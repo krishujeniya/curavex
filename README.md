@@ -4,6 +4,7 @@
 > Predicting therapeutic improvement scores and optimizing patient-specific treatment regimens using ensemble gradient boosting and multi-feature clinical trial data.
 
 <p align="center">
+  <a href="https://github.com/krishujeniya/drug-effectiveness-prediction/actions/workflows/ci.yml"><img src="https://github.com/krishujeniya/drug-effectiveness-prediction/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" />
   <img src="https://img.shields.io/badge/scikit--learn-1.3%2B-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white" alt="scikit-learn" />
   <img src="https://img.shields.io/badge/Streamlit-1.28%2B-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit" />

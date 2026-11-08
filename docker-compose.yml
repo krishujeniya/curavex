@@ -1,0 +1,20 @@
+services:
+  clinical-mlops-saas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agyos-clinical-mlops
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./models/registry:/app/models/registry
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

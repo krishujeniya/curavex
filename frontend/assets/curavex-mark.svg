@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#070b14"/>
+    </linearGradient>
+
+    <!-- Bio-therapeutic Gradient (Cyan to Emerald) -->
+    <linearGradient id="bioGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <!-- ML Vector Gradient (Indigo to Sky) -->
+    <linearGradient id="vectorGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="60%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+
+    <!-- Subtle Glow Filter -->
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <filter id="coreGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Container with Concentric Radii (r=112) -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="508" height="508" x="2" y="2" rx="110" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+
+  <!-- Subtle Radial Backlight -->
+  <circle cx="256" cy="256" r="140" fill="url(#bioGrad)" opacity="0.12" filter="url(#subtleGlow)"/>
+
+  <!-- Molecular Hex-Vector Geometry -->
+  <g transform="translate(256, 256)">
+    <!-- Ambient Pulse Ring -->
+    <circle cx="0" cy="0" r="160" fill="none" stroke="rgba(56, 189, 248, 0.15)" stroke-width="2" stroke-dasharray="6 8"/>
+
+    <!-- Left Arc: Biological Care & Clinical Response (Therapeutic 'C' Curve) -->
+    <path d="M -40,-130 
+             C -110,-130 -140,-80 -140,0 
+             C -140,80 -110,130 -40,130 
+             C 10,130 50,105 75,70
+             C 60,65 50,55 45,45
+             C 25,75 -5,95 -40,95
+             C -90,95 -105,55 -105,0
+             C -105,-55 -90,-95 -40,-95
+             C -5,-95 25,-75 45,-45
+             C 50,-55 60,-65 75,-70
+             C 50,-105 10,-130 -40,-130 Z" 
+          fill="url(#bioGrad)" 
+          filter="url(#coreGlow)"/>
+
+    <!-- Right Interlocking Vector: Quantitative Regression & Prognostic Trajectory -->
+    <path d="M 40,-120 
+             L 125,-120 
+             C 145,-120 155,-105 145,-90 
+             L 60,35 
+             L 135,35 
+             C 150,35 155,50 145,65 
+             L 50,140 
+             L -30,140 
+             C -50,140 -60,125 -50,110 
+             L 35,-15 
+             L -40,-15 
+             C -55,-15 -60,-30 -50,-45 
+             L 25,-115 
+             C 30,-118 35,-120 40,-120 Z" 
+          fill="url(#vectorGrad)" 
+          opacity="0.95"/>
+
+    <!-- Central Precision Diamond / Intersection Node -->
+    <g transform="translate(10, 5)">
+      <circle cx="0" cy="0" r="16" fill="#ffffff" filter="url(#coreGlow)"/>
+      <circle cx="0" cy="0" r="10" fill="#06b6d4"/>
+      <!-- Clinical Cross Core -->
+      <path d="M -3,-7 L 3,-7 L 3,-3 L 7,-3 L 7,3 L 3,3 L 3,7 L -3,7 L -3,3 L -7,3 L -7,-3 L -3,-3 Z" fill="#ffffff"/>
+    </g>
+
+    <!-- Satellite Pharmacometric Nodes -->
+    <circle cx="-135" cy="-45" r="7" fill="#38bdf8"/>
+    <circle cx="-135" cy="45" r="7" fill="#10b981"/>
+    <circle cx="125" cy="-85" r="6" fill="#818cf8"/>
+    <circle cx="110" cy="95" r="6" fill="#2dd4bf"/>
+  </g>
+</svg>

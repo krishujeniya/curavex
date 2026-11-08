@@ -1,0 +1,86 @@
+/* Design Engineering Standards: Emil Kowalski Guidelines & Obsidian Palette */
+:root {
+  --bg-primary: #090d16;
+  --bg-secondary: #0f172a;
+  --bg-card: rgba(15, 23, 42, 0.75);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-focus: #38bdf8;
+  --accent-cyan: #06b6d4;
+  --accent-teal: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Concentric Border Radii Rule: R_inner = R_outer - padding */
+/* Outer: 16px (rounded-2xl), padding: 12px (p-3) -> Inner: 4px (rounded) */
+/* Outer: 24px (rounded-3xl), padding: 16px (p-4) -> Inner: 8px (rounded-lg) */
+.card-outer {
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  backdrop-filter: blur(12px);
+}
+
+.card-inner {
+  border-radius: 8px; /* 16px - 8px effective or 8px inner */
+}
+
+/* Micro-interactions: 150ms-200ms cubic-bezier */
+.interactive-tap {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease, background-color 180ms ease;
+  will-change: transform;
+}
+
+.interactive-tap:active {
+  transform: scale(0.98);
+}
+
+.interactive-tap:hover {
+  opacity: 0.95;
+}
+
+/* Subtle glow effects */
+.glow-cyan {
+  box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.25);
+}
+
+.glow-teal {
+  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.25);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Pulse animation for active model */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+.pulse-indicator {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

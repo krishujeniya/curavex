@@ -1,21 +1,45 @@
-name: CI
+name: Curavex CI
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate:
+  test-and-ratchet:
+    name: Unit Tests & Coverage Ratchet
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      - name: Verify Dataset & Pipeline Syntax
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
         run: |
-          python -m compileall .
-          test -f real_drug_dataset.csv
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Run ETL & Data Validation Pipeline
+        run: |
+          python -m src.data.make_dataset
+
+      - name: Execute Full Test Suite
+        run: |
+          PYTHONPATH=. pytest tests/ -v
+
+      - name: Enforce Test Coverage Ratchet (>= 80%)
+        run: |
+          PYTHONPATH=. pytest --cov=src --cov-fail-under=80 tests/

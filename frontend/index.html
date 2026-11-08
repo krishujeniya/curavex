@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curavex | Clinical Treatment Response & MLOps Platform</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/curavex-mark.svg" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/app.css" />
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-white/10 bg-[#090d16]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="./assets/curavex-mark.svg" alt="CURAVEX Mark" class="w-9 h-9 rounded-xl shadow-md shadow-cyan-950/40" />
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-extrabold tracking-tight text-white">CURA<span class="text-cyan-400">VEX</span></span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-950 text-cyan-400 border border-cyan-800/40 font-mono">CLINICAL MLOPS</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Treatment Response Regression &amp; Efficacy Governance</p>
+      </div>
+    </div>
+
+    <!-- Live Telemetry Pill Indicators -->
+    <div class="hidden md:flex items-center gap-5 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-indicator"></span>
+        <span>Active Model: <code id="header-active-model" class="font-mono text-slate-200">loading...</code></span>
+      </div>
+      <div class="border-l border-white/10 h-4"></div>
+      <div>p50 Latency: <span id="header-latency" class="font-mono text-cyan-400">0.0 ms</span></div>
+      <div class="border-l border-white/10 h-4"></div>
+      <div class="flex items-center gap-2">
+        <span>Drift:</span>
+        <span id="drift-status-indicator" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400">Checking...</span>
+      </div>
+      <div class="border-l border-white/10 h-4"></div>
+      <a id="header-docs-link" href="https://drug-effectiveness-prediction.vercel.app/docs" target="_blank" class="text-slate-300 hover:text-cyan-400 transition-colors flex items-center gap-1 font-mono text-[11px]">
+        <span>API Docs</span> ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- Workspace Subheader & Tabs -->
+  <nav class="border-b border-white/5 bg-[#0d1322] px-6 flex items-center gap-2 overflow-x-auto">
+    <button data-tab-target="predict" class="px-4 py-3 text-xs font-medium border-b-2 border-cyan-400 text-cyan-400 interactive-tap whitespace-nowrap">
+      Clinical Decision Support
+    </button>
+    <button data-tab-target="batch" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+      Batch Prediction Hub
+    </button>
+    <button data-tab-target="mlops" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+      MLOps Control Plane
+    </button>
+    <button data-tab-target="monitoring" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+      Observability & Drift Studio
+    </button>
+    <button data-tab-target="apikeys" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+      Developer API Hub
+    </button>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6">
+
+    <!-- TAB 1: CLINICAL DECISION SUPPORT -->
+    <section id="tab-predict" class="tab-content-panel space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Input Form (7 cols) -->
+        <div class="lg:col-span-7 card-outer">
+          <div class="mb-4">
+            <h2 class="text-base font-semibold text-white tracking-tight">Patient Regimen Parameters</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Input demographics and pharmacology to compute predicted improvement score.</p>
+          </div>
+
+          <form id="single-predict-form" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Age -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Patient Age</label>
+                <input id="input-age" type="number" min="1" max="120" value="48" required
+                  class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+                <span class="text-[10px] text-slate-500 mt-1 block">Trial cohort: 18 – 79 years</span>
+              </div>
+
+              <!-- Gender -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Biological Sex</label>
+                <select id="input-gender" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                </select>
+                <span class="text-[10px] text-slate-500 mt-1 block">Demographic strata</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Condition -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Primary Indication</label>
+                <select id="input-condition" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+                  <option value="Hypertension">Hypertension</option>
+                  <option value="Depression">Depression</option>
+                  <option value="Diabetes">Diabetes</option>
+                  <option value="Infection">Infection</option>
+                  <option value="Pain Relief">Pain Relief</option>
+                </select>
+              </div>
+
+              <!-- Drug Name -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Approved Compound</label>
+                <select id="input-drug" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Dosage -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Unit Dose (mg)</label>
+                <input id="input-dosage" type="number" step="10" min="20" max="1500" value="250" required
+                  class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+                <span class="text-[10px] text-slate-500 mt-1 block">Permitted range: 50 – 850 mg</span>
+              </div>
+
+              <!-- Treatment Duration -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Duration (days)</label>
+                <input id="input-duration" type="number" min="1" max="365" value="30" required
+                  class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+                <span class="text-[10px] text-slate-500 mt-1 block">Course length: 5 – 60 days</span>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-predict-submit"
+              class="w-full py-2.5 mt-2 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-slate-950 font-semibold text-xs uppercase tracking-wider rounded-lg interactive-tap shadow-lg shadow-cyan-900/20">
+              Run Clinical Prognosis
+            </button>
+          </form>
+        </div>
+
+        <!-- Prognosis Output Card (5 cols) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div id="prediction-result-card" class="card-outer hidden border-cyan-500/30">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+              <span class="text-xs uppercase font-mono text-slate-400">Prognosis Output</span>
+              <span id="res-badge" class="px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-950 text-emerald-400 border border-emerald-500/30">High Efficacy</span>
+            </div>
+
+            <div class="py-5 text-center">
+              <div class="text-[11px] font-mono uppercase text-slate-400">Expected Improvement Score</div>
+              <div class="text-4xl font-extrabold tracking-tight text-white mt-1 font-mono">
+                <span id="res-score">7.85</span> <span class="text-sm font-normal text-slate-400">/ 10.0</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-1">
+                95% Confidence Interval: <code id="res-ci" class="font-mono text-cyan-300">[6.40 - 9.30]</code>
+              </div>
+            </div>
+
+            <!-- Attribution Chart -->
+            <div class="pt-3 border-t border-white/10">
+              <div class="text-xs font-semibold text-slate-300 mb-2">Feature Impact Attribution</div>
+              <div class="h-44 w-full">
+                <canvas id="feature-importance-canvas"></canvas>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div>Inference: <span id="res-latency" class="text-slate-200">1.2 ms</span></div>
+              <div class="truncate max-w-[200px]" id="res-model">gb-regressor-v1.0.0</div>
+            </div>
+          </div>
+
+          <!-- Clinical Guidance Notice -->
+          <div class="p-4 rounded-xl border border-white/10 bg-slate-900/40 text-xs text-slate-400 space-y-1.5">
+            <div class="font-semibold text-slate-200 flex items-center gap-1.5">
+              <span>Biostatistical Note</span>
+            </div>
+            <p>Prognosis reflects ensemble regression trained on canonical multi-cohort clinical trial response trajectories. Thresholds: <strong>Low (1.0–4.5)</strong>, <strong>Medium (4.6–7.5)</strong>, <strong>High (7.6–10.0)</strong>.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: BATCH PREDICTION HUB -->
+    <section id="tab-batch" class="tab-content-panel space-y-6 hidden">
+      <div class="card-outer">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-semibold text-white tracking-tight">Batch Cohort Scoring Hub</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Upload multi-subject CSV files to score clinical response across entire patient populations.</p>
+          </div>
+          <a href="./demo_batch_cohort.csv" download class="text-xs text-cyan-400 hover:underline font-mono">Download Template CSV</a>
+        </div>
+
+        <!-- File Drop Box -->
+        <div class="border-2 border-dashed border-white/15 rounded-xl p-8 text-center hover:border-cyan-500/50 transition-colors bg-slate-900/40">
+          <input type="file" id="csv-file-input" accept=".csv" class="hidden" />
+          <label for="csv-file-input" class="cursor-pointer inline-flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full bg-cyan-950 border border-cyan-800/40 flex items-center justify-center text-cyan-400 mb-3">
+              ↑
+            </div>
+            <span class="text-sm font-semibold text-slate-200">Select Clinical CSV Dataset</span>
+            <span class="text-xs text-slate-500 mt-1">Requires columns: Age, Gender, Condition, Drug_Name, Dosage_mg, Treatment_Duration_days</span>
+          </label>
+          <div id="batch-upload-status" class="mt-3 text-xs font-mono text-cyan-400"></div>
+        </div>
+      </div>
+
+      <!-- Batch Results Container -->
+      <div id="batch-results-container" class="card-outer space-y-4 hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-4 border-b border-white/10">
+          <div class="bg-slate-900/70 p-3 rounded-lg border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 uppercase">Processed Cohort</span>
+            <div id="batch-stat-total" class="text-xl font-bold font-mono text-white mt-0.5">0</div>
+          </div>
+          <div class="bg-slate-900/70 p-3 rounded-lg border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 uppercase">Mean Prognosis</span>
+            <div id="batch-stat-mean" class="text-xl font-bold font-mono text-cyan-400 mt-0.5">0.0</div>
+          </div>
+          <div class="bg-slate-900/70 p-3 rounded-lg border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 uppercase">Minimum Score</span>
+            <div id="batch-stat-min" class="text-xl font-bold font-mono text-slate-200 mt-0.5">0.0</div>
+          </div>
+          <div class="bg-slate-900/70 p-3 rounded-lg border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 uppercase">Maximum Score</span>
+            <div id="batch-stat-max" class="text-xl font-bold font-mono text-emerald-400 mt-0.5">0.0</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-white/10 text-[11px] font-mono text-slate-400 uppercase">
+                <th class="py-2.5 px-3">Subject ID</th>
+                <th class="py-2.5 px-3">Predicted Score</th>
+                <th class="py-2.5 px-3">Efficacy Tier</th>
+                <th class="py-2.5 px-3">95% Confidence Interval</th>
+              </tr>
+            </thead>
+            <tbody id="batch-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MLOPS CONTROL PLANE -->
+    <section id="tab-mlops" class="tab-content-panel space-y-6 hidden">
+      <!-- Active Model Overview Banner -->
+      <div class="card-outer bg-gradient-to-r from-slate-900/90 to-cyan-950/40 border-cyan-500/20">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-500/40">Active In Production</span>
+              <span id="hero-active-algo" class="text-sm font-bold text-white capitalize">Gradient Boosting</span>
+              <span id="hero-active-ver" class="text-xs font-mono text-cyan-400">v1.0.0</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Directing live clinical traffic. Evaluated against 5-fold cross validation on canonical cohort.</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="text-[10px] font-mono uppercase text-slate-400">Test RMSE</div>
+              <div id="hero-active-rmse" class="text-lg font-bold font-mono text-white">1.45</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] font-mono uppercase text-slate-400">Test MAE</div>
+              <div id="hero-active-mae" class="text-lg font-bold font-mono text-white">1.18</div>
+            </div>
+            <button onclick="document.getElementById('retrain-modal').classList.remove('hidden')"
+              class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs rounded-lg interactive-tap">
+              + Retrain New Model
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Models Registry Table -->
+      <div class="card-outer">
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-white">Model Governance Registry</h3>
+          <p class="text-xs text-slate-400">All registered candidate architectures, validation metrics, and atomic promotion controls.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-white/10 text-[11px] font-mono text-slate-400 uppercase">
+                <th class="py-2.5 px-3">Model ID</th>
+                <th class="py-2.5 px-3">Architecture</th>
+                <th class="py-2.5 px-3">Version</th>
+                <th class="py-2.5 px-3">Stage</th>
+                <th class="py-2.5 px-3">Metrics</th>
+                <th class="py-2.5 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="models-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: OBSERVABILITY & DRIFT STUDIO -->
+    <section id="tab-monitoring" class="tab-content-panel space-y-6 hidden">
+      <!-- Top Metrics Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="card-outer">
+          <span class="text-[10px] font-mono uppercase text-slate-400">Total Live Inferences</span>
+          <div id="stat-inferences" class="text-2xl font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="card-outer">
+          <span class="text-[10px] font-mono uppercase text-slate-400">System Throughput</span>
+          <div id="stat-throughput" class="text-2xl font-bold font-mono text-cyan-400 mt-1">0.0 rpm</div>
+        </div>
+        <div class="card-outer">
+          <span class="text-[10px] font-mono uppercase text-slate-400">Error Rate</span>
+          <div id="stat-error-rate" class="text-2xl font-bold font-mono text-emerald-400 mt-1">0.0%</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Latency Chart -->
+        <div class="card-outer space-y-3">
+          <h3 class="text-xs font-semibold text-slate-200">Latency Percentiles (ms)</h3>
+          <div class="h-48 w-full">
+            <canvas id="latency-percentiles-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Drift Chart -->
+        <div class="card-outer space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-200">Kolmogorov-Smirnov Drift Test</h3>
+            <span class="text-[10px] font-mono text-slate-500">p < 0.05 indicates drift</span>
+          </div>
+          <div class="h-48 w-full">
+            <canvas id="drift-metrics-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Inference Audit Log Table -->
+      <div class="card-outer">
+        <div class="mb-3">
+          <h3 class="text-sm font-semibold text-white">Live Inference Audit Trail</h3>
+          <p class="text-xs text-slate-400">Stream of processed clinical scoring requests and execution durations.</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-white/10 text-[11px] font-mono text-slate-400 uppercase">
+                <th class="py-2 px-3">Timestamp</th>
+                <th class="py-2 px-3">Serving Model</th>
+                <th class="py-2 px-3">Score</th>
+                <th class="py-2 px-3">Efficacy</th>
+                <th class="py-2 px-3">Latency</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: DEVELOPER API HUB -->
+    <section id="tab-apikeys" class="tab-content-panel space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Active Keys & Generator (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="card-outer">
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold text-white">Active Developer API Keys</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Use API keys with the <code>X-API-Key</code> header to programmatically query the clinical engine.</p>
+            </div>
+            <div id="api-keys-list" class="space-y-3">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Key Generation Form -->
+          <div class="card-outer">
+            <h3 class="text-xs font-semibold text-slate-200 mb-3">Provision New API Key</h3>
+            <form id="generate-key-form" class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Key Description / Team Name</label>
+                <input id="new-key-name" type="text" placeholder="e.g. Oncology Clinical Site 4" required
+                  class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">SaaS Service Tier</label>
+                <select id="new-key-tier" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500">
+                  <option value="standard">Standard (300 req/min, 100k/mo)</option>
+                  <option value="enterprise">Enterprise (1200 req/min, 1M/mo)</option>
+                  <option value="free">Free Sandbox (60 req/min, 10k/mo)</option>
+                </select>
+              </div>
+              <button type="submit" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs rounded-lg interactive-tap">
+                Generate API Key
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Code Integration Snippets (5 cols) -->
+        <div class="lg:col-span-5 card-outer space-y-4">
+          <h3 class="text-xs font-semibold text-slate-200">Programmatic Integration</h3>
+
+          <div>
+            <span class="text-[11px] font-mono text-cyan-400">cURL Example</span>
+            <pre class="bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-slate-300 overflow-x-auto border border-white/5 mt-1"><code>curl -X POST https://your-domain.com/api/v1/predict \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \
+  -d '{
+    "Age": 52,
+    "Gender": "Male",
+    "Condition": "Hypertension",
+    "Drug_Name": "Amlodipine",
+    "Dosage_mg": 250.0,
+    "Treatment_Duration_days": 30
+  }'</code></pre>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-mono text-teal-400">Python requests</span>
+            <pre class="bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-slate-300 overflow-x-auto border border-white/5 mt-1"><code>import requests
+
+res = requests.post(
+    "https://your-domain.com/api/v1/predict",
+    headers={"X-API-Key": "live_agyos_clinical_enterprise_key_99x"},
+    json={
+        "Age": 52, "Gender": "Male",
+        "Condition": "Hypertension",
+        "Drug_Name": "Amlodipine",
+        "Dosage_mg": 250.0,
+        "Treatment_Duration_days": 30
+    }
+)
+print(res.json()["predicted_score"])</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Retraining Modal Dialog -->
+  <div id="retrain-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="card-outer max-w-md w-full bg-[#0d1322] border-cyan-500/40">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+        <h3 class="text-sm font-bold text-white">Retrain Clinical Model</h3>
+        <button onclick="document.getElementById('retrain-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <form id="retrain-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Architecture</label>
+          <select id="retrain-algo" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500">
+            <option value="gradient_boosting">Gradient Boosting Regressor</option>
+            <option value="random_forest">Random Forest Regressor</option>
+            <option value="ridge">Ridge Regression (L2 Regularized)</option>
+            <option value="decision_tree">Decision Tree Regressor</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Release Version</label>
+          <input id="retrain-version" type="text" value="v2.1.0" required
+            class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <button type="submit" id="btn-retrain-submit"
+          class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs rounded-lg interactive-tap">
+          Launch Retraining Job
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="border-t border-white/5 py-4 text-center text-xs text-slate-500 font-mono">
+    Curavex Clinical MLOps System &bull; Contract-First REST API &bull; Automated Model Governance
+  </footer>
+
+  <script src="./js/charts.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

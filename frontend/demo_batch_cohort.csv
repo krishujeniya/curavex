@@ -1,0 +1,11 @@
+Age,Gender,Condition,Drug_Name,Dosage_mg,Treatment_Duration_days
+56,Female,Infection,Ciprofloxacin,500,14
+69,Male,Hypertension,Amlodipine,100,30
+46,Female,Depression,Sertraline,50,60
+62,Male,Diabetes,Metformin,500,90
+38,Female,Pain Relief,Ibuprofen,400,7
+72,Male,Hypertension,Losartan,50,45
+29,Female,Infection,Amoxicillin,250,10
+51,Male,Depression,Escitalopram,20,30
+44,Female,Diabetes,Glipizide,10,60
+65,Male,Pain Relief,Tramadol,50,14

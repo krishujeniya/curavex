@@ -46,3 +46,11 @@ None. All systems operational and verified.
 ```bash
 make run
 ```
+
+## 2026-11-09 UI checkpoint
+- Task: Restyle the Curavex clinical MLOps workspace using a clinical dark palette and improve keyboard/assistive-technology tab support.
+- Branch/revision: `main`, starting revision `084ebfc`; UI changes are local and pending commit/push.
+- Files: `frontend/index.html`, `frontend/css/curavex-shell.css`, `frontend/js/app.js`.
+- Verification: `make data` completed; `make coverage` passed 30 tests at 84.97% coverage; `node --check frontend/js/app.js` and `git diff --check` passed. Browser checks against the live read-only API returned HTTP 200 for metadata, models, telemetry, drift, logs, and key listing. Mobile and desktop Lighthouse accessibility, best-practices, and SEO scores were 100. Layout had no horizontal overflow at 320, 360, 390, 768, 1024, 1280, 1440, or 1920 px. Workspace tabs responded to click and arrow keys.
+- Blocker: GitHub Actions and Pages deployment have not yet run for this revision.
+- Next command: `git push origin main` after creating the UI commit.

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Curavex is a clinical MLOps workspace for treatment-response predictions, model governance, and drift monitoring." />
   <title>Curavex | Clinical Treatment Response & MLOps Platform</title>
   <link rel="icon" type="image/svg+xml" href="./assets/curavex-mark.svg" />
   <!-- Tailwind CSS CDN -->
@@ -14,10 +15,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./css/app.css" />
+  <link rel="stylesheet" href="./css/curavex-shell.css" />
 </head>
 <body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
   <!-- Top Navigation Header -->
+  <a class="skip-link" href="#main-content">Skip to workspace</a>
   <header class="border-b border-white/10 bg-[#090d16]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <img src="./assets/curavex-mark.svg" alt="CURAVEX Mark" class="w-9 h-9 rounded-xl shadow-md shadow-cyan-950/40" />
@@ -51,26 +54,26 @@
   </header>
 
   <!-- Workspace Subheader & Tabs -->
-  <nav class="border-b border-white/5 bg-[#0d1322] px-6 flex items-center gap-2 overflow-x-auto">
-    <button data-tab-target="predict" class="px-4 py-3 text-xs font-medium border-b-2 border-cyan-400 text-cyan-400 interactive-tap whitespace-nowrap">
+  <nav aria-label="Workspace views" role="tablist" class="workspace-tabs border-b border-white/5 bg-[#0d1322] px-6 flex items-center gap-2 overflow-x-auto">
+    <button id="workspace-tab-predict" role="tab" aria-selected="true" aria-controls="tab-predict" tabindex="0" data-tab-target="predict" class="px-4 py-3 text-xs font-medium border-b-2 border-cyan-400 text-cyan-400 interactive-tap whitespace-nowrap">
       Clinical Decision Support
     </button>
-    <button data-tab-target="batch" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+    <button id="workspace-tab-batch" role="tab" aria-selected="false" aria-controls="tab-batch" tabindex="-1" data-tab-target="batch" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
       Batch Prediction Hub
     </button>
-    <button data-tab-target="mlops" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+    <button id="workspace-tab-mlops" role="tab" aria-selected="false" aria-controls="tab-mlops" tabindex="-1" data-tab-target="mlops" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
       MLOps Control Plane
     </button>
-    <button data-tab-target="monitoring" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+    <button id="workspace-tab-monitoring" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1" data-tab-target="monitoring" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
       Observability & Drift Studio
     </button>
-    <button data-tab-target="apikeys" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
+    <button id="workspace-tab-apikeys" role="tab" aria-selected="false" aria-controls="tab-apikeys" tabindex="-1" data-tab-target="apikeys" class="px-4 py-3 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 interactive-tap whitespace-nowrap">
       Developer API Hub
     </button>
   </nav>
 
   <!-- Main Content Body -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-6">
+  <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto p-6">
 
     <!-- TAB 1: CLINICAL DECISION SUPPORT -->
     <section id="tab-predict" class="tab-content-panel space-y-6">
@@ -79,7 +82,7 @@
         <!-- Input Form (7 cols) -->
         <div class="lg:col-span-7 card-outer">
           <div class="mb-4">
-            <h2 class="text-base font-semibold text-white tracking-tight">Patient Regimen Parameters</h2>
+            <h1 class="text-base font-semibold text-white tracking-tight">Patient Regimen Parameters</h1>
             <p class="text-xs text-slate-400 mt-0.5">Input demographics and pharmacology to compute predicted improvement score.</p>
           </div>
 
@@ -87,7 +90,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Age -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Patient Age</label>
+                <label for="input-age" class="block text-xs font-medium text-slate-300 mb-1.5">Patient Age</label>
                 <input id="input-age" type="number" min="1" max="120" value="48" required
                   class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
                 <span class="text-[10px] text-slate-500 mt-1 block">Trial cohort: 18 – 79 years</span>
@@ -95,7 +98,7 @@
 
               <!-- Gender -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Biological Sex</label>
+                <label for="input-gender" class="block text-xs font-medium text-slate-300 mb-1.5">Biological Sex</label>
                 <select id="input-gender" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
                   <option value="Female">Female</option>
                   <option value="Male">Male</option>
@@ -107,7 +110,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Condition -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Primary Indication</label>
+                <label for="input-condition" class="block text-xs font-medium text-slate-300 mb-1.5">Primary Indication</label>
                 <select id="input-condition" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
                   <option value="Hypertension">Hypertension</option>
                   <option value="Depression">Depression</option>
@@ -119,7 +122,7 @@
 
               <!-- Drug Name -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Approved Compound</label>
+                <label for="input-drug" class="block text-xs font-medium text-slate-300 mb-1.5">Approved Compound</label>
                 <select id="input-drug" class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
                   <!-- Populated dynamically -->
                 </select>
@@ -129,7 +132,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Dosage -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Unit Dose (mg)</label>
+                <label for="input-dosage" class="block text-xs font-medium text-slate-300 mb-1.5">Unit Dose (mg)</label>
                 <input id="input-dosage" type="number" step="10" min="20" max="1500" value="250" required
                   class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
                 <span class="text-[10px] text-slate-500 mt-1 block">Permitted range: 50 – 850 mg</span>
@@ -137,7 +140,7 @@
 
               <!-- Treatment Duration -->
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1.5">Duration (days)</label>
+                <label for="input-duration" class="block text-xs font-medium text-slate-300 mb-1.5">Duration (days)</label>
                 <input id="input-duration" type="number" min="1" max="365" value="30" required
                   class="w-full px-3 py-2 bg-slate-900/90 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
                 <span class="text-[10px] text-slate-500 mt-1 block">Course length: 5 – 60 days</span>
@@ -402,12 +405,12 @@
             <h3 class="text-xs font-semibold text-slate-200 mb-3">Provision New API Key</h3>
             <form id="generate-key-form" class="space-y-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Key Description / Team Name</label>
+                <label for="new-key-name" class="block text-xs text-slate-400 mb-1">Key Description / Team Name</label>
                 <input id="new-key-name" type="text" placeholder="e.g. Oncology Clinical Site 4" required
                   class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500" />
               </div>
               <div>
-                <label class="block text-xs text-slate-400 mb-1">SaaS Service Tier</label>
+                <label for="new-key-tier" class="block text-xs text-slate-400 mb-1">SaaS Service Tier</label>
                 <select id="new-key-tier" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500">
                   <option value="standard">Standard (300 req/min, 100k/mo)</option>
                   <option value="enterprise">Enterprise (1200 req/min, 1M/mo)</option>
@@ -474,7 +477,7 @@ print(res.json()["predicted_score"])</code></pre>
 
       <form id="retrain-form" class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Architecture</label>
+          <label for="retrain-algo" class="block text-xs font-medium text-slate-300 mb-1">Architecture</label>
           <select id="retrain-algo" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500">
             <option value="gradient_boosting">Gradient Boosting Regressor</option>
             <option value="random_forest">Random Forest Regressor</option>
@@ -484,7 +487,7 @@ print(res.json()["predicted_score"])</code></pre>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Release Version</label>
+          <label for="retrain-version" class="block text-xs font-medium text-slate-300 mb-1">Release Version</label>
           <input id="retrain-version" type="text" value="v2.1.0" required
             class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-cyan-500" />
         </div>

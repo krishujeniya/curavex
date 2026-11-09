@@ -1,0 +1,57 @@
+/* Curavex workspace: calm clinical contrast, legible live state, dense task-first layout. */
+:root {
+  color-scheme: dark;
+  --cv-canvas: #0b1114;
+  --cv-panel: #111a1e;
+  --cv-panel-raised: #172328;
+  --cv-border: rgba(215, 232, 226, .13);
+  --cv-paper: #eef4ef;
+  --cv-muted: #a7b5b5;
+  --cv-teal: #8fd6c5;
+  --cv-blue: #9bbbe9;
+  --cv-warning: #f1c879;
+  --cv-danger: #f19a91;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--cv-canvas); color: var(--cv-paper); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+.text-slate-500 { color: var(--cv-muted) !important; }
+.skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; transform: translateY(-180%); padding: .7rem 1rem; border-radius: .5rem; color: #10211e; background: var(--cv-paper); }
+.skip-link:focus { transform: translateY(0); }
+header.sticky { background: rgba(11,17,20,.94); border-color: var(--cv-border); backdrop-filter: blur(16px); }
+header.sticky > div:first-child img { border-radius: 11px; }
+header p { color: var(--cv-muted) !important; }
+.workspace-tabs { scrollbar-width: thin; scrollbar-color: #46605b transparent; background: #0e171a !important; border-color: var(--cv-border) !important; }
+.workspace-tabs button { min-height: 48px; color: var(--cv-muted); border-bottom-width: 2px; white-space: nowrap; transition: color .18s ease, border-color .18s ease, background .18s ease; }
+.workspace-tabs button:hover { color: var(--cv-paper); background: rgba(255,255,255,.025); }
+.workspace-tabs button:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--cv-teal); outline-offset: 3px; }
+main { max-width: 1500px !important; padding: clamp(18px, 3vw, 38px) !important; }
+.card-outer { background: var(--cv-panel); border: 1px solid var(--cv-border); border-radius: 16px; padding: clamp(16px, 2vw, 24px); box-shadow: 0 16px 48px rgba(0,0,0,.12); backdrop-filter: none; }
+.card-outer h2, .card-outer h3 { color: var(--cv-paper); }
+.card-outer p { color: var(--cv-muted); line-height: 1.6; }
+input, select { min-height: 44px; background-color: #0c1417 !important; border-color: var(--cv-border) !important; border-radius: 9px !important; }
+input:hover, select:hover { border-color: rgba(143,214,197,.42) !important; }
+button, a { transition-timing-function: cubic-bezier(.2,.75,.25,1); }
+button:disabled { cursor: not-allowed; opacity: .6; }
+#single-predict-form button[type="submit"], #generate-key-form button[type="submit"], #retrain-form button[type="submit"] { min-height: 46px; border-radius: 9px; background: var(--cv-teal); color: #10211e; box-shadow: none; font-weight: 700; }
+#single-predict-form button[type="submit"]:hover, #generate-key-form button[type="submit"]:hover, #retrain-form button[type="submit"]:hover { background: #a8e2d2; }
+#prediction-result-card { border-color: rgba(143,214,197,.3) !important; }
+#header-active-model, #header-latency { color: var(--cv-teal) !important; }
+#drift-status-indicator { min-height: 25px; display: inline-flex; align-items: center; padding-inline: 10px; border-radius: 999px; }
+input[type="file"] { min-height: initial; background: transparent !important; }
+label[for="csv-file-input"] { min-height: 44px; }
+pre { white-space: pre; tab-size: 2; }
+footer { color: var(--cv-muted); border-color: var(--cv-border) !important; }
+::selection { color: #10211e; background: var(--cv-teal); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@media (max-width: 767px) {
+  header.sticky { align-items: flex-start; padding: 12px 16px; }
+  header.sticky > div:first-child { min-width: 0; }
+  header.sticky > div:first-child p { max-width: 58vw; white-space: normal; line-height: 1.35; }
+  header.sticky > div:nth-child(2) { display: none; }
+  .workspace-tabs { padding-inline: 12px; }
+  main { padding: 16px !important; }
+  .card-outer { border-radius: 13px; }
+  #batch-results-container .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+#main-content h1 { margin: 0; font-size: 1rem; font-weight: 650; letter-spacing: -.01em; }

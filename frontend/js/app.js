@@ -45,6 +45,18 @@ const App = {
         const target = e.currentTarget.getAttribute('data-tab-target');
         this.switchTab(target);
       });
+      btn.addEventListener('keydown', (e) => {
+        const tabs = [...document.querySelectorAll('[data-tab-target]')];
+        const index = tabs.indexOf(e.currentTarget);
+        const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length
+          : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length
+            : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+        if (next >= 0) {
+          e.preventDefault();
+          tabs[next].focus();
+          this.switchTab(tabs[next].getAttribute('data-tab-target'));
+        }
+      });
     });
 
     // Single Prediction Form
@@ -95,10 +107,16 @@ const App = {
       btn.classList.toggle('border-cyan-400', match);
       btn.classList.toggle('text-slate-400', !match);
       btn.classList.toggle('border-transparent', !match);
+      btn.setAttribute('aria-selected', String(match));
+      btn.tabIndex = match ? 0 : -1;
     });
 
     document.querySelectorAll('.tab-content-panel').forEach(panel => {
-      panel.classList.toggle('hidden', panel.id !== `tab-${tabId}`);
+      const active = panel.id === `tab-${tabId}`;
+      panel.classList.toggle('hidden', !active);
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', `workspace-tab-${tabId}`);
+      panel.toggleAttribute('hidden', !active);
     });
 
     if (tabId === 'monitoring') {

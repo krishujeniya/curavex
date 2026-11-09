@@ -54,3 +54,10 @@ make run
 - Verification: `make data` completed; `make coverage` passed 30 tests at 84.97% coverage; `node --check frontend/js/app.js` and `git diff --check` passed. Browser checks against the live read-only API returned HTTP 200 for metadata, models, telemetry, drift, logs, and key listing. Mobile and desktop Lighthouse accessibility, best-practices, and SEO scores were 100. Layout had no horizontal overflow at 320, 360, 390, 768, 1024, 1280, 1440, or 1920 px. Workspace tabs responded to click and arrow keys.
 - Blocker: GitHub Actions and Pages deployment have not yet run for this revision.
 - Next command: `git push origin main` after creating the UI commit.
+
+## 2026-11-09 UI release result
+- UI commit `5ead67e` is on `main`. Curavex CI run `42569080066` passed all jobs, including ETL, tests, and the 80% coverage ratchet. Pages deployment run `42569079990` completed successfully.
+- Production smoke check: GitHub Pages served the updated page and local assets with HTTP 200; read-only backend metadata, models, and telemetry requests returned HTTP 200. The page rendered the current production model. No browser console errors appeared; the existing Tailwind CDN emitted its production-use warning.
+- Local browser verification: keyboard tab selection and all eight target widths passed; mobile and desktop Lighthouse accessibility, best practices, and SEO each scored 100.
+- Remaining operational note: GitHub Actions reports Node 20 deprecation notices for `actions/checkout@v4` and `actions/setup-python@v5`; these are existing workflow dependencies and did not fail the runs.
+- Next command: `git status --short --branch`.

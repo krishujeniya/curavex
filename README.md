@@ -5,8 +5,8 @@
   <p><strong>Clinical Precision Oncology & Pharmacology Response Prediction</strong></p>
   <p>
     <a href="https://krishujeniya.github.io/curavex/"><strong>Live Frontend Dashboard</strong></a> &bull;
-    <a href="https://drug-effectiveness-prediction.vercel.app"><strong>Live Backend API</strong></a> &bull;
-    <a href="https://drug-effectiveness-prediction.vercel.app/docs"><strong>Interactive OpenAPI Docs</strong></a>
+    <a href="https://curavex.vercel.app"><strong>Live Backend API</strong></a> &bull;
+    <a href="https://curavex.vercel.app/docs"><strong>Interactive OpenAPI Docs</strong></a>
   </p>
 </div>
 
@@ -15,8 +15,8 @@
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white)
-![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Active-222222?style=flat-square&logo=github&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-curavex.vercel.app-000000?style=flat-square&logo=vercel&logoColor=white)
+![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-krishujeniya.github.io%2Fcuravex-222222?style=flat-square&logo=github&logoColor=white)
 ![Coverage](https://img.shields.io/badge/Coverage-86%25-brightgreen?style=flat-square)
 
 ---
@@ -36,13 +36,13 @@ flowchart TD
         TRAIN["models/train_model.py<br/>(Ensemble Regressors)"]
         REG["models/registry.py<br/>(Semantic Versioning & Promotion)"]
         MON["monitoring/drift_detector.py & tracker.py<br/>(KS-test, PSI, Latencies)"]
-        EXP["explainability/attributions.py<br/>(Feature Impact)"]
+        EXP["explainability/attributions.py<br/>(Clinical Feature Impact)"]
     end
 
     subgraph Serving["FastAPI SaaS Gateway (Vercel Serverless / Docker)"]
-        AUTH["Token Auth & Rate Limiter"]
+        AUTH["Token Auth & Tiered Rate Limiter"]
         ROUTERS["REST API v1 Endpoints"]
-        STATIC["Static Asset Server"]
+        STATIC["Static Asset Handler"]
     end
 
     subgraph Storage["Artifact & Storage Hierarchy"]
@@ -62,6 +62,7 @@ flowchart TD
 ## 2. Cookiecutter Project Structure
 
 ```
+curavex/
 ├── Makefile                       <- Standard automation: make data, make train, make test, make run
 ├── README.md                      <- Top-level system overview
 ├── pyproject.toml                 <- Project metadata, pytest, and coverage configuration
@@ -154,7 +155,7 @@ All requests accept `X-API-Key` or `Authorization: Bearer <key>`. Pre-seeded dev
 - Standard: `live_agyos_standard_key_44b` (300 req/min)
 - Guest Sandbox: `demo_key_public_guest` (60 req/min)
 
-Live Interactive OpenAPI documentation is available at [https://drug-effectiveness-prediction.vercel.app/docs](https://drug-effectiveness-prediction.vercel.app/docs).
+Live Interactive OpenAPI documentation is available at [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs).
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -175,13 +176,60 @@ Live Interactive OpenAPI documentation is available at [https://drug-effectivene
 ## 5. Live Production Deployments
 
 - **Frontend Dashboard (GitHub Pages)**: [https://krishujeniya.github.io/curavex/](https://krishujeniya.github.io/curavex/)
-- **Backend API (Vercel Serverless)**: [https://drug-effectiveness-prediction.vercel.app](https://drug-effectiveness-prediction.vercel.app)
-- **API Documentation**: [https://drug-effectiveness-prediction.vercel.app/docs](https://drug-effectiveness-prediction.vercel.app/docs)
-- **Health Check Probe**: [https://drug-effectiveness-prediction.vercel.app/healthz](https://drug-effectiveness-prediction.vercel.app/healthz)
+- **Backend API (Vercel Serverless)**: [https://curavex.vercel.app](https://curavex.vercel.app)
+- **API Documentation**: [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs)
+- **Health Check Probe**: [https://curavex.vercel.app/healthz](https://curavex.vercel.app/healthz)
 
 ---
 
-## 6. Local Quickstart
+## 6. Programmatic Integration Examples
+
+### cURL
+
+```bash
+curl -X POST https://curavex.vercel.app/api/v1/predict \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \
+  -d '{
+    "Age": 52,
+    "Gender": "Male",
+    "Condition": "Hypertension",
+    "Drug_Name": "Amlodipine",
+    "Dosage_mg": 250.0,
+    "Treatment_Duration_days": 30
+  }'
+```
+
+### Python Requests
+
+```python
+import requests
+
+url = "https://curavex.vercel.app/api/v1/predict"
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": "live_agyos_clinical_enterprise_key_99x",
+}
+payload = {
+    "Age": 52,
+    "Gender": "Male",
+    "Condition": "Hypertension",
+    "Drug_Name": "Amlodipine",
+    "Dosage_mg": 250.0,
+    "Treatment_Duration_days": 30,
+}
+
+response = requests.post(url, headers=headers, json=payload)
+data = response.json()
+
+print(f"Predicted Score: {data['predicted_score']}")
+print(f"Effectiveness Level: {data['effectiveness_level']}")
+print(f"Confidence Interval: {data['confidence_interval']}")
+```
+
+---
+
+## 7. Local Quickstart
 
 ```bash
 # 1. Clone repository

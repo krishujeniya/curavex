@@ -119,7 +119,7 @@ const App = {
 
     // If running on GitHub Pages, route requests to production Vercel backend
     if (window.location.hostname.includes('github.io')) {
-      return 'https://drug-effectiveness-prediction.vercel.app';
+      return 'https://curavex.vercel.app';
     }
 
     return '';

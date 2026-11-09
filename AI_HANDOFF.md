@@ -6,14 +6,15 @@ Deploy Curavex End-to-End MLOps SaaS system with frontend on GitHub Pages, serve
 ## Repository & Revisions
 - Repository: `https://github.com/krishujeniya/curavex`
 - Branch: `main`
-- Latest Commit: `d125c3d`
-- Git Status: Clean working tree, fully synced with remote
+- Latest Commit: `f9a0ea2`
+- Git Status: Sanitization and branding finalized; all legacy names removed
 
 ## Live Production Deployments
 - Frontend SPA Dashboard: [https://krishujeniya.github.io/curavex/](https://krishujeniya.github.io/curavex/)
 - Serverless Backend Gateway: [https://curavex.vercel.app](https://curavex.vercel.app)
 - Interactive OpenAPI Documentation: [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs)
 - System Health Liveness Probe: [https://curavex.vercel.app/healthz](https://curavex.vercel.app/healthz)
+- Legacy Alias Status: `https://drug-effectiveness-prediction.vercel.app` permanently deleted (HTTP 404 DEPLOYMENT_NOT_FOUND)
 
 ## CI/CD Pipeline Verification (GitHub Actions)
 - `Curavex CI` (Run ID 42513779497): Status `completed`, Conclusion `success`

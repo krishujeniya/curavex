@@ -31,7 +31,7 @@ run:
 	$(UVICORN) src.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 docker-build:
-	docker build -t agyos-clinical-mlops:latest .
+	docker build -t curavex:latest .
 
 docker-run:
 	docker compose up --build

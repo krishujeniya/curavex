@@ -3,12 +3,13 @@ message: "If you use this software in your research, please cite it as below."
 authors:
   - family-names: "Ujeniya"
     given-names: "Krish"
-title: "Drug Effectiveness Predictor: Clinical Treatment Response Regression Pipeline"
-version: 1.0.0
-date-released: 2026-11-02
-url: "https://github.com/krishujeniya/drug-effectiveness-prediction"
+title: "Curavex: Clinical Treatment Response & Precision Pharmacology MLOps Platform"
+version: 2.0.0
+date-released: 2026-11-09
+url: "https://github.com/krishujeniya/curavex"
 keywords:
   - "healthcare-ai"
   - "clinical-trials"
   - "machine-learning"
-  - "streamlit"
+  - "mlops"
+  - "precision-oncology"

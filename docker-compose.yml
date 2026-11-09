@@ -1,9 +1,9 @@
 services:
-  clinical-mlops-saas:
+  curavex-saas:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: agyos-clinical-mlops
+    container_name: curavex
     restart: unless-stopped
     ports:
       - "8000:8000"

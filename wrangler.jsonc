@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curavex-edge-api",
+  "main": "edge/worker.ts",
+  "compatibility_date": "2026-11-20",
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "shared-production-db",
+      "database_id": "ce4a313b-69c9-4fc6-8385-b45eeba064df"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SHARED_CONFIG_KV",
+      "id": "f8b3339a3f154b29bb794f7f32a654ed"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "UPSTREAM_API": "https://curavex.vercel.app"
+  }
+}

@@ -4,19 +4,19 @@
   <img src="frontend/assets/curavex-logo.svg" alt="Curavex Logo" width="380" />
   <p><strong>Clinical Precision Oncology & Pharmacology Response Prediction</strong></p>
   <p>
-    <a href="https://krishujeniya.github.io/curavex/"><strong>Live Frontend Dashboard</strong></a> &bull;
-    <a href="https://curavex.vercel.app"><strong>Live Backend API</strong></a> &bull;
-    <a href="https://curavex.vercel.app/docs"><strong>Interactive OpenAPI Docs</strong></a>
+    <a href="https://curavex.pages.dev"><strong>Live Frontend Dashboard</strong></a> &bull;
+    <a href="https://curavex-edge-api.curavex.workers.dev"><strong>Live Backend API</strong></a> &bull;
+    <a href="https://curavex-edge-api.curavex.workers.dev/docs"><strong>Interactive OpenAPI Docs</strong></a>
   </p>
 </div>
 
 [![Curavex CI](https://github.com/krishujeniya/curavex/actions/workflows/ci.yml/badge.svg)](https://github.com/krishujeniya/curavex/actions/workflows/ci.yml)
-[![Deploy Frontend](https://github.com/krishujeniya/curavex/actions/workflows/pages.yml/badge.svg)](https://github.com/krishujeniya/curavex/actions/workflows/pages.yml)
+[![Deploy Frontend](https://img.shields.io/badge/Cloudflare_Pages-Active-F38020?style=flat-square&logo=cloudflare)](https://github.com/krishujeniya/curavex/actions/workflows/pages.yml)
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-curavex.vercel.app-000000?style=flat-square&logo=vercel&logoColor=white)
-![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-krishujeniya.github.io%2Fcuravex-222222?style=flat-square&logo=github&logoColor=white)
+[![Cloudflare Edge](https://img.shields.io/badge/Cloudflare_Edge-Deployed-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://curavex.pages.dev)
+[![Security](https://img.shields.io/badge/Security-A%2B_Hardened-blue?style=flat-square)](https://curavex.pages.dev)
 ![Coverage](https://img.shields.io/badge/Coverage-86%25-brightgreen?style=flat-square)
 
 ---
@@ -155,7 +155,7 @@ All requests accept `X-API-Key` or `Authorization: Bearer <key>`. Pre-seeded dev
 - Standard: `live_agyos_standard_key_44b` (300 req/min)
 - Guest Sandbox: `demo_key_public_guest` (60 req/min)
 
-Live Interactive OpenAPI documentation is available at [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs).
+Live Interactive OpenAPI documentation is available at [https://curavex-edge-api.curavex.workers.dev/docs](https://curavex-edge-api.curavex.workers.dev/docs).
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -175,10 +175,10 @@ Live Interactive OpenAPI documentation is available at [https://curavex.vercel.a
 
 ## 5. Live Production Deployments
 
-- **Frontend Dashboard (GitHub Pages)**: [https://krishujeniya.github.io/curavex/](https://krishujeniya.github.io/curavex/)
-- **Backend API (Vercel Serverless)**: [https://curavex.vercel.app](https://curavex.vercel.app)
-- **API Documentation**: [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs)
-- **Health Check Probe**: [https://curavex.vercel.app/healthz](https://curavex.vercel.app/healthz)
+- **Frontend Dashboard (GitHub Pages)**: [https://curavex.pages.dev](https://curavex.pages.dev)
+- **Backend API (Vercel Serverless)**: [https://curavex-edge-api.curavex.workers.dev](https://curavex-edge-api.curavex.workers.dev)
+- **API Documentation**: [https://curavex-edge-api.curavex.workers.dev/docs](https://curavex-edge-api.curavex.workers.dev/docs)
+- **Health Check Probe**: [https://curavex-edge-api.curavex.workers.dev/healthz](https://curavex-edge-api.curavex.workers.dev/healthz)
 
 ---
 
@@ -187,7 +187,7 @@ Live Interactive OpenAPI documentation is available at [https://curavex.vercel.a
 ### cURL
 
 ```bash
-curl -X POST https://curavex.vercel.app/api/v1/predict \
+curl -X POST https://curavex-edge-api.curavex.workers.dev/api/v1/predict \
   -H "Content-Type: application/json" \
   -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \
   -d '{
@@ -205,7 +205,7 @@ curl -X POST https://curavex.vercel.app/api/v1/predict \
 ```python
 import requests
 
-url = "https://curavex.vercel.app/api/v1/predict"
+url = "https://curavex-edge-api.curavex.workers.dev/api/v1/predict"
 headers = {
     "Content-Type": "application/json",
     "X-API-Key": "live_agyos_clinical_enterprise_key_99x",

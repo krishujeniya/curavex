@@ -60,29 +60,24 @@ docker pull ghcr.io/krishujeniya/curavex:latest
 docker run -d --restart unless-stopped -p 8000:8000 ghcr.io/krishujeniya/curavex:latest
 ```
 
-### Method C: Vercel Serverless Deployment (CLI)
+### Method C: Cloudflare Pages Deployment (Frontend)
 
-FastAPI endpoints deploy directly via Vercel CLI using `@vercel/python` rewrites:
+The frontend SPA deploys directly to Cloudflare Pages via GitHub Actions or Wrangler CLI:
 ```bash
-# Link and pull production environment
-vercel link --yes
-vercel env pull .env.production.local --environment=production
-
-# Deploy preview build
-vercel deploy
-
-# Deploy production release
-vercel deploy --prod
+# Direct Wrangler deployment to Cloudflare Pages
+wrangler pages deploy frontend --project-name=curavex --branch=main
 ```
 
-### Method D: Cloudflare Free Stack Deployment (CLI)
+### Method D: Cloudflare Workers Edge API Deployment (CLI)
 
 Edge proxy, D1 database, and Workers AI inference deployment using Wrangler CLI:
 ```bash
 # Verify shared D1 database
 wrangler d1 info shared-production-db
 
-# Deploy edge proxy Worker with Workers AI and R2 bindings
+# Deploy edge proxy Worker with Workers AI and D1 bindings
+wrangler deploy
+```
 wrangler deploy
 ```
 

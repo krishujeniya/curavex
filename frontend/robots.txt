@@ -17,4 +17,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://krishujeniya.github.io/curavex/sitemap.xml
+Sitemap: https://curavex.pages.dev/sitemap.xml

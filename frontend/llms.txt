@@ -3,8 +3,8 @@
 > Clinical treatment response regression and precision pharmacology MLOps platform.
 > Architected and developed by Krish Ujeniya (@krishujeniya).
 > Developer Profile: https://github.com/krishujeniya
-> Portfolio Showcase: https://krishujeniya.github.io/MostlyOutlier/
-> Live Site: https://krishujeniya.github.io/curavex/
+> Portfolio Showcase: https://mostlyoutlier.pages.dev/
+> Live Site: https://curavex.pages.dev/
 > Source Repository: https://github.com/krishujeniya/curavex
 
 ## Overview
@@ -12,7 +12,7 @@ Curavex bridges clinical pharmacology datasets with predictive machine learning 
 
 ## Author & Ecosystem
 - Author: Krish Ujeniya (https://github.com/krishujeniya)
-- Canonical Person Entity: https://krishujeniya.github.io/#krishujeniya
+- Canonical Person Entity: https://krishujeniya.dev/#krishujeniya
 - Linked Projects: AGYOS, Hadron, WaferPulse, Somnostasis, Hajree, Scanlark, TraceMigo
 
 ## Key Clinical & MLOps Capabilities

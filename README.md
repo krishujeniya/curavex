@@ -26,7 +26,7 @@
 ```mermaid
 flowchart TD
     subgraph Client["Clinical & API Clients"]
-        UI["Web SPA Dashboard<br/>(GitHub Pages: krishujeniya.github.io/curavex)"]
+        UI["Web SPA Dashboard<br/>(Cloudflare Pages: curavex.pages.dev)"]
         API_CLIENT["Programmatic EHR / API Client<br/>(cURL / Python requests)"]
     end
 
@@ -39,7 +39,7 @@ flowchart TD
         EXP["explainability/attributions.py<br/>(Clinical Feature Impact)"]
     end
 
-    subgraph Serving["FastAPI SaaS Gateway (Vercel Serverless / Docker)"]
+    subgraph Serving["FastAPI SaaS Gateway (Cloudflare Workers / Docker)"]
         AUTH["Token Auth & Tiered Rate Limiter"]
         ROUTERS["REST API v1 Endpoints"]
         STATIC["Static Asset Handler"]
@@ -67,13 +67,13 @@ curavex/
 ├── README.md                      <- Top-level system overview
 ├── pyproject.toml                 <- Project metadata, pytest, and coverage configuration
 ├── requirements.txt               <- Pinned Python dependencies
-├── vercel.json                    <- Serverless routing & CORS configuration
+├── wrangler.jsonc                 <- Cloudflare Workers edge configuration
 ├── Dockerfile                     <- Multi-stage container configuration
 ├── docker-compose.yml             <- Production container service composition
 │
 ├── .github/workflows/
 │   ├── ci.yml                     <- Full pipeline validation, test suite, and 80% coverage ratchet
-│   └── pages.yml                  <- Automated GitHub Pages continuous deployment for frontend
+│   └── cloudflare-deploy.yml      <- Automated Cloudflare continuous deployment for frontend & edge
 │
 ├── data/                          <- Data storage tiers
 │   ├── raw/                       <- Immutable clinical dataset dump (real_drug_dataset.csv)

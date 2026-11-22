@@ -10,11 +10,10 @@ Deploy Curavex End-to-End MLOps SaaS system with frontend on GitHub Pages, serve
 - Git Status: Sanitization and branding finalized; all legacy names removed
 
 ## Live Production Deployments
-- Frontend SPA Dashboard: [https://krishujeniya.github.io/curavex/](https://krishujeniya.github.io/curavex/)
-- Serverless Backend Gateway: [https://curavex.vercel.app](https://curavex.vercel.app)
-- Interactive OpenAPI Documentation: [https://curavex.vercel.app/docs](https://curavex.vercel.app/docs)
-- System Health Liveness Probe: [https://curavex.vercel.app/healthz](https://curavex.vercel.app/healthz)
-- Legacy Alias Status: `https://drug-effectiveness-prediction.vercel.app` permanently deleted (HTTP 404 DEPLOYMENT_NOT_FOUND)
+- Frontend SPA Dashboard: [https://curavex.pages.dev/](https://curavex.pages.dev/)
+- Serverless Backend Gateway: [https://curavex-api.curavex.workers.dev](https://curavex-api.curavex.workers.dev)
+- Interactive OpenAPI Documentation: [https://curavex-api.curavex.workers.dev/docs](https://curavex-api.curavex.workers.dev/docs)
+- System Health Liveness Probe: [https://curavex-api.curavex.workers.dev/healthz](https://curavex-api.curavex.workers.dev/healthz)
 
 ## CI/CD Pipeline Verification (GitHub Actions)
 - `Curavex CI` (Run ID 42513779497): Status `completed`, Conclusion `success`
@@ -24,7 +23,7 @@ Deploy Curavex End-to-End MLOps SaaS system with frontend on GitHub Pages, serve
   - Coverage Ratchet: Enforced `>= 80%` (achieved 85.97%)
 - `Deploy Frontend to GitHub Pages` (Run ID 42513779435): Status `completed`, Conclusion `success`
   - Build Artifact: `frontend/` directory uploaded and published
-  - Custom domain/subpath: `https://krishujeniya.github.io/curavex/`
+  - Cloudflare Pages domain: `https://curavex.pages.dev/`
   - Assets: All SVG/CSS/JS assets return HTTP 200
 
 ## Architecture Summary

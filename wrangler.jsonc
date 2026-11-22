@@ -21,6 +21,6 @@
   ],
   "vars": {
     "ENVIRONMENT": "production",
-    "UPSTREAM_API": "https://curavex.vercel.app"
+    "UPSTREAM_API": "https://curavex-api.curavex.workers.dev"
   }
 }

@@ -135,9 +135,9 @@ const App = {
     const stored = localStorage.getItem('curavex_backend_url');
     if (stored) return stored.replace(/\/$/, '');
 
-    // If running on GitHub Pages, route requests to production Vercel backend
-    if (window.location.hostname.includes('github.io')) {
-      return 'https://curavex.vercel.app';
+    // If running on Cloudflare Pages or custom domain, route requests to production Cloudflare Worker backend
+    if (window.location.hostname.includes('pages.dev') || window.location.hostname.includes('curavex')) {
+      return 'https://curavex-api.curavex.workers.dev';
     }
 
     return '';

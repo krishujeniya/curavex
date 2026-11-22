@@ -5,8 +5,8 @@
   <p><strong>Clinical Precision Oncology & Pharmacology Response Prediction</strong></p>
   <p>
     <a href="https://curavex.pages.dev"><strong>Live Frontend Dashboard</strong></a> &bull;
-    <a href="https://curavex-edge-api.curavex.workers.dev"><strong>Live Backend API</strong></a> &bull;
-    <a href="https://curavex-edge-api.curavex.workers.dev/docs"><strong>Interactive OpenAPI Docs</strong></a>
+    <a href="https://api.curavex.workers.dev"><strong>Live Backend API</strong></a> &bull;
+    <a href="https://api.curavex.workers.dev/docs"><strong>Interactive OpenAPI Docs</strong></a>
   </p>
 </div>
 
@@ -155,7 +155,7 @@ All requests accept `X-API-Key` or `Authorization: Bearer <key>`. Pre-seeded dev
 - Standard: `live_agyos_standard_key_44b` (300 req/min)
 - Guest Sandbox: `demo_key_public_guest` (60 req/min)
 
-Live Interactive OpenAPI documentation is available at [https://curavex-edge-api.curavex.workers.dev/docs](https://curavex-edge-api.curavex.workers.dev/docs).
+Live Interactive OpenAPI documentation is available at [https://api.curavex.workers.dev/docs](https://api.curavex.workers.dev/docs).
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -176,9 +176,9 @@ Live Interactive OpenAPI documentation is available at [https://curavex-edge-api
 ## 5. Live Production Deployments
 
 - **Frontend Dashboard (GitHub Pages)**: [https://curavex.pages.dev](https://curavex.pages.dev)
-- **Backend API (Vercel Serverless)**: [https://curavex-edge-api.curavex.workers.dev](https://curavex-edge-api.curavex.workers.dev)
-- **API Documentation**: [https://curavex-edge-api.curavex.workers.dev/docs](https://curavex-edge-api.curavex.workers.dev/docs)
-- **Health Check Probe**: [https://curavex-edge-api.curavex.workers.dev/healthz](https://curavex-edge-api.curavex.workers.dev/healthz)
+- **Backend API (Cloudflare Worker)**: [https://api.curavex.workers.dev](https://api.curavex.workers.dev)
+- **API Documentation**: [https://api.curavex.workers.dev/docs](https://api.curavex.workers.dev/docs)
+- **Health Check Probe**: [https://api.curavex.workers.dev/healthz](https://api.curavex.workers.dev/healthz)
 
 ---
 
@@ -187,7 +187,7 @@ Live Interactive OpenAPI documentation is available at [https://curavex-edge-api
 ### cURL
 
 ```bash
-curl -X POST https://curavex-edge-api.curavex.workers.dev/api/v1/predict \
+curl -X POST https://api.curavex.workers.dev/api/v1/predict \
   -H "Content-Type: application/json" \
   -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \
   -d '{
@@ -205,7 +205,7 @@ curl -X POST https://curavex-edge-api.curavex.workers.dev/api/v1/predict \
 ```python
 import requests
 
-url = "https://curavex-edge-api.curavex.workers.dev/api/v1/predict"
+url = "https://api.curavex.workers.dev/api/v1/predict"
 headers = {
     "Content-Type": "application/json",
     "X-API-Key": "live_agyos_clinical_enterprise_key_99x",

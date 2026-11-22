@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "curavex-edge-api",
+  "name": "api",
   "main": "edge/worker.ts",
   "compatibility_date": "2026-11-20",
   "ai": {
@@ -21,6 +21,6 @@
   ],
   "vars": {
     "ENVIRONMENT": "production",
-    "UPSTREAM_API": "https://curavex-api.curavex.workers.dev"
+    "UPSTREAM_API": "https://api.curavex.workers.dev"
   }
 }

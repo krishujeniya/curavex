@@ -19,8 +19,8 @@ window.AppCharts = {
         datasets: [{
           label: 'Attribution Magnitude',
           data: data,
-          backgroundColor: '#4fd1b5',
-          borderRadius: 4,
+          backgroundColor: '#ffffff',
+          borderRadius: 2,
           maxBarThickness: 24,
         }]
       },
@@ -31,20 +31,20 @@ window.AppCharts = {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#0f172a',
-            borderColor: 'rgba(255,255,255,0.1)',
+            backgroundColor: '#000000',
+            borderColor: '#333333',
             borderWidth: 1,
             bodyFont: { family: 'Inter', size: 12 },
           }
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }
+            grid: { color: '#171717' },
+            ticks: { color: '#a3a3a3', font: { family: 'Inter', size: 11 } }
           },
           y: {
             grid: { display: false },
-            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+            ticks: { color: '#d4d4d4', font: { family: 'Inter', size: 11 } }
           }
         }
       }
@@ -63,8 +63,8 @@ window.AppCharts = {
         datasets: [{
           label: 'Latency (ms)',
           data: [latencyData.avg || 0, latencyData.p50 || 0, latencyData.p95 || 0, latencyData.p99 || 0],
-          backgroundColor: ['#7ee7d2', '#4fd1b5', '#60a5fa', '#f19a91'],
-          borderRadius: 6,
+          backgroundColor: ['#525252', '#737373', '#a3a3a3', '#ffffff'],
+          borderRadius: 4,
           maxBarThickness: 36,
         }]
       },
@@ -73,16 +73,16 @@ window.AppCharts = {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { backgroundColor: '#0f172a' }
+          tooltip: { backgroundColor: '#000000', borderColor: '#333333', borderWidth: 1 }
         },
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: '#94a3b8' }
+            ticks: { color: '#a3a3a3' }
           },
           y: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#64748b' }
+            grid: { color: '#171717' },
+            ticks: { color: '#737373' }
           }
         }
       }
@@ -96,7 +96,7 @@ window.AppCharts = {
 
     const labels = Object.keys(numericMetrics);
     const pValues = labels.map(k => numericMetrics[k].p_value);
-    const backgroundColors = pValues.map(p => p < 0.05 ? '#f19a91' : '#4fd1b5');
+    const backgroundColors = pValues.map(p => p < 0.05 ? '#ffffff' : '#525252');
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'bar',
@@ -106,7 +106,7 @@ window.AppCharts = {
           label: 'KS-test p-value (Threshold: 0.05)',
           data: pValues,
           backgroundColor: backgroundColors,
-          borderRadius: 4,
+          borderRadius: 2,
           maxBarThickness: 28,
         }]
       },
@@ -116,18 +116,21 @@ window.AppCharts = {
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: '#000000',
+            borderColor: '#333333',
+            borderWidth: 1,
             callbacks: {
               afterLabel: (ctx) => ctx.raw < 0.05 ? 'DRIFT ALERT' : 'Normal Distribution'
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+          x: { grid: { display: false }, ticks: { color: '#a3a3a3' } },
           y: {
             min: 0,
             max: 1.0,
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#64748b' }
+            grid: { color: '#171717' },
+            ticks: { color: '#737373' }
           }
         }
       }

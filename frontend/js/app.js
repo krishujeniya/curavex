@@ -135,9 +135,9 @@ const App = {
     const stored = localStorage.getItem('curavex_backend_url');
     if (stored) return stored.replace(/\/$/, '');
 
-    // If running on Cloudflare Pages or custom domain, route requests to production Cloudflare Worker backend
+    // If running on Cloudflare Pages or custom domain, route requests to production Cloudflare Pages backend
     if (window.location.hostname.includes('pages.dev') || window.location.hostname.includes('curavex')) {
-      return 'https://curavex-api.curavex.workers.dev';
+      return 'https://api-curavex.pages.dev';
     }
 
     return '';

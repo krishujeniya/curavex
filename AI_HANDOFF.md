@@ -11,9 +11,9 @@ Deploy Curavex End-to-End MLOps SaaS system with frontend on GitHub Pages, serve
 
 ## Live Production Deployments
 - Frontend SPA Dashboard: [https://curavex.pages.dev/](https://curavex.pages.dev/)
-- Serverless Backend Gateway: [https://api.curavex.workers.dev](https://api.curavex.workers.dev)
-- Interactive OpenAPI Documentation: [https://api.curavex.workers.dev/docs](https://api.curavex.workers.dev/docs)
-- System Health Liveness Probe: [https://api.curavex.workers.dev/healthz](https://api.curavex.workers.dev/healthz)
+- Serverless Backend Gateway: [https://api-curavex.pages.dev](https://api-curavex.pages.dev)
+- Interactive OpenAPI Documentation: [https://api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs)
+- System Health Liveness Probe: [https://api-curavex.pages.dev/healthz](https://api-curavex.pages.dev/healthz)
 
 ## CI/CD Pipeline Verification (GitHub Actions)
 - `Curavex CI` (Run ID 42513779497): Status `completed`, Conclusion `success`

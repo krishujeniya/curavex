@@ -91,7 +91,7 @@
   <a class="skip-link" href="#main-content">Skip to workspace</a>
   <header class="border-b border-white/10 bg-[#090d16]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <img src="./assets/curavex-mark.svg" alt="CURAVEX Mark" class="w-9 h-9 rounded-xl shadow-md shadow-cyan-950/40" />
+      <img src="./assets/curavex-mark.svg" alt="CURAVEX Mark" class="w-9 h-9 rounded-lg border border-white/10" />
       <div>
         <div class="flex items-center gap-2">
           <span class="text-sm font-extrabold tracking-tight text-white">CURA<span class="text-cyan-400">VEX</span></span>
@@ -216,7 +216,7 @@
             </div>
 
             <button type="submit" id="btn-predict-submit"
-              class="w-full py-2.5 mt-2 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-slate-950 font-semibold text-xs uppercase tracking-wider rounded-lg interactive-tap shadow-lg shadow-cyan-900/20">
+              class="w-full py-2.5 mt-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs uppercase tracking-wider rounded-lg interactive-tap border border-emerald-400/20">
               Run Clinical Prognosis
             </button>
           </form>
@@ -278,11 +278,11 @@
         </div>
 
         <!-- File Drop Box -->
-        <div class="border-2 border-dashed border-white/15 rounded-xl p-8 text-center hover:border-cyan-500/50 transition-colors bg-slate-900/40">
+        <div class="border border-white/15 rounded-xl p-8 text-center hover:border-slate-500 transition-colors bg-slate-900/40">
           <input type="file" id="csv-file-input" accept=".csv" class="hidden" />
           <label for="csv-file-input" class="cursor-pointer inline-flex flex-col items-center">
-            <div class="w-12 h-12 rounded-full bg-cyan-950 border border-cyan-800/40 flex items-center justify-center text-cyan-400 mb-3">
-              ↑
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-slate-200 mb-3 font-mono font-bold">
+              CSV
             </div>
             <span class="text-sm font-semibold text-slate-200">Select Clinical CSV Dataset</span>
             <span class="text-xs text-slate-500 mt-1">Requires columns: Age, Gender, Condition, Drug_Name, Dosage_mg, Treatment_Duration_days</span>
@@ -333,7 +333,7 @@
     <!-- TAB 3: MLOPS CONTROL PLANE -->
     <section id="tab-mlops" class="tab-content-panel space-y-6 hidden">
       <!-- Active Model Overview Banner -->
-      <div class="card-outer bg-gradient-to-r from-slate-900/90 to-cyan-950/40 border-cyan-500/20">
+      <div class="card-outer bg-slate-900/80 border-white/10">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2">

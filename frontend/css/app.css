@@ -26,15 +26,15 @@ body {
 /* Outer: 16px (rounded-2xl), padding: 12px (p-3) -> Inner: 4px (rounded) */
 /* Outer: 24px (rounded-3xl), padding: 16px (p-4) -> Inner: 8px (rounded-lg) */
 .card-outer {
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  backdrop-filter: blur(12px);
+  backdrop-filter: none;
 }
 
 .card-inner {
-  border-radius: 8px; /* 16px - 8px effective or 8px inner */
+  border-radius: 6px;
 }
 
 /* Micro-interactions: 150ms-200ms cubic-bezier */
@@ -49,15 +49,6 @@ body {
 
 .interactive-tap:hover {
   opacity: 0.95;
-}
-
-/* Subtle glow effects */
-.glow-cyan {
-  box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.25);
-}
-
-.glow-teal {
-  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.25);
 }
 
 /* Scrollbar styling */

@@ -103,8 +103,8 @@ const App = {
     this.state.activeTab = tabId;
     document.querySelectorAll('[data-tab-target]').forEach(btn => {
       const match = btn.getAttribute('data-tab-target') === tabId;
-      btn.classList.toggle('text-cyan-400', match);
-      btn.classList.toggle('border-cyan-400', match);
+      btn.classList.toggle('text-teal-300', match);
+      btn.classList.toggle('border-teal-400', match);
       btn.classList.toggle('text-slate-400', !match);
       btn.classList.toggle('border-transparent', !match);
       btn.setAttribute('aria-selected', String(match));

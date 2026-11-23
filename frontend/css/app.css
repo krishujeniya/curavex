@@ -1,14 +1,15 @@
-/* Design Engineering Standards: Emil Kowalski Guidelines & Obsidian Palette */
+/* Design Engineering Standards: Clinical Precision Realtime Obsidian-Teal Palette */
 :root {
-  --bg-primary: #090d16;
-  --bg-secondary: #0f172a;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --border-card: rgba(255, 255, 255, 0.08);
-  --border-focus: #38bdf8;
-  --accent-cyan: #06b6d4;
-  --accent-teal: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
+  --bg-primary: #0b1114;
+  --bg-secondary: #111a1e;
+  --bg-card: rgba(17, 26, 30, 0.95);
+  --border-card: rgba(215, 232, 226, 0.12);
+  --border-focus: #7ee7d2;
+  --accent-teal: #7ee7d2;
+  --accent-teal-subtle: #4fd1b5;
+  --accent-blue: #60a5fa;
+  --accent-amber: #f1c879;
+  --accent-rose: #f19a91;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

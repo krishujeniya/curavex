@@ -19,7 +19,7 @@ window.AppCharts = {
         datasets: [{
           label: 'Attribution Magnitude',
           data: data,
-          backgroundColor: '#06b6d4',
+          backgroundColor: '#4fd1b5',
           borderRadius: 4,
           maxBarThickness: 24,
         }]
@@ -63,7 +63,7 @@ window.AppCharts = {
         datasets: [{
           label: 'Latency (ms)',
           data: [latencyData.avg || 0, latencyData.p50 || 0, latencyData.p95 || 0, latencyData.p99 || 0],
-          backgroundColor: ['#38bdf8', '#0ea5e9', '#0284c7', '#f43f5e'],
+          backgroundColor: ['#7ee7d2', '#4fd1b5', '#60a5fa', '#f19a91'],
           borderRadius: 6,
           maxBarThickness: 36,
         }]
@@ -96,7 +96,7 @@ window.AppCharts = {
 
     const labels = Object.keys(numericMetrics);
     const pValues = labels.map(k => numericMetrics[k].p_value);
-    const backgroundColors = pValues.map(p => p < 0.05 ? '#f43f5e' : '#10b981');
+    const backgroundColors = pValues.map(p => p < 0.05 ? '#f19a91' : '#4fd1b5');
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'bar',

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "api",
+  "name": "curavex-api",
   "main": "edge/worker.ts",
   "compatibility_date": "2026-11-20",
   "ai": {
@@ -21,6 +21,6 @@
   ],
   "vars": {
     "ENVIRONMENT": "production",
-    "UPSTREAM_API": "https://curavex-edge-api.curavex.workers.dev"
+    "UPSTREAM_API": "https://curavex.vercel.app"
   }
 }

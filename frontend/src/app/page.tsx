@@ -150,9 +150,6 @@ export default function CuravexWorkspacePage() {
               <div className="text-label font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
                 Curavex
               </div>
-              <p className="text-caption text-[var(--cv-text-secondary)] truncate">
-                Treatment response regression and efficacy governance
-              </p>
             </div>
           </div>
 

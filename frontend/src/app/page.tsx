@@ -1,8 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
-import { Kbd } from "@/components/wensity/kbd";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import {
+  WorkspaceCommand,
+  type WorkspaceTabId,
+} from "@/components/layout/WorkspaceCommand";
+import { ArchitectureSection } from "@/components/sections/ArchitectureSection";
+import { FinalCtaSection } from "@/components/sections/FinalCtaSection";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { MethodologySection } from "@/components/sections/MethodologySection";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/wensity/tabs";
 import { ApiKeysTab } from "@/components/workspace/ApiKeysTab";
 import { BatchTab } from "@/components/workspace/BatchTab";
 import { MlopsTab } from "@/components/workspace/MlopsTab";
@@ -14,14 +28,14 @@ import {
   type ApiKeyRecord,
   type AuditLogEntry,
   type ClinicalMetadata,
+  type DatasetStats,
   type DriftMetrics,
   type RegisteredModel,
   type TelemetryMetrics,
 } from "@/lib/api";
+import type { ClinicalCasePreset } from "@/lib/clinical-validation";
 
-type TabId = "predict" | "batch" | "mlops" | "monitoring" | "apikeys";
-
-const WORKSPACE_TABS: Array<{ id: TabId; label: string }> = [
+const WORKSPACE_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
   { id: "predict", label: "Clinical decision support" },
   { id: "batch", label: "Batch cohort scoring" },
   { id: "mlops", label: "Model governance" },
@@ -30,14 +44,20 @@ const WORKSPACE_TABS: Array<{ id: TabId; label: string }> = [
 ];
 
 export default function CuravexWorkspacePage() {
-  const [activeTab, setActiveTab] = React.useState<TabId>("predict");
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<WorkspaceTabId>("predict");
+  const [commandOpen, setCommandOpen] = React.useState(false);
   const [docsUrl, setDocsUrl] = React.useState(
     "https://api-curavex.pages.dev/docs",
   );
+  const [apiStatus, setApiStatus] = React.useState<
+    "live" | "connecting" | "offline"
+  >("connecting");
 
   const [clinicalMeta, setClinicalMeta] =
     React.useState<ClinicalMetadata | null>(null);
+  const [datasetStats, setDatasetStats] = React.useState<DatasetStats | null>(
+    null,
+  );
   const [models, setModels] = React.useState<RegisteredModel[]>([]);
   const [activeModel, setActiveModel] = React.useState<RegisteredModel | null>(
     null,
@@ -48,319 +68,184 @@ export default function CuravexWorkspacePage() {
   const [drift, setDrift] = React.useState<DriftMetrics | null>(null);
   const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
   const [apiKeys, setApiKeys] = React.useState<ApiKeyRecord[]>([]);
-
-  const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const [selectedPreset, setSelectedPreset] = React.useState<{
+    preset: ClinicalCasePreset;
+    nonce: number;
+  } | null>(null);
 
   const refreshModels = React.useCallback(async () => {
-    try {
-      const list = await curavexApi.listModels();
-      setModels(list);
-      setActiveModel(
-        list.find((m) => m.status === "PRODUCTION") ?? list[0] ?? null,
-      );
-    } catch {
-      // Initial offline/dev fallback leaves previous state intact
-    }
+    const list = await curavexApi.listModels();
+    setModels(list);
+    setActiveModel(
+      list.find((m) => m.status === "PRODUCTION") ?? list[0] ?? null,
+    );
   }, []);
 
   const refreshTelemetry = React.useCallback(async () => {
-    try {
-      const [metrics, logs] = await Promise.all([
-        curavexApi.getTelemetry(),
-        curavexApi.getAuditLogs(15),
-      ]);
-      setTelemetry(metrics);
-      setAuditLogs(logs);
-    } catch {
-      // Handled gracefully in monitoring view
-    }
+    const [metrics, logs] = await Promise.all([
+      curavexApi.getTelemetry(),
+      curavexApi.getAuditLogs(15),
+    ]);
+    setTelemetry(metrics);
+    setAuditLogs(logs);
   }, []);
 
   const refreshDrift = React.useCallback(async () => {
-    try {
-      const data = await curavexApi.getDrift();
-      setDrift(data);
-    } catch {
-      // Handled gracefully in monitoring view
-    }
+    const data = await curavexApi.getDrift();
+    setDrift(data);
   }, []);
 
   const refreshApiKeys = React.useCallback(async () => {
-    try {
-      const keys = await curavexApi.listApiKeys();
-      setApiKeys(keys);
-    } catch {
-      // Handled gracefully in developer view
-    }
+    const keys = await curavexApi.listApiKeys();
+    setApiKeys(keys);
   }, []);
 
   React.useEffect(() => {
     const base = getApiBaseUrl();
     if (base) setDocsUrl(`${base}/docs`);
 
-    void curavexApi
-      .getClinicalMetadata()
-      .then(setClinicalMeta)
-      .catch(() => undefined);
-    void refreshModels();
-    void refreshTelemetry();
-    void refreshDrift();
-    void refreshApiKeys();
-  }, [refreshModels, refreshTelemetry, refreshDrift, refreshApiKeys]);
+    let mounted = true;
+    async function bootstrap() {
+      const results = await Promise.allSettled([
+        curavexApi.getClinicalMetadata().then((m) => {
+          if (mounted) setClinicalMeta(m);
+        }),
+        curavexApi.getDatasetStats().then((s) => {
+          if (mounted) setDatasetStats(s);
+        }),
+        refreshModels(),
+        refreshTelemetry(),
+        refreshDrift(),
+        refreshApiKeys(),
+      ]);
+
+      if (!mounted) return;
+      const anySuccess = results.some((r) => r.status === "fulfilled");
+      setApiStatus(anySuccess ? "live" : "offline");
+    }
+
+    void bootstrap();
+    return () => {
+      mounted = false;
+    };
+  }, [refreshApiKeys, refreshDrift, refreshModels, refreshTelemetry]);
 
   React.useEffect(() => {
     if (activeTab !== "monitoring") return;
     const timer = window.setInterval(() => {
-      void refreshTelemetry();
-      void refreshDrift();
+      void Promise.allSettled([refreshTelemetry(), refreshDrift()]);
     }, 6000);
     return () => window.clearInterval(timer);
   }, [activeTab, refreshTelemetry, refreshDrift]);
 
-  function handleTabKeyDown(e: React.KeyboardEvent, index: number) {
-    const nextIndex =
-      e.key === "ArrowRight"
-        ? (index + 1) % WORKSPACE_TABS.length
-        : e.key === "ArrowLeft"
-          ? (index + WORKSPACE_TABS.length - 1) % WORKSPACE_TABS.length
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? WORKSPACE_TABS.length - 1
-              : -1;
+  function scrollToWorkspace(targetTab?: WorkspaceTabId) {
+    if (targetTab) setActiveTab(targetTab);
+    const el = document.getElementById("workspace");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
-    if (nextIndex >= 0) {
-      e.preventDefault();
-      setActiveTab(WORKSPACE_TABS[nextIndex].id);
-      tabRefs.current[nextIndex]?.focus();
-    }
+  function handleSelectPreset(preset: ClinicalCasePreset) {
+    setSelectedPreset({ preset, nonce: Date.now() });
+    scrollToWorkspace("predict");
   }
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[var(--cv-border)] bg-[var(--cv-canvas)]/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 min-w-0">
-            <img
-              src="./assets/curavex-logo.png"
-              alt="Curavex logo"
-              className="h-8 w-8 rounded border border-[var(--cv-border)] object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <div className="text-label font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
-                Curavex
-              </div>
-            </div>
-          </div>
+      <SiteHeader
+        activeModelId={activeModel?.model_id}
+        apiStatus={apiStatus}
+        docsUrl={docsUrl}
+        onOpenCommand={() => setCommandOpen(true)}
+        onJumpToWorkspace={() => scrollToWorkspace()}
+      />
 
-          <div className="hidden md:flex items-center gap-4 text-caption text-[var(--cv-text-secondary)] shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--cv-text-primary)]" />
-              <span>
-                Active:{" "}
-                <code className="font-mono text-[var(--cv-text-primary)]">
-                  {activeModel?.model_id ?? "loading…"}
-                </code>
-              </span>
-            </div>
-            <span className="h-4 w-px bg-[var(--cv-border)]" />
-            <div className="font-mono tabular-nums">
-              p50:{" "}
-              <span className="text-[var(--cv-text-primary)]">
-                {telemetry?.latency_ms?.p50 ?? "0.0"} ms
-              </span>
-            </div>
-            <span className="h-4 w-px bg-[var(--cv-border)]" />
-            <span className="rounded border border-[var(--cv-border-strong)] bg-[var(--cv-surface)] px-2 py-0.5 font-mono text-[var(--cv-text-primary)]">
-              {drift
-                ? drift.overall_drift_detected
-                  ? "Drift detected"
-                  : "Distribution stable"
-                : "Checking…"}
-            </span>
-            <span className="h-4 w-px bg-[var(--cv-border)]" />
-            <a
-              href={docsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-[var(--cv-text-primary)] hover:underline"
-            >
-              API docs ↗
-            </a>
-          </div>
+      <WorkspaceCommand
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        docsUrl={docsUrl}
+        onSelectTab={(tab) => scrollToWorkspace(tab)}
+        onLoadPreset={handleSelectPreset}
+      />
 
-          <div className="md:hidden">
-            <HamburgerMenu
-              variant="squeeze"
-              open={mobileMenuOpen}
-              onOpenChange={setMobileMenuOpen}
-              aria-controls="mobile-workspace-nav"
-              aria-label="Toggle workspace navigation"
-            />
-          </div>
-        </div>
+      <main id="main-content" className="flex-1">
+        <HeroSection
+          activeModel={activeModel}
+          telemetry={telemetry}
+          drift={drift}
+          datasetStats={datasetStats}
+          apiStatus={apiStatus}
+          onStartScoring={() => scrollToWorkspace("predict")}
+          onSelectPreset={handleSelectPreset}
+        />
 
-        {mobileMenuOpen && (
-          <nav
-            id="mobile-workspace-nav"
-            aria-label="Mobile workspace views"
-            className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] px-4 py-3 md:hidden"
+        <section
+          id="workspace"
+          className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+        >
+          <Tabs
+            variant="underline"
+            value={activeTab}
+            onValueChange={(val) => setActiveTab(val as WorkspaceTabId)}
+            className="space-y-6"
           >
-            <div className="flex flex-col gap-1">
-              {WORKSPACE_TABS.map((tab) => {
-                const isSelected = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`min-h-[44px] rounded-md px-3 py-2 text-start text-label transition-colors ${
-                      isSelected
-                        ? "bg-[var(--cv-surface-raised)] text-[var(--cv-text-primary)]"
-                        : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
-                    }`}
-                  >
+            <div className="border-b border-[var(--cv-border)] overflow-x-auto">
+              <TabsList className="min-w-max">
+                {WORKSPACE_TABS.map((tab) => (
+                  <TabsTrigger key={tab.id} value={tab.id} className="min-h-[44px]">
                     {tab.label}
-                  </button>
-                );
-              })}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
-          </nav>
-        )}
 
-        <nav
-          aria-label="Workspace views"
-          role="tablist"
-          className="hidden md:flex mx-auto max-w-[1440px] items-center gap-2 overflow-x-auto border-t border-[var(--cv-border)] px-4 sm:px-6 lg:px-8"
-        >
-          {WORKSPACE_TABS.map((tab, index) => {
-            const isSelected = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                ref={(el) => {
-                  tabRefs.current[index] = el;
+            <TabsContent value="predict">
+              <PredictTab
+                clinicalMeta={clinicalMeta}
+                selectedPreset={selectedPreset}
+                onPredictionComplete={() => {
+                  void Promise.allSettled([refreshTelemetry(), refreshDrift()]);
                 }}
-                id={`workspace-tab-${tab.id}`}
-                role="tab"
-                type="button"
-                aria-selected={isSelected}
-                aria-controls={`panel-${tab.id}`}
-                tabIndex={isSelected ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                onKeyDown={(e) => handleTabKeyDown(e, index)}
-                className={`min-h-[44px] whitespace-nowrap border-b-2 px-3 py-2.5 text-label transition-colors ${
-                  isSelected
-                    ? "border-[var(--cv-text-primary)] text-[var(--cv-text-primary)]"
-                    : "border-transparent text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-          <div className="ms-auto hidden xl:flex items-center gap-1.5 text-caption text-[var(--cv-text-secondary)]">
-            <span>Switch tabs:</span>
-            <Kbd>←</Kbd>
-            <Kbd>→</Kbd>
-          </div>
-        </nav>
-      </header>
+              />
+            </TabsContent>
 
-      <main
-        id="main-content"
-        className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
-      >
-        <div
-          id="panel-predict"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-predict"
-          hidden={activeTab !== "predict"}
-        >
-          {activeTab === "predict" && (
-            <PredictTab
-              clinicalMeta={clinicalMeta}
-              onPredictionComplete={() => {
-                void refreshTelemetry();
-              }}
-            />
-          )}
-        </div>
+            <TabsContent value="batch">
+              <BatchTab />
+            </TabsContent>
 
-        <div
-          id="panel-batch"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-batch"
-          hidden={activeTab !== "batch"}
-        >
-          {activeTab === "batch" && <BatchTab />}
-        </div>
+            <TabsContent value="mlops">
+              <MlopsTab
+                models={models}
+                activeModel={activeModel}
+                onModelsUpdated={refreshModels}
+              />
+            </TabsContent>
 
-        <div
-          id="panel-mlops"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-mlops"
-          hidden={activeTab !== "mlops"}
-        >
-          {activeTab === "mlops" && (
-            <MlopsTab
-              models={models}
-              activeModel={activeModel}
-              onModelsUpdated={refreshModels}
-            />
-          )}
-        </div>
+            <TabsContent value="monitoring">
+              <MonitoringTab
+                telemetry={telemetry}
+                drift={drift}
+                auditLogs={auditLogs}
+                onRefresh={async () => {
+                  await Promise.allSettled([refreshTelemetry(), refreshDrift()]);
+                }}
+              />
+            </TabsContent>
 
-        <div
-          id="panel-monitoring"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-monitoring"
-          hidden={activeTab !== "monitoring"}
-        >
-          {activeTab === "monitoring" && (
-            <MonitoringTab
-              telemetry={telemetry}
-              drift={drift}
-              auditLogs={auditLogs}
-            />
-          )}
-        </div>
+            <TabsContent value="apikeys">
+              <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
+            </TabsContent>
+          </Tabs>
+        </section>
 
-        <div
-          id="panel-apikeys"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-apikeys"
-          hidden={activeTab !== "apikeys"}
-        >
-          {activeTab === "apikeys" && (
-            <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
-          )}
-        </div>
+        <ArchitectureSection />
+        <MethodologySection datasetStats={datasetStats} />
+        <FinalCtaSection
+          docsUrl={docsUrl}
+          onOpenApiTab={() => scrollToWorkspace("apikeys")}
+        />
       </main>
 
-      <footer className="border-t border-[var(--cv-border)] py-4 text-center text-caption font-mono text-[var(--cv-text-secondary)]">
-        Curavex Clinical Response Engine · Built by{" "}
-        <a
-          href="https://github.com/krishujeniya"
-          target="_blank"
-          rel="noreferrer"
-          className="text-[var(--cv-text-primary)] hover:underline"
-        >
-          Krish Ujeniya (krishujeniya)
-        </a>{" "}
-        ·{" "}
-        <a
-          href="https://github.com/krishujeniya/curavex"
-          target="_blank"
-          rel="noreferrer"
-          className="hover:underline"
-        >
-          GitHub
-        </a>
-      </footer>
+      <SiteFooter docsUrl={docsUrl} />
     </>
   );
 }

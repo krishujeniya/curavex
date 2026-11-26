@@ -33,11 +33,45 @@ export interface BatchPredictionResponse {
   min_predicted_score: number;
   max_predicted_score: number;
   batch_latency_ms: number;
+  effectiveness_distribution?: Record<string, number>;
   predictions: Array<{
     predicted_score: number;
     effectiveness_level: string;
     confidence_interval: [number, number];
   }>;
+}
+
+export interface DatasetStats {
+  total_records: number;
+  null_counts?: Record<string, number>;
+  numeric_stats?: Record<
+    string,
+    { mean: number; std: number; min: number; max: number }
+  >;
+  condition_distribution?: Record<string, number>;
+  is_healthy?: boolean;
+}
+
+export interface ModelDetailResponse {
+  model: RegisteredModel & {
+    description?: string;
+    created_at?: string;
+    hyperparameters?: Record<string, unknown>;
+  };
+  feature_importances: Array<{ feature: string; importance: number }>;
+}
+
+export interface BenchmarkReport {
+  algorithm: string;
+  train_samples: number;
+  test_samples: number;
+  test_metrics: {
+    rmse: number;
+    mae: number;
+    mse: number;
+    r2: number;
+    pearson_corr: number;
+  };
 }
 
 export interface RegisteredModel {
@@ -64,8 +98,30 @@ export interface TelemetryMetrics {
 }
 
 export interface DriftMetrics {
+  total_features_evaluated?: number;
+  drifted_features_count?: number;
+  drifted_features?: string[];
   overall_drift_detected: boolean;
-  numeric_metrics?: Record<string, { p_value: number }>;
+  numeric_metrics?: Record<
+    string,
+    {
+      p_value: number;
+      statistic?: number;
+      drift_detected?: boolean;
+      baseline_mean?: number;
+      current_mean?: number;
+      note?: string;
+    }
+  >;
+  categorical_metrics?: Record<
+    string,
+    {
+      psi: number;
+      drift_detected?: boolean;
+      status?: string;
+      note?: string;
+    }
+  >;
 }
 
 export interface AuditLogEntry {
@@ -138,6 +194,9 @@ export const curavexApi = {
   getClinicalMetadata: () =>
     apiRequest<ClinicalMetadata>("/metadata/clinical"),
 
+  getDatasetStats: () =>
+    apiRequest<DatasetStats>("/metadata/dataset-stats"),
+
   predictSingle: (payload: PredictionRequest) =>
     apiRequest<PredictionResponse>("/predict", "POST", payload),
 
@@ -163,6 +222,15 @@ export const curavexApi = {
   },
 
   listModels: () => apiRequest<RegisteredModel[]>("/models"),
+
+  getModelDetails: (modelId: string) =>
+    apiRequest<ModelDetailResponse>(`/models/${modelId}`),
+
+  runBenchmarkSuite: () =>
+    apiRequest<{ benchmark_suite: Record<string, BenchmarkReport> }>(
+      "/models/benchmark",
+      "POST",
+    ),
 
   promoteModel: (modelId: string) =>
     apiRequest<{ status: string }>(`/models/${modelId}/promote`, "POST", {

@@ -1,15 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import {
+  JetBrains_Mono,
+  Plus_Jakarta_Sans,
+  Space_Grotesk,
+} from "next/font/google";
+import { ToastList, ToastProvider } from "@/components/wensity/toast";
 import "./globals.css";
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
+  weight: ["400", "500"],
   variable: "--font-jetbrains-mono",
   display: "swap",
 });
@@ -22,7 +36,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://curavex.pages.dev"),
-  title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
+  title: "Curavex: Clinical Treatment Response & MLOps by Krish Ujeniya",
   description:
     "Curavex is a clinical treatment-response regression and MLOps governance platform built by Krish Ujeniya (krishujeniya) with Next.js, FastAPI, and scikit-learn.",
   authors: [{ name: "Krish Ujeniya", url: "https://github.com/krishujeniya" }],
@@ -53,13 +67,13 @@ export const metadata: Metadata = {
     canonical: "https://curavex.pages.dev/",
   },
   icons: {
-    icon: "./assets/curavex-logo.png",
+    icon: "./assets/curavex-mark.svg",
   },
   openGraph: {
     type: "website",
     url: "https://curavex.pages.dev/",
     siteName: "Curavex",
-    title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
+    title: "Curavex: Clinical Treatment Response & MLOps by Krish Ujeniya",
     description:
       "Clinical treatment-response regression, batch cohort scoring, and drift observability platform built by Krish Ujeniya (krishujeniya).",
     images: [
@@ -74,7 +88,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     creator: "@krishujeniya",
-    title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
+    title: "Curavex: Clinical Treatment Response & MLOps by Krish Ujeniya",
     description:
       "Clinical treatment-response regression and MLOps platform built by Krish Ujeniya (krishujeniya).",
     images: ["/assets/curavex-logo.png"],
@@ -130,32 +144,34 @@ const jsonLd = {
       mainEntity: [
         {
           "@type": "Question",
-          "name": "What is Curavex?",
-          "acceptedAnswer": {
+          name: "What is Curavex?",
+          acceptedAnswer: {
             "@type": "Answer",
-            "text": "Curavex is a clinical treatment-response regression and MLOps governance platform built by Krish Ujeniya (krishujeniya). It predicts patient improvement scores from demographics and compound dosing, scores CSV cohorts, and monitors Kolmogorov-Smirnov and PSI drift.",
+            text: "Curavex is a clinical treatment-response regression and MLOps governance platform built by Krish Ujeniya (krishujeniya). It predicts patient improvement scores from demographics and compound dosing, scores CSV cohorts, and monitors Kolmogorov-Smirnov and PSI drift.",
           },
         },
         {
           "@type": "Question",
-          "name": "Who built Curavex?",
-          "acceptedAnswer": {
+          name: "Who built Curavex?",
+          acceptedAnswer: {
             "@type": "Answer",
-            "text": "Curavex was engineered and developed by Krish Ujeniya (@krishujeniya), and is open-source at https://github.com/krishujeniya/curavex.",
+            text: "Curavex was engineered and developed by Krish Ujeniya (@krishujeniya), and is open-source at https://github.com/krishujeniya/curavex.",
           },
         },
         {
           "@type": "Question",
-          "name": "What stack powers Curavex?",
-          "acceptedAnswer": {
+          name: "What stack powers Curavex?",
+          acceptedAnswer: {
             "@type": "Answer",
-            "text": "Curavex uses a Next.js 15 App Router static frontend with Tailwind CSS v4 and Wensity UI components on Cloudflare Pages, backed by a FastAPI and scikit-learn MLOps service and Cloudflare Workers edge caching.",
+            text: "Curavex uses a Next.js App Router static frontend with Tailwind CSS v4 and Wensity UI components on Cloudflare Pages, backed by a FastAPI and scikit-learn MLOps service and Cloudflare Workers edge caching.",
           },
         },
       ],
     },
   ],
 };
+
+const themeInitScript = `(function(){try{var t=localStorage.getItem('curavex-theme');var d=(t==='dark')||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;var m=d?'dark':'light';r.setAttribute('data-theme',m);r.classList.toggle('dark',d);}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -165,19 +181,26 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+      className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <head>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-dvh flex flex-col bg-[var(--cv-canvas)] text-[var(--cv-text-primary)] font-sans antialiased selection:bg-[var(--cv-text-primary)] selection:text-[var(--cv-canvas)]">
+      <body className="min-h-dvh flex flex-col bg-[var(--cv-canvas)] text-[var(--cv-text-primary)] font-sans selection:bg-[var(--cv-accent)] selection:text-[var(--cv-on-accent)]">
         <a className="skip-link" href="#main-content">
           Skip to workspace
         </a>
-        {children}
+        <ToastProvider>
+          {children}
+          <ToastList placement="bottom-right" />
+        </ToastProvider>
       </body>
     </html>
   );

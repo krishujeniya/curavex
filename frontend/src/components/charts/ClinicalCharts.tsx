@@ -13,6 +13,64 @@ import type { FeatureAttribution } from "@/lib/api";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
+interface ChartThemeTokens {
+  primary: string;
+  secondary: string;
+  muted: string;
+  surface: string;
+  border: string;
+  grid: string;
+  danger: string;
+  success: string;
+}
+
+function readChartTokens(): ChartThemeTokens {
+  if (typeof window === "undefined") {
+    return {
+      primary: "#f4f4f5",
+      secondary: "#a8a8a8",
+      muted: "#52525b",
+      surface: "#101010",
+      border: "#242424",
+      grid: "rgba(255, 255, 255, 0.08)",
+      danger: "#e11d2e",
+      success: "#34d399",
+    };
+  }
+  const styles = getComputedStyle(document.documentElement);
+  const isDark =
+    document.documentElement.classList.contains("dark") ||
+    document.documentElement.getAttribute("data-theme") === "dark";
+
+  return {
+    primary: styles.getPropertyValue("--cv-text-primary").trim() || (isDark ? "#f4f4f5" : "#050505"),
+    secondary: styles.getPropertyValue("--cv-text-secondary").trim() || (isDark ? "#a8a8a8" : "#525252"),
+    muted: isDark ? "#52525b" : "#a3a3a3",
+    surface: styles.getPropertyValue("--cv-surface").trim() || (isDark ? "#101010" : "#ffffff"),
+    border: styles.getPropertyValue("--cv-border-strong").trim() || (isDark ? "#4d4d4d" : "#a3a3a3"),
+    grid: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(5, 5, 5, 0.08)",
+    danger: styles.getPropertyValue("--primitive-destructive").trim() || (isDark ? "#e11d2e" : "#dc2626"),
+    success: styles.getPropertyValue("--primitive-success").trim() || (isDark ? "#34d399" : "#047857"),
+  };
+}
+
+function useThemeTick(): number {
+  const [tick, setTick] = React.useState(0);
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTick((t) => t + 1);
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return tick;
+}
+
 export function FeatureAttributionChart({
   items,
 }: {
@@ -20,6 +78,7 @@ export function FeatureAttributionChart({
 }) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartRef = React.useRef<Chart | null>(null);
+  const themeTick = useThemeTick();
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,10 +90,12 @@ export function FeatureAttributionChart({
       chartRef.current.destroy();
     }
 
+    const tokens = readChartTokens();
     const labels = items.map((item) => item.feature);
     const values = items.map((item) =>
       Math.abs(item.impact ?? item.importance ?? 0),
     );
+    const rawImpacts = items.map((item) => item.impact ?? item.importance ?? 0);
 
     chartRef.current = new Chart(ctx, {
       type: "bar",
@@ -44,9 +105,11 @@ export function FeatureAttributionChart({
           {
             label: "Attribution magnitude",
             data: values,
-            backgroundColor: "#f4f4f5",
-            borderRadius: 3,
-            maxBarThickness: 22,
+            backgroundColor: rawImpacts.map((val) =>
+              val >= 0 ? tokens.primary : tokens.muted,
+            ),
+            borderRadius: 4,
+            maxBarThickness: 20,
           },
         ],
       },
@@ -57,20 +120,28 @@ export function FeatureAttributionChart({
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#0b0c0e",
-            borderColor: "#3a3f4b",
+            backgroundColor: tokens.surface,
+            titleColor: tokens.primary,
+            bodyColor: tokens.secondary,
+            borderColor: tokens.border,
             borderWidth: 1,
-            bodyFont: { family: "Inter", size: 12 },
+            callbacks: {
+              label: (context) => {
+                const raw = rawImpacts[context.dataIndex] ?? 0;
+                const sign = raw >= 0 ? "+" : "";
+                return `Impact: ${sign}${raw.toFixed(3)}`;
+              },
+            },
           },
         },
         scales: {
           x: {
-            grid: { color: "#1a1c22" },
-            ticks: { color: "#a1a1aa", font: { family: "Inter", size: 11 } },
+            grid: { color: tokens.grid },
+            ticks: { color: tokens.secondary, font: { size: 11 } },
           },
           y: {
             grid: { display: false },
-            ticks: { color: "#e4e4e7", font: { family: "Inter", size: 11 } },
+            ticks: { color: tokens.primary, font: { size: 11 } },
           },
         },
       },
@@ -80,7 +151,7 @@ export function FeatureAttributionChart({
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [items]);
+  }, [items, themeTick]);
 
   return (
     <div className="h-44 w-full">
@@ -96,6 +167,7 @@ export function LatencyPercentilesChart({
 }) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartRef = React.useRef<Chart | null>(null);
+  const themeTick = useThemeTick();
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -106,6 +178,8 @@ export function LatencyPercentilesChart({
     if (chartRef.current) {
       chartRef.current.destroy();
     }
+
+    const tokens = readChartTokens();
 
     chartRef.current = new Chart(ctx, {
       type: "bar",
@@ -120,7 +194,12 @@ export function LatencyPercentilesChart({
               latency.p95 || 0,
               latency.p99 || 0,
             ],
-            backgroundColor: ["#52525b", "#71717a", "#a1a1aa", "#f4f4f5"],
+            backgroundColor: [
+              tokens.muted,
+              tokens.secondary,
+              tokens.secondary,
+              tokens.primary,
+            ],
             borderRadius: 4,
             maxBarThickness: 36,
           },
@@ -132,19 +211,21 @@ export function LatencyPercentilesChart({
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#0b0c0e",
-            borderColor: "#3a3f4b",
+            backgroundColor: tokens.surface,
+            titleColor: tokens.primary,
+            bodyColor: tokens.secondary,
+            borderColor: tokens.border,
             borderWidth: 1,
           },
         },
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: "#a1a1aa" },
+            ticks: { color: tokens.secondary },
           },
           y: {
-            grid: { color: "#1a1c22" },
-            ticks: { color: "#a1a1aa" },
+            grid: { color: tokens.grid },
+            ticks: { color: tokens.secondary },
           },
         },
       },
@@ -154,7 +235,7 @@ export function LatencyPercentilesChart({
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [latency]);
+  }, [latency, themeTick]);
 
   return (
     <div className="h-48 w-full">
@@ -170,6 +251,7 @@ export function DriftMetricsChart({
 }) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartRef = React.useRef<Chart | null>(null);
+  const themeTick = useThemeTick();
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -181,10 +263,11 @@ export function DriftMetricsChart({
       chartRef.current.destroy();
     }
 
+    const tokens = readChartTokens();
     const labels = Object.keys(numericMetrics);
     const pValues = labels.map((key) => numericMetrics[key].p_value);
     const backgroundColors = pValues.map((value) =>
-      value < 0.05 ? "#f4f4f5" : "#52525b",
+      value < 0.05 ? tokens.danger : tokens.primary,
     );
 
     chartRef.current = new Chart(ctx, {
@@ -196,7 +279,7 @@ export function DriftMetricsChart({
             label: "KS-test p-value (threshold 0.05)",
             data: pValues,
             backgroundColor: backgroundColors,
-            borderRadius: 3,
+            borderRadius: 4,
             maxBarThickness: 28,
           },
         ],
@@ -207,8 +290,10 @@ export function DriftMetricsChart({
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#0b0c0e",
-            borderColor: "#3a3f4b",
+            backgroundColor: tokens.surface,
+            titleColor: tokens.primary,
+            bodyColor: tokens.secondary,
+            borderColor: tokens.border,
             borderWidth: 1,
             callbacks: {
               afterLabel: (context) =>
@@ -219,12 +304,12 @@ export function DriftMetricsChart({
           },
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: "#a1a1aa" } },
+          x: { grid: { display: false }, ticks: { color: tokens.secondary } },
           y: {
             min: 0,
             max: 1.0,
-            grid: { color: "#1a1c22" },
-            ticks: { color: "#a1a1aa" },
+            grid: { color: tokens.grid },
+            ticks: { color: tokens.secondary },
           },
         },
       },
@@ -234,7 +319,7 @@ export function DriftMetricsChart({
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [numericMetrics]);
+  }, [numericMetrics, themeTick]);
 
   return (
     <div className="h-48 w-full">

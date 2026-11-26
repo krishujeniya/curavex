@@ -1,31 +1,34 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 @theme {
-  --text-display: clamp(2.25rem, 1.5rem + 2.4vw, 3.25rem);
-  --text-display--line-height: 1.05;
-  --text-display--letter-spacing: -0.03em;
+  --text-display: clamp(2.5rem, 1.55rem + 3.4vw, 4.5rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.04em;
   --text-display--font-weight: 600;
 
-  --text-title: 1.5rem;
-  --text-title--line-height: 1.2;
-  --text-title--letter-spacing: -0.02em;
+  --text-title: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.025em;
   --text-title--font-weight: 600;
 
-  --text-heading: 1rem;
+  --text-heading: 1.125rem;
   --text-heading--line-height: 1.35;
-  --text-heading--letter-spacing: -0.01em;
+  --text-heading--letter-spacing: -0.015em;
   --text-heading--font-weight: 600;
 
   --text-body: 0.9375rem;
-  --text-body--line-height: 1.55;
+  --text-body--line-height: 1.6;
 
   --text-label: 0.875rem;
-  --text-label--line-height: 1.3;
+  --text-label--line-height: 1.35;
   --text-label--font-weight: 500;
 
   --text-caption: 0.8125rem;
@@ -33,16 +36,30 @@
 }
 
 :root {
-  color-scheme: dark;
-  --cv-canvas: #050506;
-  --cv-surface: #0b0c0e;
-  --cv-surface-raised: #111317;
-  --cv-border: #23262d;
-  --cv-border-strong: #3a3f4b;
-  --cv-text-primary: #f4f4f5;
-  --cv-text-secondary: #a1a1aa;
-  --cv-text-disabled: #52525b;
-  --cv-accent: #e4e4e7;
+  color-scheme: light;
+  --mx: 76%;
+  --my: 24%;
+
+  /* AGYOS & AmberClaw Light Monochrome Editorial Palette */
+  --cv-canvas: #f7f7f7;
+  --cv-surface: #ffffff;
+  --cv-surface-raised: #efefef;
+  --cv-border: #dcdcdc;
+  --cv-border-strong: #a3a3a3;
+  --cv-text-primary: #050505;
+  --cv-text-secondary: #525252;
+  --cv-text-disabled: #6e6e6e;
+  --cv-accent: #000000;
+  --cv-on-accent: #ffffff;
+
+  --cv-grad-surface: linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%);
+  --cv-grad-section: linear-gradient(180deg, #efefef 0%, #fafafa 55%, #f2f2f2 100%);
+  --cv-grad-dark: linear-gradient(135deg, #000000 0%, #1a1a1a 52%, #080808 100%);
+  --cv-grad-card: linear-gradient(160deg, #ffffff 0%, #f4f4f4 100%);
+  --cv-grad-hero: radial-gradient(640px circle at var(--mx, 76%) var(--my, 24%), rgba(0, 0, 0, 0.065), transparent 58%), linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+  --cv-grad-progress: linear-gradient(90deg, #a3a3a3 0%, #4d4d4d 50%, #000000 100%);
+  --cv-shadow-elev: 0 22px 60px rgba(0, 0, 0, 0.08);
+
   --z-dropdown: 10;
   --z-sticky: 20;
   --z-overlay: 30;
@@ -51,15 +68,47 @@
   --z-tooltip: 60;
 }
 
+.dark,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* AGYOS & AmberClaw Dark Monochrome Editorial Palette */
+  --cv-canvas: #050505;
+  --cv-surface: #101010;
+  --cv-surface-raised: #141414;
+  --cv-border: #242424;
+  --cv-border-strong: #4d4d4d;
+  --cv-text-primary: #f4f4f5;
+  --cv-text-secondary: #a8a8a8;
+  --cv-text-disabled: #858585;
+  --cv-accent: #ffffff;
+  --cv-on-accent: #000000;
+
+  --cv-grad-surface: linear-gradient(180deg, #141414 0%, #080808 100%);
+  --cv-grad-section: linear-gradient(180deg, #0c0c0c 0%, #040404 55%, #0d0d0d 100%);
+  --cv-grad-dark: linear-gradient(135deg, #1f1f1f 0%, #0b0b0b 55%, #000000 100%);
+  --cv-grad-card: linear-gradient(160deg, #171717 0%, #0c0c0c 100%);
+  --cv-grad-hero: radial-gradient(640px circle at var(--mx, 76%) var(--my, 24%), rgba(255, 255, 255, 0.07), transparent 58%), linear-gradient(180deg, #000000 0%, #0b0b0b 100%);
+  --cv-grad-progress: linear-gradient(90deg, #4d4d4d 0%, #a3a3a3 50%, #ffffff 100%);
+  --cv-shadow-elev: 0 28px 70px rgba(0, 0, 0, 0.75);
+}
+
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+  overflow-x: clip;
 }
 
 body {
   background-color: var(--cv-canvas);
   color: var(--cv-text-primary);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+.dark body,
+:root[data-theme="dark"] body {
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, .text-display, .text-title {
@@ -91,9 +140,9 @@ p, li, figcaption {
   left: 0.75rem;
   transform: translateY(-200%);
   padding: 0.625rem 1rem;
-  border-radius: 6px;
-  color: #050506;
-  background: #f4f4f5;
+  border-radius: 8px;
+  color: var(--cv-on-accent);
+  background: var(--cv-accent);
   font-weight: 600;
 }
 
@@ -119,6 +168,217 @@ p, li, figcaption {
   background: var(--cv-border-strong);
 }
 
+/* ── AGYOS & AmberClaw Signature Footer ── */
+.site-footer {
+  padding: clamp(56px, 7vw, 96px) 0 42px;
+  background: linear-gradient(180deg, #050505 0%, #000000 100%);
+  color: #fafafa;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(255, 255, 255, 0.05), transparent 70%);
+}
+
+.footer-shell {
+  max-width: 1440px;
+  margin: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  flex-wrap: wrap;
+  padding-bottom: clamp(32px, 4vw, 52px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-tagline {
+  font: 600 11px/1.6 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a3a3a3;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 28px;
+}
+
+.footer-links a {
+  font: 600 11px/1.4 var(--font-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a3a3a3;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.35);
+}
+
+.footer-banner {
+  padding: clamp(36px, 6vw, 78px) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  overflow: hidden;
+}
+
+.footer-wordmark {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font: 700 clamp(2.75rem, 12.5vw, 12rem)/0.92 var(--font-display);
+  letter-spacing: -0.045em;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.footer-part {
+  display: inline-flex;
+  align-items: baseline;
+  will-change: transform, opacity;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
+}
+
+.footer-motion .footer-left {
+  transform: translate3d(-24vw, 0, 0);
+  opacity: 0;
+}
+
+.footer-motion .footer-right {
+  transform: translate3d(24vw, 0, 0);
+  opacity: 0;
+}
+
+.footer-motion .footer-wordmark.in-view .footer-left,
+.footer-motion .footer-wordmark.in-view .footer-right {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.footer-letter {
+  display: inline-block;
+  background: linear-gradient(180deg, #ffffff 35%, #737373 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer-float-1 {
+  animation: kFloat 4.8s ease-in-out infinite;
+}
+
+.footer-float-2 {
+  animation: kFloat 4.8s ease-in-out 0.6s infinite;
+}
+
+.footer-float-3 {
+  animation: kFloat 4.8s ease-in-out 1.2s infinite;
+}
+
+@keyframes kFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.footer-bottom {
+  padding-top: clamp(24px, 3vw, 36px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font: 600 11px/1.5 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a3a3a3;
+}
+
+.footer-meta a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.footer-meta a:hover {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.35);
+}
+
+.footer-sep {
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.back-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 0;
+  padding: 8px 0;
+  min-height: 44px;
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a3a3a3;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.back-top:hover {
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .footer-float-1,
+  .footer-float-2,
+  .footer-float-3 {
+    animation: none !important;
+  }
+  .footer-motion .footer-left,
+  .footer-motion .footer-right {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
 /* ── Wensity Base Tokens — generated by the Wensity CLI.
       Edit these values to retheme your app; re-running `wensity init --preset`
       replaces this block. ── */
@@ -133,24 +393,25 @@ p, li, figcaption {
   --color-border-strong: var(--border-strong);
 }
 :root {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
+  --background: #f7f7f7;
+  --foreground: #050505;
   --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --muted: #f4f4f5;
-  --muted-foreground: #52525b;
-  --border: rgba(10, 10, 10, 0.08);
-  --border-strong: rgba(10, 10, 10, 0.16);
+  --surface-muted: #efefef;
+  --muted: #efefef;
+  --muted-foreground: #525252;
+  --border: rgba(5, 5, 5, 0.12);
+  --border-strong: rgba(5, 5, 5, 0.24);
 }
-.dark {
-  --background: #0a0a0b;
-  --foreground: #f5f5f6;
-  --surface: #111113;
-  --surface-muted: #18181b;
-  --muted: #1c1c1f;
-  --muted-foreground: #a1a1aa;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
+.dark,
+:root[data-theme="dark"] {
+  --background: #050505;
+  --foreground: #f4f4f5;
+  --surface: #101010;
+  --surface-muted: #141414;
+  --muted: #18181b;
+  --muted-foreground: #a8a8a8;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
 }
 /* ── End Wensity Base Tokens ── */
 

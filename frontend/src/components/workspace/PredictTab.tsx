@@ -1,56 +1,77 @@
 "use client";
 
 import * as React from "react";
-import { IconActivityHeartbeat } from "@tabler/icons-react";
+import { IconActivityHeartbeat, IconInfoCircle } from "@tabler/icons-react";
 import { Alert } from "@/components/wensity/alert";
+import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/wensity/card";
+import { NumberTicker } from "@/components/wensity/count-up-animation";
 import { EmptyState } from "@/components/wensity/empty-state";
-import { Field, FieldControl } from "@/components/wensity/field";
+import { Input } from "@/components/wensity/input";
 import { NativeSelect } from "@/components/wensity/native-select";
+import { Progress } from "@/components/wensity/progress";
+import { RadioGroup, RadioOption } from "@/components/wensity/radio-group";
 import { Separator } from "@/components/wensity/separator";
 import {
   ShimmeringSkeletonWrapper,
   SkeletonLine,
 } from "@/components/wensity/shimmering-skeleton-wrapper";
+import { Slider } from "@/components/wensity/slider";
+import { useToastManager } from "@/components/wensity/toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/wensity/tooltip";
 import { FeatureAttributionChart } from "@/components/charts/ClinicalCharts";
 import {
   curavexApi,
   type ClinicalMetadata,
   type PredictionResponse,
 } from "@/lib/api";
-
-const FALLBACK_CONDITIONS = [
-  "Hypertension",
-  "Depression",
-  "Diabetes",
-  "Infection",
-  "Pain Relief",
-];
-
-const inputClassName =
-  "w-full min-h-[42px] rounded-md border border-[var(--cv-border)] bg-[#08090b] px-3 py-2 text-base sm:text-sm text-[var(--cv-text-primary)] font-mono tabular-nums placeholder:text-[var(--cv-text-disabled)] hover:border-[var(--cv-border-strong)] focus:border-[var(--cv-text-primary)] focus:outline-none";
+import {
+  CANONICAL_CONDITION_DRUG_MAP,
+  CLINICAL_LIMITS,
+  CLINICAL_PRESETS,
+  formatConfidenceInterval,
+  validateClinicalInput,
+  type ClinicalCasePreset,
+} from "@/lib/clinical-validation";
 
 export function PredictTab({
   clinicalMeta,
+  selectedPreset,
   onPredictionComplete,
 }: {
   clinicalMeta: ClinicalMetadata | null;
+  selectedPreset?: { preset: ClinicalCasePreset; nonce: number } | null;
   onPredictionComplete: () => void;
 }) {
+  const toast = useToastManager();
+  const conditionDrugMap =
+    clinicalMeta?.condition_drug_mapping ?? CANONICAL_CONDITION_DRUG_MAP;
   const conditions = clinicalMeta?.conditions?.length
     ? clinicalMeta.conditions
-    : FALLBACK_CONDITIONS;
+    : Object.keys(conditionDrugMap).sort();
 
-  const [age, setAge] = React.useState("48");
-  const [gender, setGender] = React.useState("Female");
-  const [condition, setCondition] = React.useState(conditions[0]);
+  const [age, setAge] = React.useState(48);
+  const [gender, setGender] = React.useState<"Female" | "Male">("Female");
+  const [condition, setCondition] = React.useState(conditions[0] ?? "Hypertension");
   const drugsForCondition = React.useMemo(
-    () => clinicalMeta?.condition_drug_mapping?.[condition] ?? ["Amlodipine"],
-    [clinicalMeta, condition],
+    () => conditionDrugMap[condition] ?? ["Amlodipine"],
+    [conditionDrugMap, condition],
   );
-  const [drugName, setDrugName] = React.useState(drugsForCondition[0] ?? "");
-  const [dosage, setDosage] = React.useState("250");
-  const [duration, setDuration] = React.useState("30");
+  const [drugName, setDrugName] = React.useState(drugsForCondition[0] ?? "Amlodipine");
+  const [dosage, setDosage] = React.useState(250);
+  const [duration, setDuration] = React.useState(30);
 
   const [isPredicting, setIsPredicting] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -68,243 +89,390 @@ export function PredictTab({
     }
   }, [drugsForCondition, drugName]);
 
+  React.useEffect(() => {
+    if (!selectedPreset) return;
+    const { input } = selectedPreset.preset;
+    setAge(input.Age);
+    setGender(input.Gender === "Male" ? "Male" : "Female");
+    setCondition(input.Condition);
+    setDrugName(input.Drug_Name);
+    setDosage(input.Dosage_mg);
+    setDuration(input.Treatment_Duration_days);
+    setErrorMsg(null);
+  }, [selectedPreset]);
+
+  function applyPreset(preset: ClinicalCasePreset) {
+    setAge(preset.input.Age);
+    setGender(preset.input.Gender === "Male" ? "Male" : "Female");
+    setCondition(preset.input.Condition);
+    setDrugName(preset.input.Drug_Name);
+    setDosage(preset.input.Dosage_mg);
+    setDuration(preset.input.Treatment_Duration_days);
+    setErrorMsg(null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isPredicting) return;
+
+    const payload = {
+      Age: age,
+      Gender: gender,
+      Condition: condition,
+      Drug_Name: drugName,
+      Dosage_mg: dosage,
+      Treatment_Duration_days: duration,
+    };
+
+    const validationError = validateClinicalInput(payload, conditionDrugMap);
+    if (validationError) {
+      setErrorMsg(validationError);
+      return;
+    }
 
     setIsPredicting(true);
     setErrorMsg(null);
 
     try {
-      const response = await curavexApi.predictSingle({
-        Age: parseInt(age, 10),
-        Gender: gender,
-        Condition: condition,
-        Drug_Name: drugName,
-        Dosage_mg: parseFloat(dosage),
-        Treatment_Duration_days: parseInt(duration, 10),
-      });
+      const response = await curavexApi.predictSingle(payload);
       setResult(response);
       onPredictionComplete();
+      toast.add({
+        title: "Prognosis computed",
+        description: `${response.predicted_score.toFixed(2)} / 10.0 (${response.effectiveness_level} efficacy)`,
+        data: { variant: "success" },
+      });
     } catch (err) {
-      setErrorMsg(
+      const message =
         err instanceof Error
           ? err.message
-          : "We couldn't reach the scoring engine. Check your connection and try again.",
-      );
+          : "We couldn't reach the scoring engine. Check your connection and try again.";
+      setErrorMsg(message);
+      toast.add({
+        title: "Prognosis request failed",
+        description: message,
+        data: { variant: "error" },
+      });
     } finally {
       setIsPredicting(false);
     }
   }
 
+  const efficacyBadgeVariant =
+    result?.effectiveness_level === "High"
+      ? "success"
+      : result?.effectiveness_level === "Medium"
+        ? "info"
+        : "warning";
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <section className="lg:col-span-7 min-w-0 rounded-lg border border-[var(--cv-border)] bg-[var(--cv-surface)] p-6">
-        <div className="mb-6 space-y-2">
-          <h1 className="text-title text-[var(--cv-text-primary)]">
-            Score a patient regimen
-          </h1>
-          <p className="text-body text-[var(--cv-text-secondary)] max-w-[60ch]">
-            Enter patient demographics and compound dosing to estimate expected
-            clinical improvement and feature attribution.
-          </p>
-        </div>
+    <TooltipProvider>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <Card
+          className="lg:col-span-7 min-w-0"
+          style={{ background: "var(--cv-grad-card)" }}
+        >
+          <CardHeader className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle className="text-title">Score a patient regimen</CardTitle>
+              <Badge variant="outline" size="sm">
+                Calibrated regression
+              </Badge>
+            </div>
+            <CardDescription className="max-w-[60ch]">
+              Configure patient demographics and compound dosing to estimate
+              clinical improvement and local feature attribution.
+            </CardDescription>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Patient age" description="Trial cohort: 18 to 79 years" required>
-              <FieldControl asChild>
-                <input
-                  id="input-age"
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  required
-                  className={inputClassName}
-                />
-              </FieldControl>
-            </Field>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {CLINICAL_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className="inline-flex min-h-[34px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 py-1 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </CardHeader>
 
-            <NativeSelect
-              id="input-gender"
-              label="Biological sex"
-              hint="Demographic strata"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              options={[
-                { value: "Female", label: "Female" },
-                { value: "Male", label: "Male" },
-              ]}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <NativeSelect
-              id="input-condition"
-              label="Primary indication"
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-              options={conditions.map((c) => ({ value: c, label: c }))}
-            />
-
-            <NativeSelect
-              id="input-drug"
-              label="Approved compound"
-              value={drugName}
-              onChange={(e) => setDrugName(e.target.value)}
-              options={drugsForCondition.map((d) => ({ value: d, label: d }))}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Unit dose (mg)" description="Permitted range: 50 to 850 mg" required>
-              <FieldControl asChild>
-                <input
-                  id="input-dosage"
-                  type="number"
-                  step={10}
-                  min={20}
-                  max={1500}
-                  value={dosage}
-                  onChange={(e) => setDosage(e.target.value)}
-                  required
-                  className={inputClassName}
-                />
-              </FieldControl>
-            </Field>
-
-            <Field label="Duration (days)" description="Course length: 5 to 60 days" required>
-              <FieldControl asChild>
-                <input
-                  id="input-duration"
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  required
-                  className={inputClassName}
-                />
-              </FieldControl>
-            </Field>
-          </div>
-
-          {errorMsg && (
-            <Alert
-              variant="error"
-              title="Prognosis request failed"
-              description={errorMsg}
-              onDismiss={() => setErrorMsg(null)}
-            />
-          )}
-
-          <div className="pt-2">
-            <Button
-              type="submit"
-              variant="default"
-              size="lg"
-              loading={isPredicting}
-              className="w-full min-h-[44px]"
-            >
-              {isPredicting ? "Evaluating prognosis…" : "Score patient"}
-            </Button>
-          </div>
-        </form>
-      </section>
-
-      <aside className="lg:col-span-5 min-w-0 space-y-6">
-        <ShimmeringSkeletonWrapper loading={isPredicting} rounded="rounded-lg">
-          <div className="rounded-lg border border-[var(--cv-border)] bg-[var(--cv-surface)] p-6">
-            {isPredicting ? (
-              <div className="space-y-4">
-                <SkeletonLine width="42%" />
-                <SkeletonLine width="65%" />
-                <SkeletonLine width="100%" />
-                <SkeletonLine width="85%" />
-              </div>
-            ) : result ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-heading text-[var(--cv-text-primary)]">
-                    Prognosis output
-                  </h2>
-                  <span className="inline-flex items-center rounded border border-[var(--cv-border-strong)] bg-[var(--cv-surface-raised)] px-2.5 py-1 text-caption font-mono font-medium text-[var(--cv-text-primary)]">
-                    {result.effectiveness_level} efficacy
-                  </span>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="text-caption text-[var(--cv-text-secondary)]">
-                    Expected improvement score
-                  </div>
-                  <div className="flex items-baseline gap-2 font-mono tabular-nums">
-                    <span className="text-display text-[var(--cv-text-primary)]">
-                      {result.predicted_score.toFixed(2)}
-                    </span>
-                    <span className="text-body text-[var(--cv-text-secondary)]">
-                      / 10.0
-                    </span>
-                  </div>
-                  <p className="text-caption text-[var(--cv-text-secondary)]">
-                    95% confidence interval:{" "}
-                    <code className="font-mono text-[var(--cv-text-primary)] slashed-zero">
-                      [{result.confidence_interval[0]} –{" "}
-                      {result.confidence_interval[1]}]
-                    </code>
-                  </p>
-                </div>
-
-                {result.feature_attributions &&
-                  result.feature_attributions.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-3">
-                        <h3 className="text-label text-[var(--cv-text-primary)]">
-                          Feature impact attribution
-                        </h3>
-                        <FeatureAttributionChart
-                          items={result.feature_attributions}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                <Separator />
-
-                <div className="flex items-center justify-between gap-4 text-caption font-mono text-[var(--cv-text-secondary)] tabular-nums">
-                  <span>Inference: {result.latency_ms.toFixed(1)} ms</span>
-                  <span className="truncate max-w-[200px]">
-                    {result.model_id}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={
-                  <IconActivityHeartbeat
-                    size={28}
-                    stroke={1.6}
-                    className="text-[var(--cv-text-secondary)]"
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                <div className="space-y-3">
+                  <Input
+                    id="input-age"
+                    type="number"
+                    label="Patient age (years)"
+                    hint={`Trial cohort: ${CLINICAL_LIMITS.Age.cohortMin}–${CLINICAL_LIMITS.Age.cohortMax} years`}
+                    min={CLINICAL_LIMITS.Age.min}
+                    max={CLINICAL_LIMITS.Age.max}
+                    value={String(age)}
+                    onChange={(e) => {
+                      const next = parseInt(e.target.value, 10);
+                      if (!Number.isNaN(next)) setAge(next);
+                    }}
+                    required
+                    inputClassName="font-mono tabular-nums text-base sm:text-sm"
                   />
-                }
-                title="No prognosis run yet"
-                description="Submit patient regimen parameters on the left to compute an improvement score and feature attribution."
-                className="py-8"
-              />
-            )}
-          </div>
-        </ShimmeringSkeletonWrapper>
+                  <Slider
+                    label="Adjust patient age"
+                    showValue={false}
+                    min={CLINICAL_LIMITS.Age.min}
+                    max={CLINICAL_LIMITS.Age.max}
+                    step={1}
+                    value={Math.min(Math.max(age, CLINICAL_LIMITS.Age.min), CLINICAL_LIMITS.Age.max)}
+                    onValueChange={(v) => setAge(v)}
+                  />
+                </div>
 
-        <Alert
-          variant="neutral"
-          title="Biostatistical thresholds"
-          description="Ensemble regression trained on multi-cohort clinical trial trajectories. Tiers: Low (1.0 to 4.5), Medium (4.6 to 7.5), High (7.6 to 10.0)."
-        />
-      </aside>
-    </div>
+                <RadioGroup
+                  label="Biological sex"
+                  description="Demographic stratum"
+                  variant="segment"
+                  orientation="horizontal"
+                  value={gender}
+                  onValueChange={(val) =>
+                    setGender(val === "Male" ? "Male" : "Female")
+                  }
+                >
+                  <RadioOption value="Female" label="Female" />
+                  <RadioOption value="Male" label="Male" />
+                </RadioGroup>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <NativeSelect
+                  id="input-condition"
+                  label="Primary indication"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  options={conditions.map((c) => ({ value: c, label: c }))}
+                />
+
+                <NativeSelect
+                  id="input-drug"
+                  label="Approved compound"
+                  value={drugName}
+                  onChange={(e) => setDrugName(e.target.value)}
+                  options={drugsForCondition.map((d) => ({ value: d, label: d }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Input
+                    id="input-dosage"
+                    type="number"
+                    label="Unit dose (mg)"
+                    hint={`Trial cohort: ${CLINICAL_LIMITS.Dosage_mg.cohortMin}–${CLINICAL_LIMITS.Dosage_mg.cohortMax} mg`}
+                    step={10}
+                    min={CLINICAL_LIMITS.Dosage_mg.min}
+                    max={CLINICAL_LIMITS.Dosage_mg.max}
+                    value={String(dosage)}
+                    onChange={(e) => {
+                      const next = parseFloat(e.target.value);
+                      if (!Number.isNaN(next)) setDosage(next);
+                    }}
+                    required
+                    inputClassName="font-mono tabular-nums text-base sm:text-sm"
+                  />
+                  <Slider
+                    label="Adjust unit dose"
+                    showValue={false}
+                    min={CLINICAL_LIMITS.Dosage_mg.min}
+                    max={1000}
+                    step={10}
+                    value={Math.min(Math.max(dosage, CLINICAL_LIMITS.Dosage_mg.min), 1000)}
+                    onValueChange={(v) => setDosage(v)}
+                    formatValue={(v) => `${v} mg`}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Input
+                    id="input-duration"
+                    type="number"
+                    label="Treatment duration (days)"
+                    hint={`Trial cohort: ${CLINICAL_LIMITS.Treatment_Duration_days.cohortMin}–${CLINICAL_LIMITS.Treatment_Duration_days.cohortMax} days`}
+                    min={CLINICAL_LIMITS.Treatment_Duration_days.min}
+                    max={CLINICAL_LIMITS.Treatment_Duration_days.max}
+                    value={String(duration)}
+                    onChange={(e) => {
+                      const next = parseInt(e.target.value, 10);
+                      if (!Number.isNaN(next)) setDuration(next);
+                    }}
+                    required
+                    inputClassName="font-mono tabular-nums text-base sm:text-sm"
+                  />
+                  <Slider
+                    label="Adjust treatment duration"
+                    showValue={false}
+                    min={CLINICAL_LIMITS.Treatment_Duration_days.min}
+                    max={120}
+                    step={1}
+                    value={Math.min(
+                      Math.max(duration, CLINICAL_LIMITS.Treatment_Duration_days.min),
+                      120,
+                    )}
+                    onValueChange={(v) => setDuration(v)}
+                    formatValue={(v) => `${v} d`}
+                  />
+                </div>
+              </div>
+
+              {errorMsg && (
+                <Alert
+                  variant="error"
+                  title="Prognosis request failed"
+                  description={errorMsg}
+                  onDismiss={() => setErrorMsg(null)}
+                />
+              )}
+
+              <Button
+                type="submit"
+                variant="default"
+                size="lg"
+                loading={isPredicting}
+                className="w-full min-h-[44px]"
+              >
+                {isPredicting ? "Evaluating prognosis…" : "Score patient"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <aside className="lg:col-span-5 min-w-0 space-y-6">
+          <ShimmeringSkeletonWrapper loading={isPredicting} rounded="rounded-2xl">
+            <Card style={{ background: "var(--cv-grad-card)" }}>
+              <CardContent className="p-6">
+                {isPredicting ? (
+                  <div className="space-y-4">
+                    <SkeletonLine width="42%" />
+                    <SkeletonLine width="65%" />
+                    <SkeletonLine width="100%" />
+                    <SkeletonLine width="85%" />
+                  </div>
+                ) : result ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <h2 className="text-heading text-[var(--cv-text-primary)]">
+                        Prognosis output
+                      </h2>
+                      <Badge variant={efficacyBadgeVariant} dot>
+                        {result.effectiveness_level} efficacy
+                      </Badge>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                      <div className="text-caption text-[var(--cv-text-secondary)]">
+                        Expected improvement score
+                      </div>
+                      <div className="flex items-baseline gap-2 font-mono tabular-nums">
+                        <span className="font-[family-name:var(--font-display)] text-display text-[var(--cv-text-primary)]">
+                          <NumberTicker
+                            value={result.predicted_score}
+                            format={{
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }}
+                            trigger="mount"
+                          />
+                        </span>
+                        <span className="text-body text-[var(--cv-text-secondary)]">
+                          / 10.0
+                        </span>
+                      </div>
+
+                      <Progress
+                        value={result.predicted_score}
+                        max={10}
+                        size="md"
+                        tone={
+                          result.effectiveness_level === "High"
+                            ? "success"
+                            : result.effectiveness_level === "Medium"
+                              ? "brand"
+                              : "warning"
+                        }
+                        label="Improvement score"
+                      />
+
+                      <div className="flex items-center gap-1.5 text-caption text-[var(--cv-text-secondary)]">
+                        <span>95% confidence interval:</span>
+                        <code className="font-mono text-[var(--cv-text-primary)] slashed-zero">
+                          {formatConfidenceInterval(result.confidence_interval)}
+                        </code>
+                        <Tooltip>
+                          <TooltipTrigger
+                            type="button"
+                            aria-label="Confidence interval explanation"
+                            className="inline-flex text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
+                          >
+                            <IconInfoCircle size={15} />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Derived from active model holdout RMSE (±1.96 × RMSE,
+                            clamped to [0.0, 10.0]).
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+
+                    {result.feature_attributions &&
+                      result.feature_attributions.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h3 className="text-label text-[var(--cv-text-primary)]">
+                              Local feature attribution
+                            </h3>
+                            <FeatureAttributionChart
+                              items={result.feature_attributions}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between gap-4 text-caption font-mono text-[var(--cv-text-secondary)] tabular-nums">
+                      <span>Inference: {result.latency_ms.toFixed(1)} ms</span>
+                      <span className="truncate max-w-[200px]">
+                        {result.model_id}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon={
+                      <IconActivityHeartbeat
+                        size={28}
+                        stroke={1.6}
+                        className="text-[var(--cv-text-secondary)]"
+                      />
+                    }
+                    title="No prognosis run yet"
+                    description="Submit patient parameters or choose a clinical preset to compute an improvement score and feature attribution."
+                    className="py-8"
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </ShimmeringSkeletonWrapper>
+
+          <Alert
+            variant="neutral"
+            title="Clinical calibration notice"
+            description="Predictions reflect historical trial-cohort patterns (Low 1.0–4.5, Medium 4.6–7.5, High 7.6–10.0). Review confidence bounds alongside clinical judgment."
+          />
+        </aside>
+      </div>
+    </TooltipProvider>
   );
 }

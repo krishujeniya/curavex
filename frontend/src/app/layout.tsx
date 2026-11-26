@@ -21,19 +21,34 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Curavex: Clinical Treatment Response and MLOps Platform",
+  metadataBase: new URL("https://curavex.pages.dev"),
+  title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
   description:
-    "Curavex is a clinical MLOps platform for treatment-response regression, precision pharmacology, and model governance built by Krish Ujeniya.",
+    "Curavex is a clinical treatment-response regression and MLOps governance platform built by Krish Ujeniya (krishujeniya) with Next.js, FastAPI, and scikit-learn.",
   authors: [{ name: "Krish Ujeniya", url: "https://github.com/krishujeniya" }],
+  creator: "Krish Ujeniya",
+  publisher: "Krish Ujeniya",
   keywords: [
     "Curavex",
+    "Krish Ujeniya",
+    "krishujeniya",
+    "Curavex Krish Ujeniya",
     "clinical treatment response",
-    "precision oncology",
     "pharmacology MLOps",
     "drug efficacy prediction",
-    "biomarker regression",
-    "Krish Ujeniya",
+    "model drift detection",
   ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
   alternates: {
     canonical: "https://curavex.pages.dev/",
   },
@@ -43,17 +58,26 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://curavex.pages.dev/",
-    title: "Curavex: Clinical Treatment Response and MLOps Platform",
+    siteName: "Curavex",
+    title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
     description:
-      "Clinical MLOps platform for treatment-response regression and pharmacology governance. Built by Krish Ujeniya.",
-    images: ["./assets/curavex-logo.png"],
+      "Clinical treatment-response regression, batch cohort scoring, and drift observability platform built by Krish Ujeniya (krishujeniya).",
+    images: [
+      {
+        url: "/assets/curavex-logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "Curavex logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     creator: "@krishujeniya",
-    title: "Curavex: Clinical Treatment Response and MLOps Platform",
+    title: "Curavex by Krish Ujeniya | Clinical Treatment Response & MLOps",
     description:
-      "Clinical MLOps platform for treatment-response regression and pharmacology governance. Built by Krish Ujeniya.",
+      "Clinical treatment-response regression and MLOps platform built by Krish Ujeniya (krishujeniya).",
+    images: ["/assets/curavex-logo.png"],
   },
 };
 
@@ -64,13 +88,24 @@ const jsonLd = {
       "@type": "Person",
       "@id": "https://krishujeniya.dev/#krishujeniya",
       name: "Krish Ujeniya",
+      alternateName: ["krishujeniya", "@krishujeniya"],
       url: "https://github.com/krishujeniya",
       jobTitle: "Software Engineer & AI Systems Architect",
       sameAs: [
         "https://github.com/krishujeniya",
         "https://www.linkedin.com/in/krishujeniya",
         "https://x.com/krishujeniya",
+        "https://krishujeniya.pages.dev",
       ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://curavex.pages.dev/#website",
+      name: "Curavex",
+      alternateName: "Curavex by Krish Ujeniya",
+      url: "https://curavex.pages.dev/",
+      author: { "@id": "https://krishujeniya.dev/#krishujeniya" },
+      publisher: { "@id": "https://krishujeniya.dev/#krishujeniya" },
     },
     {
       "@type": "SoftwareApplication",
@@ -79,10 +114,45 @@ const jsonLd = {
       applicationCategory: "MedicalBusinessApplication",
       operatingSystem: "All",
       description:
-        "Clinical treatment response regression and pharmacology MLOps platform for precision oncology prediction and efficacy governance.",
+        "Clinical treatment-response regression and pharmacology MLOps platform for single/batch efficacy prediction, model governance, and KS/PSI drift monitoring.",
       url: "https://curavex.pages.dev/",
+      codeRepository: "https://github.com/krishujeniya/curavex",
+      programmingLanguage: ["TypeScript", "Python"],
+      keywords:
+        "Curavex, Krish Ujeniya, krishujeniya, clinical MLOps, treatment response regression",
       author: { "@id": "https://krishujeniya.dev/#krishujeniya" },
       creator: { "@id": "https://krishujeniya.dev/#krishujeniya" },
+      publisher: { "@id": "https://krishujeniya.dev/#krishujeniya" },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://curavex.pages.dev/#faq",
+      mainEntity: [
+        {
+          "@type": "Question",
+          "name": "What is Curavex?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Curavex is a clinical treatment-response regression and MLOps governance platform built by Krish Ujeniya (krishujeniya). It predicts patient improvement scores from demographics and compound dosing, scores CSV cohorts, and monitors Kolmogorov-Smirnov and PSI drift.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "Who built Curavex?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Curavex was engineered and developed by Krish Ujeniya (@krishujeniya), and is open-source at https://github.com/krishujeniya/curavex.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "What stack powers Curavex?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Curavex uses a Next.js 15 App Router static frontend with Tailwind CSS v4 and Wensity UI components on Cloudflare Pages, backed by a FastAPI and scikit-learn MLOps service and Cloudflare Workers edge caching.",
+          },
+        },
+      ],
     },
   ],
 };

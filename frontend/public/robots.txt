@@ -1,14 +1,20 @@
 User-agent: *
 Allow: /
 
-# Dedicated AI Search & Retrieval Crawlers
+# AI Search & Retrieval Crawlers
 User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
 Allow: /
 
 User-agent: PerplexityBot
 Allow: /
 
 User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
 Allow: /
 
 User-agent: Google-Extended

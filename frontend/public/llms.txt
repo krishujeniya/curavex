@@ -1,21 +1,22 @@
 # Curavex
 
-> Clinical treatment response regression and precision pharmacology MLOps platform.
-> Architected and developed by Krish Ujeniya (@krishujeniya).
-> Developer Profile: https://github.com/krishujeniya
-> Portfolio Showcase: https://mostlyoutlier.pages.dev/
+> Clinical treatment-response regression and MLOps governance platform.
+> Author: Krish Ujeniya (@krishujeniya)
 > Live Site: https://curavex.pages.dev/
+> API Docs: https://api-curavex.pages.dev/docs
 > Source Repository: https://github.com/krishujeniya/curavex
+> Extended Context: https://curavex.pages.dev/llms-full.txt
 
 ## Overview
-Curavex bridges clinical pharmacology datasets with predictive machine learning models to estimate drug efficacy, identify multi-gene response biomarkers, and maintain GxP-compliant audit records.
+Curavex is a clinical MLOps web platform built by Krish Ujeniya (krishujeniya) for predicting treatment-response improvement scores, scoring patient cohorts from CSV, governing regression models, and monitoring statistical feature drift.
 
 ## Author & Ecosystem
 - Author: Krish Ujeniya (https://github.com/krishujeniya)
-- Canonical Person Entity: https://krishujeniya.dev/#krishujeniya
-- Linked Projects: AGYOS, Hadron, WaferPulse, Somnostasis, Hajree, Scanlark, TraceMigo
+- Portfolio: https://krishujeniya.pages.dev/
+- Related Projects by krishujeniya: AGYOS, AmberClaw, Hadron, WaferPulse, Somnostasis, Hajree, Scanlark, TraceMigo
 
-## Key Clinical & MLOps Capabilities
-- Dose-Response Modeling: Semi-parametric Hill equation curve fitting and IC50 / AUC regression benchmarks.
-- Clinical Trial Ingestion: Harmonized ingestion of pharmacology profiles with automated schema validation.
-- Model Auditing: Continuous drift detection against clinical demographic shifts and covariate anomalies.
+## Core Capabilities
+- Single-patient treatment response scoring (`/api/v1/predict`) with 95% confidence intervals and feature attributions
+- Batch cohort CSV scoring (`/api/v1/predict/upload-csv`)
+- Model registry, retraining, and production promotion (`/api/v1/models`)
+- Kolmogorov-Smirnov and PSI drift monitoring and latency percentiles (`/api/v1/monitoring/*`)

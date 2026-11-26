@@ -342,8 +342,24 @@ export default function CuravexWorkspacePage() {
       </main>
 
       <footer className="border-t border-[var(--cv-border)] py-4 text-center text-caption font-mono text-[var(--cv-text-secondary)]">
-        Curavex Clinical Response Engine · Contract-first REST API · Model
-        Governance
+        Curavex Clinical Response Engine · Built by{" "}
+        <a
+          href="https://github.com/krishujeniya"
+          target="_blank"
+          rel="noreferrer"
+          className="text-[var(--cv-text-primary)] hover:underline"
+        >
+          Krish Ujeniya (krishujeniya)
+        </a>{" "}
+        ·{" "}
+        <a
+          href="https://github.com/krishujeniya/curavex"
+          target="_blank"
+          rel="noreferrer"
+          className="hover:underline"
+        >
+          GitHub
+        </a>
       </footer>
     </>
   );

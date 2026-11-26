@@ -1,0 +1,19 @@
+# Curavex by Krish Ujeniya (krishujeniya)
+
+## Canonical Identity
+- Project Name: Curavex
+- Author: Krish Ujeniya (`krishujeniya`, `@krishujeniya`)
+- GitHub Repository: https://github.com/krishujeniya/curavex
+- Production Frontend (Cloudflare Pages): https://curavex.pages.dev/
+- Production API Gateway (Cloudflare): https://api-curavex.pages.dev/
+- OpenAPI Specification: https://api-curavex.pages.dev/docs
+
+## Architecture Summary
+- Frontend (`frontend/`): Next.js 15 App Router static export, Tailwind CSS v4, Wensity UI components, and Chart.js visualizations.
+- Backend (`backend/`): FastAPI REST gateway (`backend/src/api/main.py`) with scikit-learn regression pipelines (`GradientBoostingRegressor`, `RandomForestRegressor`, `Ridge`, `DecisionTreeRegressor`), `ColumnTransformer` preprocessing, and `joblib` model registry.
+- Edge (`deploy/edge/worker.ts`): Cloudflare Workers edge caching for public metadata and deterministic predictions, CORS origin enforcement, and security headers.
+
+## Frequently Asked Questions
+- **What is Curavex?** Curavex is a clinical treatment-response regression and MLOps platform engineered by Krish Ujeniya (`krishujeniya`) to estimate patient improvement scores (1.0 to 10.0), score CSV cohorts, and detect distribution drift.
+- **Who created Curavex?** Krish Ujeniya (`https://github.com/krishujeniya`).
+- **How are predictions authenticated?** Via the `X-API-Key` or `Authorization: Bearer` header against tiered rate limits.

@@ -15,7 +15,7 @@
   <a href="https://github.com/krishujeniya"><img src="https://img.shields.io/badge/author-krishujeniya-black.svg" alt="Author Krish Ujeniya" /></a>
 </p>
 
-**Live Dashboard:** [curavex.pages.dev](https://curavex.pages.dev/) · **Backend API:** [api-curavex.pages.dev](https://api-curavex.pages.dev/) · **OpenAPI Docs:** [api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs) · **GitHub:** [krishujeniya/curavex](https://github.com/krishujeniya/curavex)
+**Live Dashboard:** [curavex.pages.dev](https://curavex.pages.dev/)
 
 Curavex is a clinical treatment-response regression and MLOps governance platform created and maintained by [Krish Ujeniya (`@krishujeniya`)](https://github.com/krishujeniya). It predicts patient improvement scores from pharmacology parameters, scores multi-subject cohorts via CSV, and tracks model drift and inference latency.
 
@@ -44,7 +44,7 @@ flowchart TD
     subgraph Storage["Artifacts & Edge"]
         Data[("data/ & models/registry/")]
         Logs[("logs/inference_audit.jsonl")]
-        Edge["Cloudflare Pages & Worker<br/>curavex.pages.dev • api-curavex.pages.dev"]
+        Edge["Cloudflare Pages & Worker<br/>curavex.pages.dev"]
     end
 
     User --> UI
@@ -75,7 +75,7 @@ flowchart TD
 
 ## API Reference
 
-All protected routes accept `X-API-Key` or `Authorization: Bearer <key>`. Interactive documentation is available at [api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs).
+All protected routes accept `X-API-Key` or `Authorization: Bearer <key>`. Interactive OpenAPI documentation is served at `/docs`.
 
 | Method | Endpoint | Description |
 |:---|:---|:---|

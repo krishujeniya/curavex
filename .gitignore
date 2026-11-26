@@ -21,3 +21,21 @@ frontend/.next/
 frontend/out/
 frontend/tsconfig.tsbuildinfo
 frontend/next-env.d.ts
+
+# Agent & IDE metadata guardrails
+GEMINI.md
+AGENTS.md
+CLAUDE.md
+COPILOT.md
+.agents/
+.claude/
+.codex/
+.cursor/
+.cursorrules
+.windsurfrules
+.roo/
+.cline/
+.aider*
+.pi/
+.hermes/
+skills-lock.json

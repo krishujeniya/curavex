@@ -1,128 +1,82 @@
-# Deployment Guide — curavex
+# Deployment Guide: Curavex
 
-> Operational Runbook for Production Deployment, Health Verification, and Rollbacks.
-> Standardized across the project suite in conformance with deployment engineering patterns.
+Operational runbook for production deployment, health verification, and rollbacks.
 
 ---
 
-## 1. Architecture & Production Topology
+## 1. Architecture and Topology
 
-**Application Type**: Clinical Drug Discovery & MLOps Platform
-
-### Declared Service Topology
-- **`curavex_saas`**: FastAPI drug prediction service (Port: `8000`)
-
-All services are orchestrated via `docker-compose.yml` with isolated internal bridge networking, non-root system users (uid 1001), and layer-cached multi-stage container builds.
+- **`curavex-frontend`**: Next.js 15 App Router static export (`frontend/out/`) hosted on Cloudflare Pages (`https://curavex.pages.dev`).
+- **`curavex_saas`**: FastAPI drug prediction and MLOps service (`backend/src/api/main.py`, port `8000`), packaged in `deploy/Dockerfile` and `deploy/docker-compose.yml`.
+- **`curavex-api`**: Cloudflare Worker edge gateway (`deploy/edge/worker.ts`) configured via `wrangler.jsonc`.
 
 ---
 
 ## 2. Environment Configuration
 
-Supply environment variables via a secure `.env` file (or CI/CD secrets manager). Never commit plaintext credentials to Git.
+Copy the example files and configure secrets via `.env` (never commit `.env` files):
 
-### Key Environment Variables
-- `PORT`
-- `PYTHONUNBUFFERED`
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+```
 
 ---
 
 ## 3. Deployment Procedures
 
-### Method A: Single-Host / VPS Deployment (Docker Compose)
+### Method A: Cloudflare Pages Deployment (Next.js Frontend)
 
-1. **Clone repository on host**:
-   ```bash
-   git clone https://github.com/krishujeniya/curavex.git
-   cd curavex
-   ```
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+wrangler pages deploy frontend/out --project-name=curavex --branch=main
+```
 
-2. **Configure environment**:
-   ```bash
-   cp .env.example .env # edit with production secrets
-   ```
+### Method B: Cloudflare Workers Edge API Deployment
 
-3. **Start stack in detached mode**:
-   ```bash
-   docker compose up -d --build
-   ```
+```bash
+wrangler d1 info shared-production-db
+wrangler deploy
+```
 
-4. **Verify container health and logs**:
-   ```bash
-   docker compose ps
-   docker compose logs -f
-   ```
+### Method C: Local / VPS Container Parity (Docker Compose)
 
-### Method B: Pre-built Container Registry Deployment (GHCR)
+```bash
+docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml ps
+```
 
-Pre-built multi-stage production images are published automatically via GitHub Actions:
+### Method D: Pre-built Container Image (GHCR)
+
 ```bash
 docker pull ghcr.io/krishujeniya/curavex:latest
 docker run -d --restart unless-stopped -p 8000:8000 ghcr.io/krishujeniya/curavex:latest
 ```
 
-### Method C: Cloudflare Pages Deployment (Frontend)
-
-The frontend SPA deploys directly to Cloudflare Pages via GitHub Actions or Wrangler CLI:
-```bash
-# Direct Wrangler deployment to Cloudflare Pages
-wrangler pages deploy frontend --project-name=curavex --branch=main
-```
-
-### Method D: Cloudflare Workers Edge API Deployment (CLI)
-
-Edge proxy, D1 database, and Workers AI inference deployment using Wrangler CLI:
-```bash
-# Verify shared D1 database
-wrangler d1 info shared-production-db
-
-# Deploy edge proxy Worker with Workers AI and D1 bindings
-wrangler deploy
-```
-wrangler deploy
-```
-
 ---
 
-## 4. Health Check & Readiness Probes
+## 4. Health Check and Verification
 
-### Verification Command
-Run the designated health check probe to confirm operational readiness:
 ```bash
 curl -f http://localhost:8000/healthz
+curl -f https://api-curavex.pages.dev/healthz
+curl -f https://curavex.pages.dev/
 ```
 
-Expected HTTP Response: `200 OK`
+Expected HTTP response: `200 OK`.
 
 ---
 
 ## 5. Rollback Procedures
 
-If an anomaly, regression, or service failure is detected:
-
-### Step 1: Immediate Container Rollback
-Roll back immediately to the previous immutable release tag or SHA:
-```bash
-# Pull previous known healthy SHA tag
-docker pull ghcr.io/krishujeniya/curavex:sha-<previous-commit-sha>
-
-# Or revert compose to previous git revision
-git checkout <previous-stable-tag>
-docker compose up -d
-```
-
-### Step 2: Verification
-Re-run the health probe to confirm traffic restoration:
-```bash
-curl -f http://localhost:8000/healthz
-```
-
----
-
-## 6. Pre-Flight & Post-Flight Quality Gates
-
-Follow the 4-phase verification protocol before declaring a release complete:
-
-- [ ] **Code Quality**: Static inspection passed; zero lint or AST warnings.
-- [ ] **Build Reproducibility**: Container builds cleanly via multi-stage isolation without dev dependencies.
-- [ ] **Environment Validation**: All required environment variables present; secrets injected via secrets manager.
-- [ ] **Safety & Probes**: Healthcheck endpoints respond with `200 OK`; rollback target verified.
+1. **Container rollback**:
+   ```bash
+   docker pull ghcr.io/krishujeniya/curavex:sha-<previous-commit-sha>
+   git checkout <previous-stable-tag>
+   docker compose -f deploy/docker-compose.yml up -d
+   ```
+2. **Cloudflare Pages rollback**: Re-deploy the previous commit's `frontend/out/` via `wrangler pages deploy` or promote the previous deployment in Cloudflare Pages.
+3. **Verify**: Re-run `curl -f https://api-curavex.pages.dev/healthz` and `curl -f https://curavex.pages.dev/`.

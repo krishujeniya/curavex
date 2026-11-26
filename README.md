@@ -59,76 +59,65 @@ flowchart TD
 
 ---
 
-## 2. Cookiecutter Project Structure
+## 2. Project Structure
 
 ```
 curavex/
-├── Makefile                       <- Standard automation: make data, make train, make test, make run
+├── .editorconfig                  <- Editor formatting rules
+├── .gitignore                     <- Build, env, and metadata guardrails
+├── CHANGELOG.md                   <- Release notes
+├── LICENSE                        <- Project license
+├── Makefile                       <- Automation: make data, make train, make test, make run
 ├── README.md                      <- Top-level system overview
-├── pyproject.toml                 <- Project metadata, pytest, and coverage configuration
-├── requirements.txt               <- Pinned Python dependencies
 ├── wrangler.jsonc                 <- Cloudflare Workers edge configuration
-├── Dockerfile                     <- Multi-stage container configuration
-├── docker-compose.yml             <- Production container service composition
 │
 ├── .github/workflows/
-│   ├── ci.yml                     <- Full pipeline validation, test suite, and 80% coverage ratchet
-│   └── cloudflare-deploy.yml      <- Automated Cloudflare continuous deployment for frontend & edge
+│   ├── ci.yml                     <- Backend ETL, pytest suite, and >= 80% coverage ratchet
+│   └── cloudflare-deploy.yml      <- Cloudflare deployment workflow
 │
-├── data/                          <- Data storage tiers
-│   ├── raw/                       <- Immutable clinical dataset dump (real_drug_dataset.csv)
-│   ├── interim/                   <- Intermediate transformed data
-│   ├── processed/                 <- Canonical processed dataset (cleaned_drug_dataset.csv)
-│   └── external/                  <- Third-party reference data
+├── backend/                       <- FastAPI service, ML pipeline, and tests
+│   ├── .env.example               <- Backend environment template
+│   ├── pyproject.toml             <- Python metadata, pytest, and coverage configuration
+│   ├── requirements.txt           <- Pinned Python dependencies
+│   ├── uv.lock                    <- uv lockfile
+│   ├── main.py                    <- Compatibility entrypoint re-exporting src.api.main
+│   ├── data/                      <- Data storage tiers (raw/, interim/, processed/, external/)
+│   ├── models/registry/           <- Registered model artifacts (.joblib) and registry.json
+│   ├── logs/                      <- Inference audit logs (.jsonl)
+│   ├── src/                       <- Core Python package
+│   │   ├── config.py              <- Central paths, feature definitions, and clinical bounds
+│   │   ├── data/                  <- ETL and schema validation (make_dataset.py, validator.py)
+│   │   ├── features/              <- ColumnTransformer feature pipeline (build_features.py)
+│   │   ├── models/                <- Training, inference, and registry governance
+│   │   ├── monitoring/            <- KS-test/PSI drift detection and telemetry tracker
+│   │   ├── explainability/        <- Global and local clinical feature impact attribution
+│   │   └── api/                   <- FastAPI app factory, auth, Pydantic v2 schemas, and v1 routers
+│   └── tests/                     <- Automated pytest suite
 │
-├── docs/                          <- Project documentation guides
-├── notebooks/                     <- Ordered exploratory Jupyter notebooks
-│   └── 1.0-eda-and-model-exploration.ipynb
+├── frontend/                      <- Next.js 15 App Router static SPA (Tailwind CSS v4 + Wensity UI)
+│   ├── .env.example               <- Frontend environment template
+│   ├── next.config.ts             <- Static export configuration (output: "export" -> out/)
+│   ├── package.json               <- Next.js, React 19, Chart.js, and Wensity dependencies
+│   ├── tsconfig.json              <- TypeScript strict configuration
+│   ├── public/                    <- Static assets (Curavex 2D B&W logos, CSV template, SEO files)
+│   └── src/
+│       ├── app/                   <- Root layout, global theme tokens, and workspace shell
+│       ├── components/
+│       │   ├── charts/            <- Chart.js wrappers (attribution, latency, drift)
+│       │   ├── wensity/           <- Installed Wensity UI components
+│       │   └── workspace/         <- Predict, Batch, MLOps, Monitoring, and API Keys tabs
+│       └── lib/                   <- Typed FastAPI client and className utilities
 │
-├── models/                        <- Serialized models and governance metadata
-│   └── registry/                  <- Registered model artifacts (.joblib) and registry.json
+├── deploy/                        <- Container and Cloudflare Worker configs
+│   ├── Dockerfile                 <- Multi-stage container configuration
+│   ├── docker-compose.yml         <- Local container parity composition
+│   └── edge/                      <- Cloudflare Worker proxy and static metadata
 │
-├── references/                    <- Data dictionaries and clinical indications
-│   └── data_dictionary.md
-│
-├── reports/                       <- Generated analysis figures and evaluation metrics
-│   ├── figures/
-│   └── brand/                     <- Curavex logo design specifications
-│
-├── src/                           <- Core Python package
-│   ├── __init__.py
-│   ├── config.py                  <- Central paths, feature definitions, and clinical bounds
-│   ├── data/                      <- Data processing and validation
-│   │   ├── make_dataset.py        <- ETL script: raw -> processed
-│   │   └── validator.py           <- Schema verification and clinical bounds checks
-│   ├── features/                  <- Feature extraction and transformation
-│   │   └── build_features.py      <- ColumnTransformer for numeric and categorical columns
-│   ├── models/                    <- Model modeling and lifecycle
-│   │   ├── train_model.py         <- Pipeline fitting, cross-validation, and benchmarks
-│   │   ├── predict_model.py       <- Single/batch inference runners and confidence intervals
-│   │   └── registry.py            <- Semantic versioning, stage transitions, and persistence
-│   ├── monitoring/                <- Observability and telemetry
-│   │   ├── drift_detector.py      <- Kolmogorov-Smirnov test and categorical PSI
-│   │   └── tracker.py             <- Inference logger, latency percentiles, and metrics
-│   ├── explainability/            <- Interpretability
-│   │   └── attributions.py        <- Global and local clinical feature impact attribution
-│   └── api/                       <- FastAPI REST serving and web dashboard
-│       ├── main.py                <- Application factory, CORS, static file mounts
-│       ├── config.py              <- API settings and rate tier definitions
-│       ├── security/auth.py       <- API Key authentication and rate limiting
-│       ├── schemas/               <- Pydantic v2 schemas
-│       └── v1/                    <- REST API routers (predict, models, monitoring, metadata, api_keys)
-│
-├── frontend/                      <- Modern clinical web dashboard
-│   ├── index.html                 <- Emil Kowalski compliant responsive interface
-│   ├── css/app.css                <- Concentric radii rules and dark obsidian theme
-│   ├── js/app.js                  <- Reactive client controller with auto-detected backend
-│   ├── js/charts.js               <- Chart.js renderers (drift, latency, feature attribution)
-│   ├── assets/                    <- Curavex SVG and PNG vector logos & marks
-│   └── demo_batch_cohort.csv      <- Sample clinical cohort dataset
-│
-├── tests/                         <- Automated test suite (>86% code coverage)
-└── logs/                          <- Persistent inference audit logs (.jsonl)
+└── docs/                          <- Documentation, data dictionary, and brand assets
+    ├── index.md                   <- Architecture overview
+    ├── deployment.md              <- Deployment and rollback runbook
+    ├── references/                <- Data dictionary
+    └── reports/                   <- Analysis figures and brand source assets
 ```
 
 ---
@@ -137,13 +126,13 @@ curavex/
 
 | Command | Action |
 | :--- | :--- |
-| `make data` | Ingests `data/raw/` dataset, validates clinical constraints, and outputs `data/processed/cleaned_drug_dataset.csv`. |
-| `make train` | Trains baseline ensemble regressor on processed data and registers artifact into `models/registry/`. |
-| `make test` | Executes all 30 automated tests via `pytest`. |
-| `make coverage` | Runs test suite and outputs coverage metrics (enforces $\ge 80\%$ ratchet). |
-| `make run` | Starts local FastAPI server and dashboard on `http://localhost:8000`. |
-| `make docker-build` | Builds production Docker container image. |
-| `make docker-run` | Runs containerized platform via `docker-compose`. |
+| `make data` | Ingests `backend/data/raw/`, validates clinical constraints, and outputs `backend/data/processed/cleaned_drug_dataset.csv`. |
+| `make train` | Trains baseline ensemble regressor on processed data and registers artifact into `backend/models/registry/`. |
+| `make test` | Executes the automated test suite via `pytest` in `backend/`. |
+| `make coverage` | Runs test suite and outputs coverage metrics (enforces >= 80% ratchet). |
+| `make run` | Starts local FastAPI server and serves `frontend/out` on `http://localhost:8000`. |
+| `make docker-build` | Builds production Docker container image from `deploy/Dockerfile`. |
+| `make docker-run` | Runs containerized platform via `deploy/docker-compose.yml`. |
 | `make clean` | Cleans temporary caches, bytecode, and test artifacts. |
 
 ---
@@ -236,20 +225,23 @@ print(f"Confidence Interval: {data['confidence_interval']}")
 git clone https://github.com/krishujeniya/curavex.git
 cd curavex
 
-# 2. Setup virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
+# 2. Setup backend environment with uv
+cd backend
+uv sync
+cd ..
 
-# 3. Run ETL and train model
+# 3. Build Next.js frontend static export
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 4. Run ETL, train model, and verify tests
 make data
 make train
-
-# 4. Verify test suite & coverage
 make test
 make coverage
 
-# 5. Launch local server
+# 5. Launch local FastAPI server + Next.js static frontend
 make run
 ```

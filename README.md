@@ -1,4 +1,4 @@
-# Curavex | Clinical Treatment Response & MLOps Platform
+# Curavex
 
 <div align="center">
   <img src="frontend/public/assets/curavex-logo.png" alt="Curavex Logo" width="180" />

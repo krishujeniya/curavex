@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a defect in the frontend, FastAPI backend, or Cloudflare edge worker
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Concise description of the unexpected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `make run` or open https://curavex.pages.dev
+        2. Submit ...
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Frontend (Next.js)
+        - Backend (FastAPI / ML)
+        - Edge (Cloudflare Worker)
+        - CI/CD
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or HTTP status
+      render: shell

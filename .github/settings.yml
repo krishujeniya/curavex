@@ -1,0 +1,25 @@
+repository:
+  name: curavex
+  description: Clinical Treatment Response Regression and MLOps Platform
+  homepage: https://curavex.pages.dev
+  has_issues: true
+  has_projects: true
+  has_wiki: false
+  has_discussions: true
+  default_branch: main
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: false
+  allow_auto_merge: true
+  delete_branch_on_merge: true
+
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - Unit Tests & Coverage Ratchet
+      enforce_admins: false
+      required_pull_request_reviews: null
+      restrictions: null

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/krishujeniya/curavex/discussions
+    about: Ask questions or discuss Curavex architecture and ideas.
+  - name: Security Policy
+    url: https://github.com/krishujeniya/curavex/security/policy
+    about: Report security vulnerabilities privately.

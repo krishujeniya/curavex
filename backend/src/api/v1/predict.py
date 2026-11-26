@@ -2,6 +2,7 @@
 import io
 import time
 from typing import Dict, Any
+import anyio
 import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
@@ -45,7 +46,7 @@ async def predict_single(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="No active model deployed.")
 
     rmse = meta.get("metrics", {}).get("rmse", 1.45)
-    score, eff_level, ci = run_predict_single(pipeline, record, rmse)
+    score, eff_level, ci = await anyio.to_thread.run_sync(run_predict_single, pipeline, record, rmse)
     attributions = calculate_local_attribution(record, score)
     latency_ms = (time.perf_counter() - start_time) * 1000.0
 
@@ -81,7 +82,7 @@ async def predict_batch(
 
     records = [r.model_dump() for r in payload.records]
     rmse = meta.get("metrics", {}).get("rmse", 1.45)
-    batch_raw = run_predict_batch(pipeline, records, rmse)
+    batch_raw = await anyio.to_thread.run_sync(run_predict_batch, pipeline, records, rmse)
 
     predictions = []
     dist = {"Low": 0, "Medium": 0, "High": 0}

@@ -1,7 +1,7 @@
-"""Security authentication and token quota checks."""
+"""Security authentication and O(1) sliding-window token quota checks."""
 import time
-from collections import defaultdict
-from typing import Optional, Dict
+from collections import defaultdict, deque
+from typing import Optional, Dict, Deque
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
 
@@ -10,7 +10,7 @@ from src.api.config import DEFAULT_API_KEYS, TIERS
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 bearer_scheme = HTTPBearer(auto_error=False)
 
-_request_buckets: Dict[str, list] = defaultdict(list)
+_request_buckets: Dict[str, Deque[float]] = defaultdict(deque)
 _active_api_keys: Dict[str, Dict[str, str]] = dict(DEFAULT_API_KEYS)
 
 
@@ -31,17 +31,18 @@ def list_registered_keys() -> Dict[str, Dict[str, str]]:
 def check_rate_limit(key: str, tier: str) -> None:
     now = time.time()
     rpm_limit = TIERS.get(tier, TIERS["free"])["rpm"]
-    window = 60.0
+    cutoff = now - 60.0
 
     bucket = _request_buckets[key]
-    _request_buckets[key] = [t for t in bucket if now - t < window]
+    while bucket and bucket[0] <= cutoff:
+        bucket.popleft()
 
-    if len(_request_buckets[key]) >= rpm_limit:
+    if len(bucket) >= rpm_limit:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Rate limit exceeded for tier '{tier}'. Limit: {rpm_limit} req/min.",
         )
-    _request_buckets[key].append(now)
+    bucket.append(now)
 
 
 async def verify_api_key(

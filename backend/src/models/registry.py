@@ -1,5 +1,6 @@
 """Model Registry managing serialized artifacts, semantic versions, and atomic promotions."""
 import json
+import threading
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +14,8 @@ class ModelRegistry:
     """Governance registry for serialized model artifacts and metadata."""
 
     def __init__(self, registry_dir: Path = MODELS_DIR):
+        self._lock = threading.RLock()
+        self._cached_active: Optional[Tuple[str, Any, Dict[str, Any]]] = None
         self.registry_dir = registry_dir
         try:
             self.registry_dir.mkdir(parents=True, exist_ok=True)
@@ -79,6 +82,8 @@ class ModelRegistry:
 
         meta["models"].append(record)
         self._save_metadata(meta)
+        with self._lock:
+            self._cached_active = None
         return record
 
     def list_models(self) -> List[Dict[str, Any]]:
@@ -115,32 +120,39 @@ class ModelRegistry:
             meta["active_production_id"] = None
 
         self._save_metadata(meta)
+        with self._lock:
+            self._cached_active = None
         return self.get_model_entry(model_id)
 
     def load_active_model(self) -> Tuple[Optional[Any], Optional[Dict[str, Any]]]:
-        """Load currently active PRODUCTION pipeline artifact and metadata."""
-        meta = self._load_metadata()
-        active_id = meta.get("active_production_id")
-        if not active_id:
-            staging = [m for m in meta["models"] if m["status"] == "STAGING"]
-            if not staging:
-                return None, None
-            active_id = staging[0]["model_id"]
+        """Load currently active PRODUCTION pipeline artifact and metadata with in-memory caching."""
+        with self._lock:
+            if self._cached_active is not None:
+                _, cached_pipeline, cached_entry = self._cached_active
+                return cached_pipeline, cached_entry
 
-        entry = self.get_model_entry(active_id)
-        if not entry:
-            return None, None
+            meta = self._load_metadata()
+            active_id = meta.get("active_production_id")
+            if not active_id:
+                staging = [m for m in meta["models"] if m["status"] == "STAGING"]
+                if not staging:
+                    return None, None
+                active_id = staging[0]["model_id"]
 
-        artifact_file = Path(entry["artifact_path"])
-        if not artifact_file.exists():
-            # Resolve relative to active registry_dir or standard models location
-            candidate = self.registry_dir / artifact_file.name
-            if candidate.exists():
-                artifact_file = candidate
-            elif (MODELS_DIR / artifact_file.name).exists():
-                artifact_file = MODELS_DIR / artifact_file.name
-            else:
+            entry = self.get_model_entry(active_id)
+            if not entry:
                 return None, None
 
-        pipeline = joblib.load(artifact_file)
-        return pipeline, entry
+            artifact_file = Path(entry["artifact_path"])
+            if not artifact_file.exists():
+                candidate = self.registry_dir / artifact_file.name
+                if candidate.exists():
+                    artifact_file = candidate
+                elif (MODELS_DIR / artifact_file.name).exists():
+                    artifact_file = MODELS_DIR / artifact_file.name
+                else:
+                    return None, None
+
+            pipeline = joblib.load(artifact_file)
+            self._cached_active = (active_id, pipeline, entry)
+            return pipeline, entry

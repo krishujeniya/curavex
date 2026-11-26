@@ -6,6 +6,7 @@ from typing import Dict, Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
     _, meta = registry.load_active_model()
     app.state.active_model_id = meta["model_id"] if meta else None
     yield
+    InferenceTracker().flush()
 
 
 app = FastAPI(
@@ -44,6 +46,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_CORS_ORIGINS,

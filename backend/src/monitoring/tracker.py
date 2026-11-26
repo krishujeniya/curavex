@@ -1,5 +1,6 @@
 """Real-time telemetry tracker, latency percentiles, and inference audit logger."""
 import json
+import threading
 import time
 from collections import deque
 from datetime import datetime, timezone
@@ -11,12 +12,15 @@ from src.config import LOGS_DIR
 
 
 class InferenceTracker:
-    """Collects inference telemetry, latency distributions, and audit trails."""
+    """Collects inference telemetry, latency distributions, and buffered audit trails."""
 
-    def __init__(self, log_dir: Path = LOGS_DIR, buffer_size: int = 1000):
+    def __init__(self, log_dir: Path = LOGS_DIR, buffer_size: int = 1000, flush_batch_size: int = 50):
+        self._lock = threading.Lock()
         self.log_file = log_dir / "inference_audit.jsonl"
         self.buffer: deque = deque(maxlen=buffer_size)
         self.latencies: deque = deque(maxlen=buffer_size)
+        self._pending_lines: List[str] = []
+        self._flush_batch_size = max(1, flush_batch_size)
         self.start_time = time.time()
         self.total_requests = 0
         self.total_errors = 0
@@ -58,32 +62,45 @@ class InferenceTracker:
             "is_batch": is_batch,
         }
 
-        self.buffer.append(record)
-        self.latencies.append(latency_ms)
-        self.total_requests += 1
-
-        try:
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(json.dumps(record) + "\n")
-        except Exception:
-            pass
+        with self._lock:
+            self.buffer.append(record)
+            self.latencies.append(latency_ms)
+            self.total_requests += 1
+            self._pending_lines.append(json.dumps(record) + "\n")
+            if len(self._pending_lines) >= self._flush_batch_size:
+                self._flush_locked()
 
         return record
 
+    def flush(self) -> None:
+        """Flush buffered audit records to disk."""
+        with self._lock:
+            self._flush_locked()
+
+    def _flush_locked(self) -> None:
+        if not self._pending_lines:
+            return
+        lines = self._pending_lines
+        self._pending_lines = []
+        try:
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.writelines(lines)
+        except Exception:
+            pass
+
     def log_error(self, error_message: str, input_data: Optional[Dict[str, Any]] = None) -> None:
         """Track failed requests."""
-        self.total_errors += 1
         record = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": error_message,
             "input": input_data,
             "status": "FAILED",
         }
-        try:
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(json.dumps(record) + "\n")
-        except Exception:
-            pass
+        with self._lock:
+            self.total_errors += 1
+            self._pending_lines.append(json.dumps(record) + "\n")
+            if len(self._pending_lines) >= self._flush_batch_size:
+                self._flush_locked()
 
     def get_telemetry_metrics(self) -> Dict[str, Any]:
         """Compute latency percentiles, throughput, and error rates."""

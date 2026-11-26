@@ -129,7 +129,7 @@ export default {
     }
 
     // 3. Forward to origin with bounded timeout and generic 503 fallback
-    const targetBase = env.UPSTREAM_API || "https://curavex.vercel.app";
+    const targetBase = env.UPSTREAM_API || "https://api-curavex.pages.dev";
     const upstream = new URL(url.pathname + url.search, targetBase);
     const upstreamHeaders = new Headers(request.headers);
     upstreamHeaders.delete("host");

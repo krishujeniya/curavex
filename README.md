@@ -1,7 +1,7 @@
 # Curavex | Clinical Treatment Response & MLOps Platform
 
 <div align="center">
-  <img src="frontend/assets/curavex-logo.svg" alt="Curavex Logo" width="380" />
+  <img src="frontend/public/assets/curavex-logo.svg" alt="Curavex Logo" width="380" />
   <p><strong>Clinical Precision Oncology & Pharmacology Response Prediction</strong></p>
   <p>
     <a href="https://curavex.pages.dev"><strong>Live Frontend Dashboard</strong></a> &bull;

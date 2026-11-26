@@ -142,7 +142,7 @@ export default function CuravexWorkspacePage() {
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src="./assets/curavex-logo.png"
+              src="./assets/curavex-mark.svg"
               alt="Curavex logo"
               className="h-8 w-8 rounded border border-[var(--cv-border)] object-contain shrink-0"
             />

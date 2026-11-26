@@ -1,83 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <!-- Crisp Clinical Surface Gradients -->
-    <linearGradient id="cv-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0e171b"/>
-      <stop offset="100%" stop-color="#080d0f"/>
-    </linearGradient>
-
-    <!-- Bio-molecular Precision Gradient -->
-    <linearGradient id="cv-core" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7ee7d2"/>
-      <stop offset="50%" stop-color="#4fd1b5"/>
-      <stop offset="100%" stop-color="#229e84"/>
-    </linearGradient>
-
-    <!-- Mathematical Regression Vector Gradient -->
-    <linearGradient id="cv-accent" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#2dd4bf"/>
-      <stop offset="100%" stop-color="#60a5fa"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Shell Base (Rounded Clinical Capsule with exact border ratio) -->
-  <rect width="512" height="512" rx="96" fill="url(#cv-bg)"/>
-  <rect width="506" height="506" x="3" y="3" rx="93" fill="none" stroke="rgba(215, 232, 226, 0.16)" stroke-width="2.5"/>
-
-  <!-- Geometric Molecular Graph Coordinate Network -->
-  <g transform="translate(256, 256)">
-    <!-- Outer Precision Target Orbit (Technical Calibration Mark) -->
-    <circle cx="0" cy="0" r="172" fill="none" stroke="rgba(143, 214, 197, 0.12)" stroke-width="1.5" stroke-dasharray="4 8"/>
-    
-    <!-- Coordinate Axis Subdivisions -->
-    <line x1="-190" y1="0" x2="-155" y2="0" stroke="rgba(143, 214, 197, 0.3)" stroke-width="2"/>
-    <line x1="155" y1="0" x2="190" y2="0" stroke="rgba(143, 214, 197, 0.3)" stroke-width="2"/>
-    <line x1="0" y1="-190" x2="0" y2="-155" stroke="rgba(143, 214, 197, 0.3)" stroke-width="2"/>
-    <line x1="0" y1="155" x2="0" y2="190" stroke="rgba(143, 214, 197, 0.3)" stroke-width="2"/>
-
-    <!-- Primary Glyph Segment 1: The 'C' Molecular Ring (Curative Arc) -->
-    <path d="M 45, -125
-             C -65, -125 -135, -75 -135, 0
-             C -135, 75 -65, 125 45, 125
-             C 95, 125 130, 95 140, 68
-             C 125, 68 115, 60 105, 48
-             C 85, 78 55, 90 28, 90
-             C -50, 90 -95, 50 -95, 0
-             C -95, -50 -50, -90 28, -90
-             C 55, -90 85, -78 105, -48
-             C 115, -60 125, -68 140, -68
-             C 130, -95 95, -125 45, -125 Z"
-          fill="url(#cv-core)"/>
-
-    <!-- Primary Glyph Segment 2: The 'V' Vector Convergence (Validation / Vector) -->
-    <path d="M 60, -98
-             L 142, 60
-             C 148, 72 138, 86 124, 86
-             L 92, 86
-             C 84, 86 77, 81 73, 73
-             L 24, -22
-             L 5, 18
-             C 1, 26 -6, 32 -14, 32
-             L -36, 32
-             C -44, 32 -50, 24 -46, 16
-             L 18, -94
-             C 22, -102 31, -106 39, -106
-             L 48, -106
-             C 54, -106 58, -102 60, -98 Z"
-          fill="url(#cv-accent)"/>
-
-    <!-- Cross-Disciplinary Node: Precision Medical Cross Diamond Center -->
-    <g transform="translate(14, 2)">
-      <!-- Outer Node Shield -->
-      <circle cx="0" cy="0" r="18" fill="#0b1316" stroke="rgba(126, 231, 210, 0.4)" stroke-width="2"/>
-      <!-- Clinical Cross Core Indicator -->
-      <path d="M -3, -9 L 3, -9 L 3, -3 L 9, -3 L 9, 3 L 3, 3 L 3, 9 L -3, 9 L -3, 3 L -9, 3 L -9, -3 L -3, -3 Z" fill="#7ee7d2"/>
-    </g>
-
-    <!-- Satellite Pharmacodynamic Reference Nodes -->
-    <circle cx="-135" cy="-55" r="5.5" fill="#7ee7d2" stroke="#080d0f" stroke-width="1.5"/>
-    <circle cx="-135" cy="55" r="5.5" fill="#4fd1b5" stroke="#080d0f" stroke-width="1.5"/>
-    <circle cx="120" cy="-90" r="4.5" fill="#60a5fa" stroke="#080d0f" stroke-width="1.5"/>
-    <circle cx="112" cy="100" r="4.5" fill="#2dd4bf" stroke="#080d0f" stroke-width="1.5"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <rect width="1000" height="1000" fill="#000"/>
+  <!-- Outer geometric 'C' squircle silhouette (AmberClaw proportions) -->
+  <path
+    fill="#fff"
+    fill-rule="evenodd"
+    d="M360 184 H648 C714 184 769 220 797 274 L696 375 C678 334 638 308 592 308 H408 C345 308 296 357 296 420 V580 C296 643 345 692 408 692 H592 C638 692 678 666 696 625 L797 726 C769 780 714 816 648 816 H360 C268 816 193 741 193 649 V351 C193 259 268 184 360 184 Z"
+  />
+  <!-- Interlocking diagonal vector slash (AGYOS terminal + AmberClaw cut) -->
+  <path
+    fill="#fff"
+    d="M442 496 C428 510 428 532 442 546 L516 620 C530 634 552 634 566 620 L802 384 C816 370 816 348 802 334 L778 310 C764 296 742 296 728 310 L541 497 L492 448 C478 434 456 434 442 448 Z"
+  />
 </svg>

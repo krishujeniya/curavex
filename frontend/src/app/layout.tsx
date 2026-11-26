@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     canonical: "https://curavex.pages.dev/",
   },
   icons: {
-    icon: "./assets/curavex-logo.png",
+    icon: "./assets/curavex-mark.svg",
   },
   openGraph: {
     type: "website",

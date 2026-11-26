@@ -1,247 +1,126 @@
-# Curavex
+<p align="center">
+  <img src="frontend/public/assets/curavex-mark.svg" alt="Curavex" width="180" />
+</p>
 
-<div align="center">
-  <img src="frontend/public/assets/curavex-logo.png" alt="Curavex Logo" width="180" />
-  <p><strong>Clinical Precision Oncology & Pharmacology Response Prediction</strong></p>
-  <p>
-    <a href="https://curavex.pages.dev"><strong>Live Frontend Dashboard</strong></a> &bull;
-    <a href="https://api-curavex.pages.dev"><strong>Live Backend API</strong></a> &bull;
-    <a href="https://api-curavex.pages.dev/docs"><strong>Interactive OpenAPI Docs</strong></a>
-  </p>
-</div>
+<h1 align="center">Curavex</h1>
 
-[![Curavex CI](https://github.com/krishujeniya/curavex/actions/workflows/ci.yml/badge.svg)](https://github.com/krishujeniya/curavex/actions/workflows/ci.yml)
-[![Deploy Frontend](https://img.shields.io/badge/Cloudflare_Pages-Active-F38020?style=flat-square&logo=cloudflare)](https://github.com/krishujeniya/curavex/actions/workflows/pages.yml)
-![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
-[![Cloudflare Edge](https://img.shields.io/badge/Cloudflare_Edge-Deployed-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://curavex.pages.dev)
-[![Security](https://img.shields.io/badge/Security-A%2B_Hardened-blue?style=flat-square)](https://curavex.pages.dev)
-![Coverage](https://img.shields.io/badge/Coverage-86%25-brightgreen?style=flat-square)
+<p align="center">
+  <strong>Clinical Treatment Response Regression and MLOps Platform</strong>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT license" /></a>
+  <a href="https://curavex.pages.dev"><img src="https://img.shields.io/badge/Cloudflare_Pages-Active-F38020?style=flat-square&logo=cloudflare" alt="Cloudflare Pages" /></a>
+  <a href="https://github.com/krishujeniya/curavex/actions/workflows/ci.yml"><img src="https://github.com/krishujeniya/curavex/actions/workflows/ci.yml/badge.svg" alt="Curavex CI" /></a>
+  <a href="https://github.com/krishujeniya"><img src="https://img.shields.io/badge/author-krishujeniya-black.svg" alt="Author Krish Ujeniya" /></a>
+</p>
+
+**Live Dashboard:** [curavex.pages.dev](https://curavex.pages.dev/) · **Backend API:** [api-curavex.pages.dev](https://api-curavex.pages.dev/) · **OpenAPI Docs:** [api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs) · **GitHub:** [krishujeniya/curavex](https://github.com/krishujeniya/curavex)
+
+Curavex is a clinical treatment-response regression and MLOps governance platform created and maintained by [Krish Ujeniya (`@krishujeniya`)](https://github.com/krishujeniya). It predicts patient improvement scores from pharmacology parameters, scores multi-subject cohorts via CSV, and tracks model drift and inference latency.
+
+The system combines a Next.js 15 App Router static frontend (`frontend/`) built with Tailwind CSS v4 and Wensity UI components, a FastAPI and scikit-learn backend (`backend/`), and Cloudflare edge deployment (`deploy/`, `wrangler.jsonc`).
 
 ---
 
-## 1. System Architecture
+## Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client["Clinical & API Clients"]
-        UI["Web SPA Dashboard<br/>(Cloudflare Pages: curavex.pages.dev)"]
-        API_CLIENT["Programmatic EHR / API Client<br/>(cURL / Python requests)"]
+    User(["Clinical / API Client"]):::client
+
+    subgraph Frontend["Next.js 15 Static Frontend (frontend/)"]
+        UI["Clinical Workspace Tabs<br/>Predict • Batch • MLOps • Drift • API Keys"]
+        Charts["Chart.js Telemetry & Attributions"]
     end
 
-    subgraph CCDS_Pipeline["Cookiecutter Data & Model Pipeline (src/)"]
-        DATA_IN["data/make_dataset.py<br/>(Raw -> Processed ETL)"]
-        FEAT["features/build_features.py<br/>(ColumnTransformer)"]
-        TRAIN["models/train_model.py<br/>(Ensemble Regressors)"]
-        REG["models/registry.py<br/>(Semantic Versioning & Promotion)"]
-        MON["monitoring/drift_detector.py & tracker.py<br/>(KS-test, PSI, Latencies)"]
-        EXP["explainability/attributions.py<br/>(Clinical Feature Impact)"]
+    subgraph Backend["FastAPI & ML Pipeline (backend/)"]
+        API["FastAPI Gateway & Auth<br/>src/api/main.py • v1/"]
+        ETL["ETL & Feature Pipeline<br/>make_dataset.py • build_features.py"]
+        Reg["Model Registry & Training<br/>train_model.py • registry.py"]
+        Mon["Drift & Attribution Engine<br/>drift_detector.py • tracker.py • attributions.py"]
     end
 
-    subgraph Serving["FastAPI SaaS Gateway (Cloudflare Workers / Docker)"]
-        AUTH["Token Auth & Tiered Rate Limiter"]
-        ROUTERS["REST API v1 Endpoints"]
-        STATIC["Static Asset Handler"]
+    subgraph Storage["Artifacts & Edge"]
+        Data[("data/ & models/registry/")]
+        Logs[("logs/inference_audit.jsonl")]
+        Edge["Cloudflare Pages & Worker<br/>curavex.pages.dev • api-curavex.pages.dev"]
     end
 
-    subgraph Storage["Artifact & Storage Hierarchy"]
-        DATA_DIR["data/<br/>raw/ | interim/ | processed/"]
-        MODELS_DIR["models/registry/*.joblib"]
-        LOGS_DIR["logs/inference_audit.jsonl"]
-    end
+    User --> UI
+    User --> API
+    UI --> Edge --> API
+    API --> Reg
+    API --> Mon
+    ETL --> Data --> Reg
+    Mon --> Logs
 
-    DATA_DIR --> DATA_IN --> FEAT --> TRAIN --> REG --> MODELS_DIR
-    UI & API_CLIENT --> AUTH --> ROUTERS & STATIC
-    ROUTERS --> REG & MON & EXP
-    MON --> LOGS_DIR
+    classDef client fill:#111113,stroke:#52525b,color:#ffffff,stroke-width:2px;
 ```
 
 ---
 
-## 2. Project Structure
+## Core Components
 
-```
-curavex/
-├── .editorconfig                  <- Editor formatting rules
-├── .gitignore                     <- Build, env, and metadata guardrails
-├── CHANGELOG.md                   <- Release notes
-├── LICENSE                        <- Project license
-├── Makefile                       <- Automation: make data, make train, make test, make run
-├── README.md                      <- Top-level system overview
-├── wrangler.jsonc                 <- Cloudflare Workers edge configuration
-│
-├── .github/workflows/
-│   ├── ci.yml                     <- Backend ETL, pytest suite, and >= 80% coverage ratchet
-│   └── cloudflare-deploy.yml      <- Cloudflare deployment workflow
-│
-├── backend/                       <- FastAPI service, ML pipeline, and tests
-│   ├── .env.example               <- Backend environment template
-│   ├── pyproject.toml             <- Python metadata, pytest, and coverage configuration
-│   ├── requirements.txt           <- Pinned Python dependencies
-│   ├── uv.lock                    <- uv lockfile
-│   ├── main.py                    <- Compatibility entrypoint re-exporting src.api.main
-│   ├── data/                      <- Data storage tiers (raw/, interim/, processed/, external/)
-│   ├── models/registry/           <- Registered model artifacts (.joblib) and registry.json
-│   ├── logs/                      <- Inference audit logs (.jsonl)
-│   ├── src/                       <- Core Python package
-│   │   ├── config.py              <- Central paths, feature definitions, and clinical bounds
-│   │   ├── data/                  <- ETL and schema validation (make_dataset.py, validator.py)
-│   │   ├── features/              <- ColumnTransformer feature pipeline (build_features.py)
-│   │   ├── models/                <- Training, inference, and registry governance
-│   │   ├── monitoring/            <- KS-test/PSI drift detection and telemetry tracker
-│   │   ├── explainability/        <- Global and local clinical feature impact attribution
-│   │   └── api/                   <- FastAPI app factory, auth, Pydantic v2 schemas, and v1 routers
-│   └── tests/                     <- Automated pytest suite
-│
-├── frontend/                      <- Next.js 15 App Router static SPA (Tailwind CSS v4 + Wensity UI)
-│   ├── .env.example               <- Frontend environment template
-│   ├── next.config.ts             <- Static export configuration (output: "export" -> out/)
-│   ├── package.json               <- Next.js, React 19, Chart.js, and Wensity dependencies
-│   ├── tsconfig.json              <- TypeScript strict configuration
-│   ├── public/                    <- Static assets (Curavex 2D B&W logos, CSV template, SEO files)
-│   └── src/
-│       ├── app/                   <- Root layout, global theme tokens, and workspace shell
-│       ├── components/
-│       │   ├── charts/            <- Chart.js wrappers (attribution, latency, drift)
-│       │   ├── wensity/           <- Installed Wensity UI components
-│       │   └── workspace/         <- Predict, Batch, MLOps, Monitoring, and API Keys tabs
-│       └── lib/                   <- Typed FastAPI client and className utilities
-│
-├── deploy/                        <- Container and Cloudflare Worker configs
-│   ├── Dockerfile                 <- Multi-stage container configuration
-│   ├── docker-compose.yml         <- Local container parity composition
-│   └── edge/                      <- Cloudflare Worker proxy and static metadata
-│
-└── docs/                          <- Documentation, data dictionary, and brand assets
-    ├── index.md                   <- Architecture overview
-    ├── deployment.md              <- Deployment and rollback runbook
-    ├── references/                <- Data dictionary
-    └── reports/                   <- Analysis figures and brand source assets
-```
+| Component | Path | Responsibility |
+|:---|:---|:---|
+| **Next.js Frontend** | `frontend/src/` | Static App Router SPA with Wensity UI components, Tailwind CSS v4, and Chart.js visualizations |
+| **FastAPI Gateway** | `backend/src/api/` | Versioned `/api/v1` REST endpoints, API key authentication, tiered rate limiting, and OpenAPI docs |
+| **ML & ETL Pipeline** | `backend/src/data/`, `features/`, `models/` | Clinical bounds validation, `ColumnTransformer` preprocessing, training, and `.joblib` registry |
+| **Observability** | `backend/src/monitoring/`, `explainability/` | Kolmogorov-Smirnov and PSI drift detection, latency percentiles, and feature impact attribution |
+| **Deployment** | `deploy/`, `wrangler.jsonc` | Multi-stage Docker parity (`deploy/Dockerfile`) and Cloudflare Worker edge proxy (`deploy/edge/`) |
+| **Tests & CI** | `backend/tests/`, `.github/workflows/ci.yml` | Automated pytest suite with an enforced >= 80% coverage ratchet |
 
 ---
 
-## 3. Makefile Automation Commands
+## API Reference
 
-| Command | Action |
-| :--- | :--- |
-| `make data` | Ingests `backend/data/raw/`, validates clinical constraints, and outputs `backend/data/processed/cleaned_drug_dataset.csv`. |
-| `make train` | Trains baseline ensemble regressor on processed data and registers artifact into `backend/models/registry/`. |
-| `make test` | Executes the automated test suite via `pytest` in `backend/`. |
-| `make coverage` | Runs test suite and outputs coverage metrics (enforces >= 80% ratchet). |
-| `make run` | Starts local FastAPI server and serves `frontend/out` on `http://localhost:8000`. |
-| `make docker-build` | Builds production Docker container image from `deploy/Dockerfile`. |
-| `make docker-run` | Runs containerized platform via `deploy/docker-compose.yml`. |
-| `make clean` | Cleans temporary caches, bytecode, and test artifacts. |
-
----
-
-## 4. API Reference
-
-All requests accept `X-API-Key` or `Authorization: Bearer <key>`. Pre-seeded developer keys:
-- Enterprise: `live_agyos_clinical_enterprise_key_99x` (1200 req/min)
-- Standard: `live_agyos_standard_key_44b` (300 req/min)
-- Guest Sandbox: `demo_key_public_guest` (60 req/min)
-
-Live Interactive OpenAPI documentation is available at [https://api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs).
+All protected routes accept `X-API-Key` or `Authorization: Bearer <key>`. Interactive documentation is available at [api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs).
 
 | Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/predict` | Single patient clinical response prognosis |
-| `POST` | `/api/v1/predict/batch` | High-throughput batch inference across multiple patient records |
-| `POST` | `/api/v1/predict/upload-csv` | File-based CSV batch scoring |
-| `GET` | `/api/v1/models` | List all registered model candidates and validation metrics |
-| `POST` | `/api/v1/models/train` | Trigger retraining pipeline for an algorithm |
-| `POST` | `/api/v1/models/{model_id}/promote` | Atomically promote model to `PRODUCTION` |
-| `GET` | `/api/v1/monitoring/drift` | Statistical drift test results comparing live traffic to baseline |
-| `GET` | `/api/v1/monitoring/metrics` | Operational telemetry (p50/p95/p99 latency, throughput, error rate) |
-| `GET` | `/api/v1/monitoring/logs` | Queryable inference audit trail |
-| `GET` | `/api/v1/metadata/clinical` | Supported conditions, approved drugs, dosage limits |
-| `GET` | `/healthz` | System liveness probe |
+|:---|:---|:---|
+| `POST` | `/api/v1/predict` | Single patient clinical response prognosis and feature attributions |
+| `POST` | `/api/v1/predict/batch` | Batch JSON inference across multiple patient records |
+| `POST` | `/api/v1/predict/upload-csv` | CSV file upload batch cohort scoring |
+| `GET` | `/api/v1/models` | List registered model candidates and validation metrics |
+| `POST` | `/api/v1/models/train` | Train and register a candidate regression model |
+| `POST` | `/api/v1/models/{model_id}/promote` | Promote a candidate model to `PRODUCTION` |
+| `GET` | `/api/v1/monitoring/drift` | Kolmogorov-Smirnov and PSI drift metrics |
+| `GET` | `/api/v1/monitoring/metrics` | Latency percentiles (`avg`, `p50`, `p95`, `p99`), throughput, and error rate |
+| `GET` | `/api/v1/monitoring/logs` | Recent inference audit trail |
+| `GET` | `/api/v1/metadata/clinical` | Supported conditions, approved compounds, and dosing bounds |
+| `GET` | `/healthz` | System health and active model probe |
 
 ---
 
-## 5. Live Production Deployments
-
-- **Frontend Dashboard (GitHub Pages)**: [https://curavex.pages.dev](https://curavex.pages.dev)
-- **Backend API (Cloudflare Pages)**: [https://api-curavex.pages.dev](https://api-curavex.pages.dev)
-- **API Documentation**: [https://api-curavex.pages.dev/docs](https://api-curavex.pages.dev/docs)
-- **Health Check Probe**: [https://api-curavex.pages.dev/healthz](https://api-curavex.pages.dev/healthz)
-
----
-
-## 6. Programmatic Integration Examples
-
-### cURL
+## Local Quickstart
 
 ```bash
-curl -X POST https://api-curavex.pages.dev/api/v1/predict \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \
-  -d '{
-    "Age": 52,
-    "Gender": "Male",
-    "Condition": "Hypertension",
-    "Drug_Name": "Amlodipine",
-    "Dosage_mg": 250.0,
-    "Treatment_Duration_days": 30
-  }'
-```
+git clone https://github.com/krishujeniya/curavex.git && cd curavex
 
-### Python Requests
+# Backend setup with uv
+cd backend && uv sync && cd ..
 
-```python
-import requests
+# Frontend build (static export -> frontend/out/)
+cd frontend && npm install && npm run build && cd ..
 
-url = "https://api-curavex.pages.dev/api/v1/predict"
-headers = {
-    "Content-Type": "application/json",
-    "X-API-Key": "live_agyos_clinical_enterprise_key_99x",
-}
-payload = {
-    "Age": 52,
-    "Gender": "Male",
-    "Condition": "Hypertension",
-    "Drug_Name": "Amlodipine",
-    "Dosage_mg": 250.0,
-    "Treatment_Duration_days": 30,
-}
-
-response = requests.post(url, headers=headers, json=payload)
-data = response.json()
-
-print(f"Predicted Score: {data['predicted_score']}")
-print(f"Effectiveness Level: {data['effectiveness_level']}")
-print(f"Confidence Interval: {data['confidence_interval']}")
-```
-
----
-
-## 7. Local Quickstart
-
-```bash
-# 1. Clone repository
-git clone https://github.com/krishujeniya/curavex.git
-cd curavex
-
-# 2. Setup backend environment with uv
-cd backend
-uv sync
-cd ..
-
-# 3. Build Next.js frontend static export
-cd frontend
-npm install
-npm run build
-cd ..
-
-# 4. Run ETL, train model, and verify tests
+# Run ETL, train model, run tests, and start FastAPI on :8000
 make data
 make train
 make test
-make coverage
-
-# 5. Launch local FastAPI server + Next.js static frontend
 make run
 ```
+
+---
+
+## Documentation
+
+- [Architecture Overview](docs/index.md): Workspace structure and module responsibilities
+- [Deployment Guide](docs/deployment.md): Cloudflare Pages, Cloudflare Workers, Docker parity, and rollback procedures
+- [Data Dictionary](docs/references/data_dictionary.md): Clinical features, bounds, and target definitions
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.

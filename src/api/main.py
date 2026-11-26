@@ -21,7 +21,8 @@ from src.models.registry import ModelRegistry
 from src.monitoring.tracker import InferenceTracker
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FRONTEND_DIR = BASE_DIR / "frontend"
+FRONTEND_OUT_DIR = BASE_DIR / "frontend" / "out"
+FRONTEND_DIR = FRONTEND_OUT_DIR if FRONTEND_OUT_DIR.exists() else BASE_DIR / "frontend"
 
 
 @asynccontextmanager
@@ -49,31 +50,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.middleware("http")
-async def vercel_rewrite_handler(request: Request, call_next):
-    """Normalize request path when hosted behind Vercel serverless rewrites."""
-    raw_path = request.scope.get("path", "")
-    route_param = request.query_params.get("__route__")
-
-    if route_param is not None and raw_path in ("/api/index.py", "/api/index", "/api", "/api/"):
-        clean = "/" + route_param.lstrip("/")
-        request.scope["path"] = clean
-        request.scope["raw_path"] = clean.encode("utf-8")
-    else:
-        headers = request.headers
-        matched = (
-            headers.get("x-matched-path")
-            or headers.get("x-forwarded-uri")
-            or headers.get("x-vercel-matched-path")
-        )
-        if matched and raw_path in ("/api/index.py", "/api/index", "/api", "/api/"):
-            clean = matched.split("?")[0]
-            request.scope["path"] = clean
-            request.scope["raw_path"] = clean.encode("utf-8")
-
-    return await call_next(request)
 
 
 app.include_router(api_v1_router, prefix=API_V1_PREFIX)
@@ -107,16 +83,6 @@ async def system_metrics() -> Dict[str, Any]:
     return tracker.get_telemetry_metrics()
 
 
-@app.get("/api/index.py", tags=["System Health"])
-async def debug_vercel_request(request: Request) -> Dict[str, Any]:
-    return {
-        "url": str(request.url),
-        "path": request.scope.get("path"),
-        "headers": dict(request.headers),
-        "query": str(request.query_params),
-    }
-
-
 @app.get("/", tags=["System Health"])
 @app.get("/dashboard", tags=["System Health"])
 async def serve_root():
@@ -135,6 +101,8 @@ async def serve_root():
 
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+    if (FRONTEND_DIR / "_next").exists():
+        app.mount("/_next", StaticFiles(directory=str(FRONTEND_DIR / "_next")), name="next_assets")
     if (FRONTEND_DIR / "css").exists():
         app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")
     if (FRONTEND_DIR / "js").exists():

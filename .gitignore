@@ -8,13 +8,16 @@ __pycache__/
 htmlcov/
 *.log
 logs/inference_audit.jsonl
-.vercel
-.env*
-
 # Cloudflare & Secret Guardrails
 .env.local
 .env.*.local
 !.env.example
 .dev.vars
 .wrangler/
-.vercel/
+
+# Next.js build & dependencies
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/tsconfig.tsbuildinfo
+frontend/next-env.d.ts

@@ -1,0 +1,39 @@
+{
+  "total_records": 1000,
+  "null_counts": {
+    "Age": 0,
+    "Gender": 0,
+    "Condition": 0,
+    "Drug_Name": 0,
+    "Dosage_mg": 0,
+    "Treatment_Duration_days": 0
+  },
+  "numeric_stats": {
+    "Age": {
+      "mean": 49.86,
+      "std": 18.11,
+      "min": 18.0,
+      "max": 79.0
+    },
+    "Dosage_mg": {
+      "mean": 352.65,
+      "std": 295.42,
+      "min": 50.0,
+      "max": 850.0
+    },
+    "Treatment_Duration_days": {
+      "mean": 32.38,
+      "std": 15.7,
+      "min": 5.0,
+      "max": 59.0
+    }
+  },
+  "condition_distribution": {
+    "Infection": 215,
+    "Pain Relief": 208,
+    "Diabetes": 207,
+    "Hypertension": 194,
+    "Depression": 176
+  },
+  "is_healthy": true
+}

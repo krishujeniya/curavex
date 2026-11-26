@@ -13,7 +13,7 @@ DATA_INTERIM_DIR = DATA_DIR / "interim"
 DATA_EXTERNAL_DIR = DATA_DIR / "external"
 
 MODELS_DIR = BASE_DIR / "models" / "registry"
-LOGS_DIR = Path("/tmp/logs") if os.environ.get("VERCEL") else BASE_DIR / "logs"
+LOGS_DIR = BASE_DIR / "logs"
 REPORTS_DIR = BASE_DIR / "reports" / "figures"
 
 # Canonical raw dataset path with fallback to root dataset

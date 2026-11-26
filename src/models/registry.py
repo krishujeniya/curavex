@@ -17,7 +17,7 @@ class ModelRegistry:
         try:
             self.registry_dir.mkdir(parents=True, exist_ok=True)
         except OSError:
-            # Serverless read-only filesystem fallback (e.g., Vercel / AWS Lambda)
+            # Serverless read-only filesystem fallback
             self.registry_dir = Path("/tmp/models/registry")
             self.registry_dir.mkdir(parents=True, exist_ok=True)
             if (MODELS_DIR / "registry.json").exists():

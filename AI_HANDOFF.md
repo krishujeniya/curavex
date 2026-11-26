@@ -1,7 +1,7 @@
 # AI Handoff & Architecture Checkpoint
 
 ## Task
-Deploy Curavex End-to-End MLOps SaaS system with frontend on GitHub Pages, serverless backend on Vercel, automated GitHub Actions CI/CD pipeline, and Cookiecutter Data Science (CCDS) architecture.
+Deploy Curavex End-to-End MLOps SaaS system with frontend on Cloudflare Pages, edge and serverless backend on Cloudflare Workers / Cloudflare Pages, automated GitHub Actions CI/CD pipeline, and Cookiecutter Data Science (CCDS) architecture.
 
 ## Repository & Revisions
 - Repository: `https://github.com/krishujeniya/curavex`

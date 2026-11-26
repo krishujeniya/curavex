@@ -1,0 +1,80 @@
+{
+  "gradient_boosting-v2.0.0-c31272": [
+    {
+      "feature": "Treatment_Duration_days",
+      "importance": 0.3319
+    },
+    {
+      "feature": "Age",
+      "importance": 0.3037
+    },
+    {
+      "feature": "Drug_Name",
+      "importance": 0.2052
+    },
+    {
+      "feature": "Dosage_mg",
+      "importance": 0.0875
+    },
+    {
+      "feature": "Condition",
+      "importance": 0.0515
+    },
+    {
+      "feature": "Gender",
+      "importance": 0.0202
+    }
+  ],
+  "gradient_boosting-v1.0.0-57cd9f": [
+    {
+      "feature": "Treatment_Duration_days",
+      "importance": 0.3387
+    },
+    {
+      "feature": "Age",
+      "importance": 0.3049
+    },
+    {
+      "feature": "Drug_Name",
+      "importance": 0.2292
+    },
+    {
+      "feature": "Dosage_mg",
+      "importance": 0.0685
+    },
+    {
+      "feature": "Condition",
+      "importance": 0.0485
+    },
+    {
+      "feature": "Gender",
+      "importance": 0.0102
+    }
+  ],
+  "random_forest-v1.1.0-06caf0": [
+    {
+      "feature": "Treatment_Duration_days",
+      "importance": 0.3156
+    },
+    {
+      "feature": "Age",
+      "importance": 0.3053
+    },
+    {
+      "feature": "Drug_Name",
+      "importance": 0.1738
+    },
+    {
+      "feature": "Dosage_mg",
+      "importance": 0.0999
+    },
+    {
+      "feature": "Condition",
+      "importance": 0.0711
+    },
+    {
+      "feature": "Gender",
+      "importance": 0.0343
+    }
+  ]
+}

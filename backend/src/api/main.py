@@ -21,8 +21,9 @@ from src.models.registry import ModelRegistry
 from src.monitoring.tracker import InferenceTracker
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FRONTEND_OUT_DIR = BASE_DIR / "frontend" / "out"
-FRONTEND_DIR = FRONTEND_OUT_DIR if FRONTEND_OUT_DIR.exists() else BASE_DIR / "frontend"
+REPO_ROOT = BASE_DIR.parent
+FRONTEND_OUT_DIR = REPO_ROOT / "frontend" / "out"
+FRONTEND_DIR = FRONTEND_OUT_DIR if FRONTEND_OUT_DIR.exists() else REPO_ROOT / "frontend"
 
 
 @asynccontextmanager

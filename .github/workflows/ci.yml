@@ -27,19 +27,23 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
+        working-directory: backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
 
       - name: Run ETL & Data Validation Pipeline
+        working-directory: backend
         run: |
           python -m src.data.make_dataset
 
       - name: Execute Full Test Suite
+        working-directory: backend
         run: |
           PYTHONPATH=. pytest tests/ -v
 
       - name: Enforce Test Coverage Ratchet (>= 80%)
+        working-directory: backend
         run: |
           PYTHONPATH=. pytest --cov=src --cov-fail-under=80 tests/

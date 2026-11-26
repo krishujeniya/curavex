@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict, Any
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -18,6 +18,7 @@ from src.api.config import (
     DESCRIPTION,
     ALLOWED_CORS_ORIGINS,
 )
+from src.api.security.auth import verify_api_key
 from src.models.registry import ModelRegistry
 from src.monitoring.tracker import InferenceTracker
 
@@ -59,30 +60,33 @@ app.add_middleware(
 app.include_router(api_v1_router, prefix=API_V1_PREFIX)
 
 
-@app.get("/api/debug", tags=["System Health"])
-async def debug_headers(request: Request) -> Dict[str, Any]:
-    return {
-        "url": str(request.url),
-        "path": request.url.path,
-        "scope_path": request.scope.get("path"),
-        "headers": dict(request.headers),
-    }
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if request.url.path.startswith("/api/v1/api-keys") or request.url.path.startswith("/api/v1/monitoring/logs"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=500, content={"detail": "Internal server error."})
 
 
 @app.get("/healthz", tags=["System Health"])
 @app.get("/api/v1/health", tags=["System Health"])
 async def health_check() -> Dict[str, Any]:
-    registry = ModelRegistry()
-    _, meta = registry.load_active_model()
     return {
         "status": "healthy",
         "version": VERSION,
-        "active_model": meta["model_id"] if meta else "none",
     }
 
 
 @app.get("/metrics", tags=["System Health"])
-async def system_metrics() -> Dict[str, Any]:
+async def system_metrics(auth: Dict[str, str] = Depends(verify_api_key)) -> Dict[str, Any]:
     tracker = InferenceTracker()
     return tracker.get_telemetry_metrics()
 

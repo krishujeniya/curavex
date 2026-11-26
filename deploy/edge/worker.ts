@@ -5,24 +5,50 @@ export interface Env {
   UPSTREAM_API: string;
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "*",
-};
-
-const CACHEABLE_READ_PATHS = new Set([
-  "/api/v1/metadata/clinical",
-  "/api/v1/models",
-  "/api/v1/monitoring/metrics",
-  "/api/v1/monitoring/drift",
+const ALLOWED_ORIGINS = new Set([
+  "https://curavex.pages.dev",
+  "http://localhost:3000",
+  "http://localhost:8000",
 ]);
 
-function withCors(response: Response): Response {
+const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "no-referrer",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
+const CACHEABLE_READ_PATHS = new Set(["/api/v1/metadata/clinical"]);
+const NO_STORE_PREFIXES = ["/api/v1/api-keys", "/api/v1/monitoring/logs"];
+
+function resolveAllowedOrigin(request: Request): string {
+  const origin = request.headers.get("Origin");
+  if (!origin) return "https://curavex.pages.dev";
+  if (ALLOWED_ORIGINS.has(origin) || /^https:\/\/[a-z0-9-]+\.curavex\.pages\.dev$/.test(origin)) {
+    return origin;
+  }
+  return "https://curavex.pages.dev";
+}
+
+function withSecurityAndCors(request: Request, response: Response, pathname: string): Response {
   const headers = new Headers(response.headers);
-  for (const [k, v] of Object.entries(CORS_HEADERS)) {
+  headers.delete("Server");
+  headers.delete("X-Powered-By");
+
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
     headers.set(k, v);
   }
+
+  headers.set("Access-Control-Allow-Origin", resolveAllowedOrigin(request));
+  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization");
+  headers.set("Vary", "Origin");
+
+  if (NO_STORE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    headers.set("Cache-Control", "no-store");
+  }
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -43,31 +69,47 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization",
+          "Vary": "Origin",
+          ...SECURITY_HEADERS,
+        },
+      });
+    }
+
+    if (url.pathname === "/api/debug") {
+      return new Response(JSON.stringify({ detail: "Not found." }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...SECURITY_HEADERS },
+      });
     }
 
     if (url.pathname === "/healthz") {
       return new Response(
-        JSON.stringify({ status: "healthy", service: "curavex-backend-edge" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        JSON.stringify({ status: "healthy" }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
+            ...SECURITY_HEADERS,
+          },
+        }
       );
-    }
-
-    if (url.pathname === "/v1/edge-ai") {
-      const result = await env.AI.run("@cf/meta/llama-3-8b-instruct", {
-        prompt: "Analyze clinical molecular binding affinity metrics.",
-      });
-      return Response.json(result, { headers: CORS_HEADERS });
     }
 
     const cache = caches.default;
 
-    // 1. Edge-cache read-only metadata, model registry, and monitoring endpoints
+    // 1. Edge-cache strictly public clinical metadata
     if (request.method === "GET" && CACHEABLE_READ_PATHS.has(url.pathname)) {
       const cacheKey = new Request(url.toString(), { method: "GET" });
       const cached = await cache.match(cacheKey);
       if (cached) {
-        return withCors(cached);
+        return withSecurityAndCors(request, cached, url.pathname);
       }
     }
 
@@ -82,11 +124,11 @@ export default {
       });
       const cachedPrediction = await cache.match(predictCacheKey);
       if (cachedPrediction) {
-        return withCors(cachedPrediction);
+        return withSecurityAndCors(request, cachedPrediction, url.pathname);
       }
     }
 
-    // 3. Forward to origin with bounded timeout and circuit-breaker fallback
+    // 3. Forward to origin with bounded timeout and generic 503 fallback
     const targetBase = env.UPSTREAM_API || "https://curavex.vercel.app";
     const upstream = new URL(url.pathname + url.search, targetBase);
     const upstreamHeaders = new Headers(request.headers);
@@ -102,22 +144,23 @@ export default {
       });
     } catch {
       return new Response(
-        JSON.stringify({
-          detail: "Upstream inference gateway timed out or is temporarily unavailable.",
-        }),
+        JSON.stringify({ detail: "Service temporarily unavailable." }),
         {
           status: 503,
-          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
+            ...SECURITY_HEADERS,
+          },
         }
       );
     }
 
-    const responseWithCors = withCors(upstreamResponse);
+    const secured = withSecurityAndCors(request, upstreamResponse, url.pathname);
 
-    // Populate Cloudflare Edge Cache asynchronously via ctx.waitUntil
     if (upstreamResponse.ok) {
       if (request.method === "GET" && CACHEABLE_READ_PATHS.has(url.pathname)) {
-        const toCache = responseWithCors.clone();
+        const toCache = secured.clone();
         const headers = new Headers(toCache.headers);
         headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=120");
         const cacheKey = new Request(url.toString(), { method: "GET" });
@@ -125,7 +168,7 @@ export default {
           cache.put(cacheKey, new Response(toCache.body, { status: toCache.status, headers }))
         );
       } else if (predictCacheKey) {
-        const toCache = responseWithCors.clone();
+        const toCache = secured.clone();
         const headers = new Headers(toCache.headers);
         headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
         ctx.waitUntil(
@@ -134,6 +177,6 @@ export default {
       }
     }
 
-    return responseWithCors;
+    return secured;
   },
 };

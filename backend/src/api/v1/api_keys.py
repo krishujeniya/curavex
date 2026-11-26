@@ -10,6 +10,12 @@ from src.api.security.auth import verify_api_key, register_new_key, list_registe
 router = APIRouter(prefix="/api-keys", tags=["Developer API Keys"])
 
 
+def _mask_api_key(token: str) -> str:
+    if len(token) <= 8:
+        return "••••"
+    return f"{token[:6]}••••••{token[-4:]}"
+
+
 @router.get("", response_model=List[ApiKeyResponse])
 async def list_keys(auth: dict = Depends(verify_api_key)) -> List[ApiKeyResponse]:
     all_keys = list_registered_keys()
@@ -19,7 +25,7 @@ async def list_keys(auth: dict = Depends(verify_api_key)) -> List[ApiKeyResponse
         tier_cfg = TIERS.get(tier, TIERS["standard"])
         result.append(
             ApiKeyResponse(
-                api_key=k,
+                api_key=_mask_api_key(k),
                 name=meta.get("name", "Generated Key"),
                 tier=tier,
                 requests_per_minute=tier_cfg["rpm"],

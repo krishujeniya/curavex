@@ -13,7 +13,7 @@ import { curavexApi, type ApiKeyRecord } from "@/lib/api";
 
 const CURL_SNIPPET = `curl -X POST https://api-curavex.pages.dev/api/v1/predict \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: live_agyos_clinical_enterprise_key_99x" \\
+  -H "X-API-Key: <YOUR_CURAVEX_API_KEY>" \\
   -d '{
     "Age": 52,
     "Gender": "Male",
@@ -27,7 +27,7 @@ const PYTHON_SNIPPET = `import requests
 
 res = requests.post(
     "https://api-curavex.pages.dev/api/v1/predict",
-    headers={"X-API-Key": "live_agyos_clinical_enterprise_key_99x"},
+    headers={"X-API-Key": "<YOUR_CURAVEX_API_KEY>"},
     json={
         "Age": 52,
         "Gender": "Male",

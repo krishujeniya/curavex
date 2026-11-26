@@ -84,7 +84,8 @@ export interface ApiKeyRecord {
   monthly_limit: number;
 }
 
-export const DEFAULT_API_KEY = "live_agyos_clinical_enterprise_key_99x";
+export const DEFAULT_API_KEY =
+  process.env.NEXT_PUBLIC_API_KEY || "demo_key_public_guest";
 
 export function getApiBaseUrl(): string {
   if (typeof window === "undefined") {

@@ -8,7 +8,6 @@ import {
   type WorkspaceTabId,
 } from "@/components/layout/WorkspaceCommand";
 import { ArchitectureSection } from "@/components/sections/ArchitectureSection";
-import { FinalCtaSection } from "@/components/sections/FinalCtaSection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { MethodologySection } from "@/components/sections/MethodologySection";
 import {
@@ -243,10 +242,6 @@ export default function CuravexWorkspacePage() {
 
         <ArchitectureSection />
         <MethodologySection datasetStats={datasetStats} />
-        <FinalCtaSection
-          docsUrl={docsUrl}
-          onOpenApiTab={() => scrollToWorkspace("apikeys")}
-        />
       </main>
 
       <SiteFooter docsUrl={docsUrl} />

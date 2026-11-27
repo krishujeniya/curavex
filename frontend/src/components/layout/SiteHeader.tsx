@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
 import {
   Sheet,
@@ -23,6 +25,7 @@ const NAV_PAGES = [
   { href: "/models", label: "Models" },
   { href: "/monitoring", label: "Monitoring" },
   { href: "/api-keys", label: "API keys" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export function SiteHeader() {
@@ -31,6 +34,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
   const [scrolled, setScrolled] = React.useState(false);
+  const clerkReady = isClerkConfigured();
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
@@ -61,7 +65,7 @@ export function SiteHeader() {
             : "bg-[var(--cv-surface)]",
         ].join(" ")}
       >
-        <div className="mx-auto grid h-16 max-w-[1440px] grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid h-16 max-w-[1440px] grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center min-w-0 justify-self-start">
             <Link
               href="/"
@@ -83,7 +87,7 @@ export function SiteHeader() {
 
           <nav
             aria-label="Primary navigation"
-            className="hidden md:inline-flex items-center gap-1 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-1 justify-self-center"
+            className="hidden lg:inline-flex items-center gap-1 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-1 justify-self-center"
           >
             {NAV_PAGES.map((item) => {
               const isActive = normalizedPath === item.href;
@@ -106,6 +110,30 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0 justify-self-end">
+            {clerkReady && (
+              <>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      className="inline-flex h-9 items-center rounded-lg bg-[var(--cv-accent)] px-3.5 text-label font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85 cursor-pointer"
+                    >
+                      Sign in
+                    </button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "size-8",
+                      },
+                    }}
+                  />
+                </SignedIn>
+              </>
+            )}
+
             <button
               type="button"
               onClick={handleToggleTheme}
@@ -129,7 +157,7 @@ export function SiteHeader() {
               </svg>
             </button>
 
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <HamburgerMenu
                 variant="squeeze"
                 open={mobileOpen}
@@ -147,7 +175,7 @@ export function SiteHeader() {
           <SheetHeader>
             <SheetTitle>Curavex</SheetTitle>
             <SheetDescription>
-              Navigate between overview, scoring, models, monitoring, and API keys.
+              Navigate between overview, scoring, models, monitoring, API keys, and pricing.
             </SheetDescription>
           </SheetHeader>
           <nav

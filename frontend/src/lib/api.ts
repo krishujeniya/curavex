@@ -140,12 +140,34 @@ export interface ApiKeyRecord {
   monthly_limit: number;
 }
 
+export interface BillingStatus {
+  plan: "free" | "enterprise" | string;
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  period_ym: string;
+}
+
+export interface EnterpriseInquiryRequest {
+  name: string;
+  email: string;
+  organization: string;
+  monthly_volume?: string;
+  requirements: string;
+}
+
 export const DEFAULT_API_KEY =
   process.env.NEXT_PUBLIC_API_KEY || "demo_key_public_guest";
 
+let authTokenGetter: (() => Promise<string | null>) | null = null;
+
+export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null) {
+  authTokenGetter = getter;
+}
+
 export function getApiBaseUrl(): string {
   if (typeof window === "undefined") {
-    return "https://api-curavex.pages.dev";
+    return "https://curavex-api.curavex.workers.dev";
   }
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -159,7 +181,7 @@ export function getApiBaseUrl(): string {
     window.location.hostname.includes("pages.dev") ||
     window.location.hostname.includes("curavex")
   ) {
-    return "https://api-curavex.pages.dev";
+    return "https://curavex-api.curavex.workers.dev";
   }
 
   return "";
@@ -176,6 +198,10 @@ async function apiRequest<T>(
     "Content-Type": "application/json",
     "X-API-Key": apiKey,
   };
+  if (authTokenGetter) {
+    const token = await authTokenGetter().catch(() => null);
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
 
   const options: RequestInit = { method, headers };
   if (body !== null) {
@@ -208,9 +234,15 @@ export const curavexApi = {
     const formData = new FormData();
     formData.append("file", file);
 
+    const headers: Record<string, string> = { "X-API-Key": apiKey };
+    if (authTokenGetter) {
+      const token = await authTokenGetter().catch(() => null);
+      if (token) headers.Authorization = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${base}/api/v1/predict/upload-csv`, {
       method: "POST",
-      headers: { "X-API-Key": apiKey },
+      headers,
       body: formData,
     });
 
@@ -255,4 +287,13 @@ export const curavexApi = {
 
   generateApiKey: (name: string, tier: string) =>
     apiRequest<ApiKeyRecord>("/api-keys/generate", "POST", { name, tier }),
+
+  getBillingStatus: () => apiRequest<BillingStatus>("/billing/status"),
+
+  submitEnterpriseInquiry: (payload: EnterpriseInquiryRequest) =>
+    apiRequest<{ id: string; status: string; message: string }>(
+      "/billing/enterprise-inquiry",
+      "POST",
+      payload,
+    ),
 };

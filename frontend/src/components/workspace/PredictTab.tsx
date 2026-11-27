@@ -35,6 +35,7 @@ import { BatchTab } from "@/components/workspace/BatchTab";
 import { RadioGroup as ModeGroup, RadioOption as ModeOption } from "@/components/wensity/radio-group";
 import {
   curavexApi,
+  type BillingStatus,
   type ClinicalMetadata,
   type PredictionResponse,
 } from "@/lib/api";
@@ -52,12 +53,14 @@ export type ScoringMode = "single" | "batch";
 export function PredictTab({
   clinicalMeta,
   selectedPreset,
+  billingStatus,
   mode = "single",
   onModeChange,
   onPredictionComplete,
 }: {
   clinicalMeta: ClinicalMetadata | null;
   selectedPreset?: { preset: ClinicalCasePreset; nonce: number } | null;
+  billingStatus?: BillingStatus | null;
   mode?: ScoringMode;
   onModeChange?: (mode: ScoringMode) => void;
   onPredictionComplete: () => void;
@@ -185,6 +188,17 @@ export function PredictTab({
             </h2>
             <p className="text-body text-[var(--cv-text-secondary)]">
               Evaluate an individual patient regimen or score a multi-patient CSV cohort.
+              {billingStatus && billingStatus.limit !== null && (
+                <>
+                  {" "}
+                  <span className="font-medium text-[var(--cv-text-primary)] tabular-nums">
+                    {billingStatus.remaining} of {billingStatus.limit} free requests remaining this month.
+                  </span>{" "}
+                  <a href="/pricing" className="text-[var(--cv-text-primary)]">
+                    View plans
+                  </a>
+                </>
+              )}
             </p>
           </div>
           <ModeGroup

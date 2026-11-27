@@ -8,6 +8,8 @@ export interface Env {
   DB?: D1Database;
   SHARED_CONFIG_KV?: KVNamespace;
   UPSTREAM_API?: string;
+  CLERK_JWKS_URL?: string;
+  CLERK_ISSUER?: string;
 }
 
 interface TreeNodeData {
@@ -116,6 +118,172 @@ const API_KEYS_STORE = new Map<
 
 const AUDIT_LOGS: AuditLogEntry[] = [];
 const LATENCIES: number[] = [];
+
+interface JwkKey {
+  kid?: string;
+  kty: string;
+  n?: string;
+  e?: string;
+  alg?: string;
+  use?: string;
+}
+
+const JWKS_CACHE = new Map<string, { keys: JwkKey[]; fetchedAt: number }>();
+
+function base64UrlDecode(input: string): Uint8Array {
+  const padded = input.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(input.length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function getJwksKeys(jwksUrl: string): Promise<JwkKey[]> {
+  const cached = JWKS_CACHE.get(jwksUrl);
+  if (cached && Date.now() - cached.fetchedAt < 300_000) {
+    return cached.keys;
+  }
+  const res = await fetch(jwksUrl, { signal: AbortSignal.timeout(5000) });
+  if (!res.ok) throw new Error("Failed to fetch JWKS");
+  const data = (await res.json()) as { keys?: JwkKey[] };
+  const keys = data.keys ?? [];
+  JWKS_CACHE.set(jwksUrl, { keys, fetchedAt: Date.now() });
+  return keys;
+}
+
+async function verifyClerkJwt(
+  request: Request,
+  env: Env,
+): Promise<{ userId: string } | null> {
+  const authHeader = request.headers.get("Authorization") || "";
+  if (!authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7).trim();
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  try {
+    const header = JSON.parse(new TextDecoder().decode(base64UrlDecode(parts[0]))) as {
+      alg?: string;
+      kid?: string;
+    };
+    const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(parts[1]))) as {
+      sub?: string;
+      exp?: number;
+      nbf?: number;
+      iss?: string;
+    };
+    if (header.alg !== "RS256" || !payload.sub) return null;
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp <= now) return null;
+    if (payload.nbf && payload.nbf > now + 60) return null;
+    if (env.CLERK_ISSUER && payload.iss !== env.CLERK_ISSUER) return null;
+
+    const jwksUrl =
+      env.CLERK_JWKS_URL ||
+      (payload.iss && /^https:\/\/[a-z0-9.-]+$/i.test(payload.iss)
+        ? `${payload.iss.replace(/\/$/, "")}/.well-known/jwks.json`
+        : "");
+    if (!jwksUrl) return null;
+
+    const keys = await getJwksKeys(jwksUrl);
+    const jwk = keys.find((k) => !header.kid || k.kid === header.kid);
+    if (!jwk) return null;
+
+    const cryptoKey = await crypto.subtle.importKey(
+      "jwk",
+      jwk as JsonWebKey,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["verify"],
+    );
+    const signingInput = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+    const signature = base64UrlDecode(parts[2]);
+    const valid = await crypto.subtle.verify(
+      "RSASSA-PKCS1-v1_5",
+      cryptoKey,
+      signature,
+      signingInput,
+    );
+    return valid ? { userId: payload.sub } : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getBillingStatus(
+  db: D1Database | undefined,
+  userId: string,
+): Promise<{
+  plan: string;
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  period_ym: string;
+}> {
+  const periodYm = new Date().toISOString().slice(0, 7);
+  if (!db) {
+    return { plan: "free", used: 0, limit: 5, remaining: 5, period_ym: periodYm };
+  }
+  const sub = await db
+    .prepare("SELECT plan, monthly_limit FROM curavex_subscriptions WHERE user_id = ?")
+    .bind(userId)
+    .first<{ plan: string; monthly_limit: number }>();
+  const plan = sub?.plan ?? "free";
+  const limit = plan === "enterprise" ? null : (sub?.monthly_limit ?? 5);
+
+  const usage = await db
+    .prepare(
+      "SELECT request_count FROM curavex_monthly_usage WHERE user_id = ? AND period_ym = ?",
+    )
+    .bind(userId, periodYm)
+    .first<{ request_count: number }>();
+  const used = usage?.request_count ?? 0;
+  const remaining = limit === null ? null : Math.max(0, limit - used);
+  return { plan, used, limit, remaining, period_ym: periodYm };
+}
+
+async function checkAndIncrementQuota(
+  db: D1Database | undefined,
+  userId: string,
+): Promise<{
+  allowed: boolean;
+  plan: string;
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  period_ym: string;
+}> {
+  const status = await getBillingStatus(db, userId);
+  if (status.limit !== null && status.used >= status.limit) {
+    return { ...status, allowed: false };
+  }
+  if (db) {
+    const nowIso = new Date().toISOString();
+    await db
+      .prepare(
+        `INSERT INTO curavex_monthly_usage (user_id, period_ym, request_count, updated_at)
+         VALUES (?, ?, 1, ?)
+         ON CONFLICT(user_id, period_ym) DO UPDATE SET
+           request_count = request_count + 1,
+           updated_at = excluded.updated_at`,
+      )
+      .bind(userId, status.period_ym, nowIso)
+      .run();
+  }
+  const nextUsed = status.used + 1;
+  const nextRemaining =
+    status.limit === null ? null : Math.max(0, status.limit - nextUsed);
+  return {
+    allowed: true,
+    plan: status.plan,
+    used: nextUsed,
+    limit: status.limit,
+    remaining: nextRemaining,
+    period_ym: status.period_ym,
+  };
+}
 
 const ALLOWED_ORIGINS = new Set([
   "https://curavex.pages.dev",
@@ -361,7 +529,7 @@ const OPENAPI_SPEC = {
 };
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
 
@@ -496,7 +664,109 @@ export default {
       return jsonResponse(request, DATASET_STATS);
     }
 
+    if (request.method === "GET" && path === "/api/v1/billing/status") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
+      const billing = await getBillingStatus(env.DB, auth.userId);
+      return jsonResponse(request, billing, 200, { "Cache-Control": "no-store" });
+    }
+
+    if (request.method === "POST" && path === "/api/v1/billing/enterprise-inquiry") {
+      let body: {
+        name?: string;
+        email?: string;
+        organization?: string;
+        monthly_volume?: string;
+        requirements?: string;
+      };
+      try {
+        body = (await request.json()) as typeof body;
+      } catch {
+        return jsonResponse(request, { detail: "Invalid JSON payload." }, 400);
+      }
+      const name = (body.name || "").trim();
+      const email = (body.email || "").trim();
+      const organization = (body.organization || "").trim();
+      const monthlyVolume = (body.monthly_volume || "").trim();
+      const requirements = (body.requirements || "").trim();
+      if (!name || !email || !email.includes("@") || !organization || !requirements) {
+        return jsonResponse(
+          request,
+          { detail: "Enter name, valid work email, organization, and requirements." },
+          400,
+        );
+      }
+      const auth = await verifyClerkJwt(request, env);
+      const id = crypto.randomUUID();
+      if (env.DB) {
+        await env.DB.prepare(
+          `INSERT INTO curavex_enterprise_inquiries
+           (id, user_id, name, email, organization, monthly_volume, requirements, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+          .bind(
+            id,
+            auth?.userId ?? null,
+            name,
+            email,
+            organization,
+            monthlyVolume || null,
+            requirements,
+            new Date().toISOString(),
+          )
+          .run();
+      }
+      return jsonResponse(
+        request,
+        {
+          id,
+          status: "received",
+          message: "Enterprise inquiry received. Our team will contact you shortly.",
+        },
+        201,
+      );
+    }
+
     if (request.method === "POST" && path === "/api/v1/predict") {
+      const auth = await verifyClerkJwt(request, env);
+      const apiKeyHeader = request.headers.get("X-API-Key") || "";
+      const hasCustomApiKey =
+        apiKeyHeader.startsWith("live_curavex_") && API_KEYS_STORE.has(apiKeyHeader);
+
+      if (!auth && !hasCustomApiKey) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required to score patients.", code: "UNAUTHORIZED" },
+          401,
+        );
+      }
+
+      if (auth) {
+        const quota = await checkAndIncrementQuota(env.DB, auth.userId);
+        if (!quota.allowed) {
+          return jsonResponse(
+            request,
+            {
+              detail:
+                "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
+              code: "QUOTA_EXCEEDED",
+              plan: quota.plan,
+              used: quota.used,
+              limit: quota.limit,
+              period_ym: quota.periodYm,
+            },
+            429,
+          );
+        }
+      }
+
       const t0 = performance.now();
       let payload: Partial<ClinicalInput>;
       try {
@@ -535,6 +805,38 @@ export default {
     }
 
     if (request.method === "POST" && path === "/api/v1/predict/upload-csv") {
+      const auth = await verifyClerkJwt(request, env);
+      const apiKeyHeader = request.headers.get("X-API-Key") || "";
+      const hasCustomApiKey =
+        apiKeyHeader.startsWith("live_curavex_") && API_KEYS_STORE.has(apiKeyHeader);
+
+      if (!auth && !hasCustomApiKey) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required to score cohorts.", code: "UNAUTHORIZED" },
+          401,
+        );
+      }
+
+      if (auth) {
+        const quota = await checkAndIncrementQuota(env.DB, auth.userId);
+        if (!quota.allowed) {
+          return jsonResponse(
+            request,
+            {
+              detail:
+                "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
+              code: "QUOTA_EXCEEDED",
+              plan: quota.plan,
+              used: quota.used,
+              limit: quota.limit,
+              period_ym: quota.periodYm,
+            },
+            429,
+          );
+        }
+      }
+
       const t0 = performance.now();
       let csvText = "";
       try {

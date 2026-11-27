@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ToastList, ToastProvider } from "@/components/wensity/toast";
+import { ClerkAuthWrapper } from "@/components/auth/ClerkAuthWrapper";
 import { CuravexProvider } from "@/components/providers/CuravexProvider";
 import "./globals.css";
 
@@ -187,10 +188,12 @@ export default function RootLayout({
         <a className="skip-link" href="#main-content">
           Skip to workspace
         </a>
-        <ToastProvider>
-          <CuravexProvider>{children}</CuravexProvider>
-          <ToastList placement="bottom-right" />
-        </ToastProvider>
+        <ClerkAuthWrapper>
+          <ToastProvider>
+            <CuravexProvider>{children}</CuravexProvider>
+            <ToastList placement="bottom-right" />
+          </ToastProvider>
+        </ClerkAuthWrapper>
       </body>
     </html>
   );

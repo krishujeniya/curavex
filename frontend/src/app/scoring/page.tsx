@@ -3,13 +3,15 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { useCuravex } from "@/components/providers/CuravexProvider";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { PredictTab } from "@/components/workspace/PredictTab";
 import { CLINICAL_PRESETS } from "@/lib/clinical-validation";
 
 function ScoringContent() {
   const searchParams = useSearchParams();
   const presetId = searchParams.get("preset");
-  const { clinicalMeta, refreshTelemetry, refreshDrift } = useCuravex();
+  const { clinicalMeta, billingStatus, refreshTelemetry, refreshDrift, refreshBilling } =
+    useCuravex();
 
   const selectedPreset = React.useMemo(() => {
     if (!presetId) return null;
@@ -18,13 +20,23 @@ function ScoringContent() {
   }, [presetId]);
 
   return (
-    <PredictTab
-      clinicalMeta={clinicalMeta}
-      selectedPreset={selectedPreset}
-      onPredictionComplete={() => {
-        void Promise.allSettled([refreshTelemetry(), refreshDrift()]);
-      }}
-    />
+    <AuthGate
+      title="Sign in to score patients"
+      description="Create a free account to get 5 scoring requests per month, or sign in to continue."
+    >
+      <PredictTab
+        clinicalMeta={clinicalMeta}
+        selectedPreset={selectedPreset}
+        billingStatus={billingStatus}
+        onPredictionComplete={() => {
+          void Promise.allSettled([
+            refreshTelemetry(),
+            refreshDrift(),
+            refreshBilling(),
+          ]);
+        }}
+      />
+    </AuthGate>
   );
 }
 

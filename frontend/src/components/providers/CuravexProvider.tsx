@@ -1,13 +1,17 @@
 "use client";
 
 import * as React from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import {
   curavexApi,
   getApiBaseUrl,
+  setAuthTokenGetter,
   type ApiKeyRecord,
   type AuditLogEntry,
+  type BillingStatus,
   type ClinicalMetadata,
   type DatasetStats,
   type DriftMetrics,
@@ -24,12 +28,14 @@ interface CuravexContextValue {
   drift: DriftMetrics | null;
   auditLogs: AuditLogEntry[];
   apiKeys: ApiKeyRecord[];
+  billingStatus: BillingStatus | null;
   apiStatus: "live" | "connecting" | "offline";
   docsUrl: string;
   refreshModels: () => Promise<void>;
   refreshTelemetry: () => Promise<void>;
   refreshDrift: () => Promise<void>;
   refreshApiKeys: () => Promise<void>;
+  refreshBilling: () => Promise<void>;
 }
 
 const CuravexContext = React.createContext<CuravexContextValue | null>(null);
@@ -42,13 +48,30 @@ export function useCuravex(): CuravexContextValue {
   return ctx;
 }
 
+function ClerkTokenBridge({
+  onSignedInChange,
+}: {
+  onSignedInChange: (signedIn: boolean) => void;
+}) {
+  const { isSignedIn, getToken } = useAuth();
+
+  React.useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    onSignedInChange(Boolean(isSignedIn));
+    return () => setAuthTokenGetter(null);
+  }, [getToken, isSignedIn, onSignedInChange]);
+
+  return null;
+}
+
 export function CuravexProvider({ children }: { children: React.ReactNode }) {
   const [docsUrl, setDocsUrl] = React.useState(
-    "https://api-curavex.pages.dev/docs",
+    "https://curavex-api.curavex.workers.dev/docs",
   );
   const [apiStatus, setApiStatus] = React.useState<
     "live" | "connecting" | "offline"
   >("connecting");
+  const [signedIn, setSignedIn] = React.useState(false);
 
   const [clinicalMeta, setClinicalMeta] =
     React.useState<ClinicalMetadata | null>(null);
@@ -65,6 +88,8 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
   const [drift, setDrift] = React.useState<DriftMetrics | null>(null);
   const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
   const [apiKeys, setApiKeys] = React.useState<ApiKeyRecord[]>([]);
+  const [billingStatus, setBillingStatus] =
+    React.useState<BillingStatus | null>(null);
 
   const refreshModels = React.useCallback(async () => {
     const list = await curavexApi.listModels();
@@ -91,6 +116,15 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
   const refreshApiKeys = React.useCallback(async () => {
     const keys = await curavexApi.listApiKeys();
     setApiKeys(keys);
+  }, []);
+
+  const refreshBilling = React.useCallback(async () => {
+    try {
+      const status = await curavexApi.getBillingStatus();
+      setBillingStatus(status);
+    } catch {
+      setBillingStatus(null);
+    }
   }, []);
 
   React.useEffect(() => {
@@ -123,6 +157,14 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refreshApiKeys, refreshDrift, refreshModels, refreshTelemetry]);
 
+  React.useEffect(() => {
+    if (signedIn) {
+      void refreshBilling();
+    } else {
+      setBillingStatus(null);
+    }
+  }, [signedIn, refreshBilling]);
+
   const value = React.useMemo<CuravexContextValue>(
     () => ({
       clinicalMeta,
@@ -133,12 +175,14 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
       drift,
       auditLogs,
       apiKeys,
+      billingStatus,
       apiStatus,
       docsUrl,
       refreshModels,
       refreshTelemetry,
       refreshDrift,
       refreshApiKeys,
+      refreshBilling,
     }),
     [
       clinicalMeta,
@@ -149,17 +193,22 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
       drift,
       auditLogs,
       apiKeys,
+      billingStatus,
       apiStatus,
       docsUrl,
       refreshModels,
       refreshTelemetry,
       refreshDrift,
       refreshApiKeys,
+      refreshBilling,
     ],
   );
 
   return (
     <CuravexContext.Provider value={value}>
+      {isClerkConfigured() && (
+        <ClerkTokenBridge onSignedInChange={setSignedIn} />
+      )}
       <SiteHeader />
       <main id="main-content" className="flex-1">
         {children}

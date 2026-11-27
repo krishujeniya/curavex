@@ -6,11 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   SignInButton,
   SignUpButton,
-  SignedIn,
-  SignedOut,
   UserButton,
   useAuth,
-} from "@clerk/clerk-react";
+} from "@clerk/react";
 import {
   IconBook,
   IconBrandGithub,
@@ -420,33 +418,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
 
               {clerkReady ? (
                 <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
-                  <SignedOut>
-                    <SignInButton mode="modal">
-                      <button
-                        type="button"
-                        className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)] cursor-pointer"
-                      >
-                        Sign in
-                      </button>
-                    </SignInButton>
-                    <SignUpButton mode="modal">
-                      <button
-                        type="button"
-                        className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[var(--cv-accent)] px-3 text-[14px] font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
-                      >
-                        Sign up
-                      </button>
-                    </SignUpButton>
-                  </SignedOut>
-                  <SignedIn>
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: "size-8",
-                        },
-                      }}
-                    />
-                  </SignedIn>
+                  <ClerkHeaderAuth />
                 </div>
               ) : (
                 <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { IconCheck } from "@tabler/icons-react";
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { SignUpButton, Show } from "@clerk/react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useCuravex } from "@/components/providers/CuravexProvider";
 import { Badge } from "@/components/wensity/badge";
@@ -117,18 +117,18 @@ export default function PricingPage() {
 
             {clerkReady ? (
               <>
-                <SignedOut>
+                <Show when="signed-out">
                   <SignUpButton mode="modal">
                     <Button variant="outline" size="lg" className="w-full min-h-[44px]">
                       Sign up free
                     </Button>
                   </SignUpButton>
-                </SignedOut>
-                <SignedIn>
+                </Show>
+                <Show when="signed-in">
                   <Button variant="outline" size="lg" asChild className="w-full min-h-[44px]">
                     <Link href="/scoring">Start scoring</Link>
                   </Button>
-                </SignedIn>
+                </Show>
               </>
             ) : (
               <Button variant="outline" size="lg" asChild className="w-full min-h-[44px]">

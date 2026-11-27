@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/react";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

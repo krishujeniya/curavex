@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { SignInButton, SignUpButton, useAuth } from "@clerk/clerk-react";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/react";
 import { IconLock } from "@tabler/icons-react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useLocalAuth } from "@/components/auth/AuthProvider";

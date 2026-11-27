@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { SignInButton, useAuth } from "@clerk/clerk-react";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/clerk-react";
 import { IconLock } from "@tabler/icons-react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useLocalAuth } from "@/components/auth/AuthProvider";
@@ -45,11 +45,18 @@ function ClerkAuthGateInner({
             <CardDescription>{description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <SignInButton mode="modal">
-              <Button variant="default" size="lg" className="w-full min-h-[44px]">
-                Sign in to continue
-              </Button>
-            </SignInButton>
+            <div className="flex gap-2">
+              <SignInButton mode="modal">
+                <Button variant="default" size="lg" className="flex-1 min-h-[44px]">
+                  Sign in
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button variant="outline" size="lg" className="flex-1 min-h-[44px]">
+                  Sign up
+                </Button>
+              </SignUpButton>
+            </div>
             <p className="text-caption text-[var(--cv-text-secondary)]">
               Free accounts include 5 scoring requests per month.
             </p>

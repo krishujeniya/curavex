@@ -55,9 +55,7 @@ export function HeroSection({
             </h1>
 
             <p className="text-body text-[var(--cv-text-secondary)] max-w-[60ch]">
-              Curavex scores patient improvement trajectories from demographics and
-              compound dosing, evaluates CSV cohorts in batches, and tracks
-              Kolmogorov-Smirnov and PSI drift in production.
+              Score patient treatment trajectories, run batch CSV evaluations, and monitor clinical drift in production.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">

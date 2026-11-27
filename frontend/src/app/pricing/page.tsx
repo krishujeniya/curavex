@@ -1,10 +1,8 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { IconCheck } from "@tabler/icons-react";
 import { useCuravex } from "@/components/providers/CuravexProvider";
-import { Alert } from "@/components/wensity/alert";
 import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
 import {
@@ -14,10 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/wensity/card";
-import { Input } from "@/components/wensity/input";
 import { Progress } from "@/components/wensity/progress";
 import { Separator } from "@/components/wensity/separator";
-import { curavexApi } from "@/lib/api";
 
 const FREE_FEATURES = [
   "5 scoring requests per calendar month",
@@ -37,55 +33,6 @@ const ENTERPRISE_FEATURES = [
 
 export default function PricingPage() {
   const { billingStatus } = useCuravex();
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [organization, setOrganization] = React.useState("");
-  const [monthlyVolume, setMonthlyVolume] = React.useState("");
-  const [requirements, setRequirements] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [feedback, setFeedback] = React.useState<{
-    variant: "success" | "error";
-    title: string;
-    description: string;
-  } | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setFeedback(null);
-
-    try {
-      const res = await curavexApi.submitEnterpriseInquiry({
-        name: name.trim(),
-        email: email.trim(),
-        organization: organization.trim(),
-        monthly_volume: monthlyVolume.trim() || undefined,
-        requirements: requirements.trim(),
-      });
-      setName("");
-      setEmail("");
-      setOrganization("");
-      setMonthlyVolume("");
-      setRequirements("");
-      setFeedback({
-        variant: "success",
-        title: "Inquiry sent",
-        description: res.message,
-      });
-    } catch (err) {
-      setFeedback({
-        variant: "error",
-        title: "Could not send inquiry",
-        description:
-          err instanceof Error
-            ? err.message
-            : "Check your details and try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
 
   return (
     <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8 space-y-10">
@@ -198,85 +145,11 @@ export default function PricingPage() {
 
             <Separator />
 
-            {feedback && (
-              <Alert
-                variant={feedback.variant}
-                title={feedback.title}
-                description={feedback.description}
-                onDismiss={() => setFeedback(null)}
-              />
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  id="ent-name"
-                  type="text"
-                  label="Full name"
-                  placeholder="Dr. Maya Chen"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <Input
-                  id="ent-email"
-                  type="email"
-                  label="Work email"
-                  placeholder="maya@northwindclinic.org"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  id="ent-org"
-                  type="text"
-                  label="Organization"
-                  placeholder="Northwind Clinical Research"
-                  value={organization}
-                  onChange={(e) => setOrganization(e.target.value)}
-                  required
-                />
-                <Input
-                  id="ent-volume"
-                  type="text"
-                  label="Expected monthly volume (optional)"
-                  placeholder="10,000 requests / month"
-                  value={monthlyVolume}
-                  onChange={(e) => setMonthlyVolume(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="ent-req"
-                  className="block text-label text-[var(--cv-text-primary)]"
-                >
-                  Requirements
-                </label>
-                <textarea
-                  id="ent-req"
-                  rows={3}
-                  required
-                  value={requirements}
-                  onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="Describe your target cohort size, deployment preference, or compliance needs."
-                  className="w-full rounded-lg border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 py-2.5 text-base sm:text-sm text-[var(--cv-text-primary)] placeholder:text-[var(--cv-text-disabled)] focus:border-[var(--cv-accent)] focus:outline-none"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="default"
-                size="lg"
-                loading={isSubmitting}
-                className="w-full min-h-[44px]"
-              >
-                {isSubmitting ? "Sending inquiry…" : "Contact us"}
-              </Button>
-            </form>
+            <Button variant="default" size="lg" asChild className="w-full min-h-[44px]">
+              <a href="mailto:enterprise@curavex.com?subject=Enterprise%20inquiry">
+                Contact us
+              </a>
+            </Button>
           </CardContent>
         </Card>
       </div>

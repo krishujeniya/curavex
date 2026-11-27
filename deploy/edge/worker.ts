@@ -1127,12 +1127,24 @@ async function verifyEdgeToken(token: string, env: Env): Promise<{ id: string; n
   return { id: payload.sub, name: payload.name, email: payload.email, tier: payload.tier || "free" };
 }
 
-async function handleEdgeAuth(request: Request, env: Env, path: string): Promise<Response> {
-  const kv = env.SHARED_CONFIG_KV;
-  if (!kv) {
-    return jsonResponse(request, { detail: "Auth storage not configured." }, 500);
-  }
+const _memoryUsers = new Map<string, string>();
 
+async function getUserRecord(env: Env, email: string): Promise<string | null> {
+  if (env.SHARED_CONFIG_KV) {
+    return env.SHARED_CONFIG_KV.get(`auth:user:${email}`);
+  }
+  return _memoryUsers.get(email) ?? null;
+}
+
+async function putUserRecord(env: Env, email: string, value: string): Promise<void> {
+  if (env.SHARED_CONFIG_KV) {
+    await env.SHARED_CONFIG_KV.put(`auth:user:${email}`, value);
+    return;
+  }
+  _memoryUsers.set(email, value);
+}
+
+async function handleEdgeAuth(request: Request, env: Env, path: string): Promise<Response> {
   if (request.method === "POST" && path === "/api/v1/auth/signup") {
     const body = (await request.json().catch(() => null)) as { name?: string; email?: string; password?: string } | null;
     const name = (body?.name || "").trim();
@@ -1141,7 +1153,7 @@ async function handleEdgeAuth(request: Request, env: Env, path: string): Promise
     if (name.length < 2 || !email.includes("@") || password.length < 8) {
       return jsonResponse(request, { detail: "Valid name, email, and password (min 8 chars) required." }, 400);
     }
-    const existing = await kv.get(`auth:user:${email}`);
+    const existing = await getUserRecord(env, email);
     if (existing) {
       return jsonResponse(request, { detail: "An account with this email already exists." }, 409);
     }
@@ -1152,7 +1164,7 @@ async function handleEdgeAuth(request: Request, env: Env, path: string): Promise
       password_hash: await hashEdgePassword(password),
       tier: "free",
     };
-    await kv.put(`auth:user:${email}`, JSON.stringify(user));
+    await putUserRecord(env, email, JSON.stringify(user));
     const access_token = await signEdgeToken(user, env);
     return jsonResponse(
       request,
@@ -1170,7 +1182,7 @@ async function handleEdgeAuth(request: Request, env: Env, path: string): Promise
     const body = (await request.json().catch(() => null)) as { email?: string; password?: string } | null;
     const email = (body?.email || "").trim().toLowerCase();
     const password = body?.password || "";
-    const raw = await kv.get(`auth:user:${email}`);
+    const raw = await getUserRecord(env, email);
     if (!raw) {
       return jsonResponse(request, { detail: "Invalid email or password." }, 401);
     }

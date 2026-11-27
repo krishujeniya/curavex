@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { IconCheck } from "@tabler/icons-react";
+import { SignUpButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useCuravex } from "@/components/providers/CuravexProvider";
 import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
@@ -31,8 +33,27 @@ const ENTERPRISE_FEATURES = [
   "SLA with direct engineering support",
 ];
 
+function FeatureList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-3 text-body text-[var(--cv-text-secondary)]">
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-2.5">
+          <IconCheck
+            size={16}
+            stroke={2}
+            className="mt-1 shrink-0 text-[var(--cv-text-primary)]"
+            aria-hidden="true"
+          />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function PricingPage() {
   const { billingStatus } = useCuravex();
+  const clerkReady = isClerkConfigured();
 
   return (
     <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8 space-y-10">
@@ -46,8 +67,9 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card className="lg:col-span-5 min-w-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* ── Free plan ── */}
+        <Card>
           <CardHeader className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-heading">Free plan</CardTitle>
@@ -91,63 +113,62 @@ export default function PricingPage() {
 
             <Separator />
 
-            <ul className="space-y-3 text-body text-[var(--cv-text-secondary)]">
-              {FREE_FEATURES.map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <IconCheck
-                    size={16}
-                    stroke={2}
-                    className="mt-1 shrink-0 text-[var(--cv-text-primary)]"
-                    aria-hidden="true"
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <FeatureList items={FREE_FEATURES} />
 
-            <Button variant="outline" size="lg" asChild className="w-full min-h-[44px]">
-              <Link href="/scoring">Start scoring</Link>
-            </Button>
+            {clerkReady ? (
+              <>
+                <SignedOut>
+                  <SignUpButton mode="modal">
+                    <Button variant="outline" size="lg" className="w-full min-h-[44px]">
+                      Sign up free
+                    </Button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <Button variant="outline" size="lg" asChild className="w-full min-h-[44px]">
+                    <Link href="/scoring">Start scoring</Link>
+                  </Button>
+                </SignedIn>
+              </>
+            ) : (
+              <Button variant="outline" size="lg" asChild className="w-full min-h-[44px]">
+                <Link href="/scoring">Start scoring</Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-7 min-w-0">
+        {/* ── Enterprise plan ── */}
+        <Card>
           <CardHeader className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-heading">Enterprise plan</CardTitle>
               <Badge variant="outline" size="sm">
-                Custom requirements
+                Custom
               </Badge>
             </div>
-            <div className="text-title text-[var(--cv-text-primary)]">
-              Contact us
+            <div className="flex items-baseline gap-1.5 tabular-nums">
+              <span className="text-display text-[var(--cv-text-primary)]">
+                Custom
+              </span>
+              <span className="text-body text-[var(--cv-text-secondary)]">
+                / month
+              </span>
             </div>
-            <CardDescription className="max-w-[60ch]">
+            <CardDescription>
               Built for hospitals, research groups, and clinical platforms that
-              need higher monthly volume, custom models, or dedicated hosting.
+              need higher volume, custom models, or dedicated hosting.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-caption text-[var(--cv-text-secondary)]">
-              {ENTERPRISE_FEATURES.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <IconCheck
-                    size={15}
-                    stroke={2}
-                    className="mt-0.5 shrink-0 text-[var(--cv-text-primary)]"
-                    aria-hidden="true"
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
             <Separator />
+
+            <FeatureList items={ENTERPRISE_FEATURES} />
 
             <Button variant="default" size="lg" asChild className="w-full min-h-[44px]">
               <a href="mailto:enterprise@curavex.com?subject=Enterprise%20inquiry">
-                Contact us
+                Contact sales
               </a>
             </Button>
           </CardContent>

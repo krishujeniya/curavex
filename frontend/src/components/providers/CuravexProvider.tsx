@@ -209,7 +209,7 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
       {isClerkConfigured() && (
         <ClerkTokenBridge onSignedInChange={setSignedIn} />
       )}
-      <SiteHeader />
+      <SiteHeader docsUrl={docsUrl} />
       <main id="main-content" className="flex-1">
         {children}
       </main>

@@ -19,8 +19,7 @@ import {
   type ThemeMode,
 } from "@/lib/theme";
 
-const NAV_PAGES = [
-  { href: "/", label: "Overview" },
+const NAV_LINKS = [
   { href: "/scoring", label: "Scoring" },
   { href: "/models", label: "Models" },
   { href: "/monitoring", label: "Monitoring" },
@@ -59,37 +58,37 @@ export function SiteHeader() {
     <>
       <header
         className={[
-          "sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] transition-colors duration-150",
+          "sticky top-0 z-[var(--z-sticky)] border-b transition-[background-color,border-color] duration-200",
           scrolled
-            ? "bg-[color-mix(in_srgb,var(--cv-surface)_88%,transparent)] backdrop-blur-md"
-            : "bg-[var(--cv-surface)]",
+            ? "border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-surface)_85%,transparent)] backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+            : "border-transparent bg-[var(--cv-surface)]",
         ].join(" ")}
       >
-        <div className="mx-auto grid h-16 max-w-[1440px] grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center min-w-0 justify-self-start">
-            <Link
-              href="/"
-              className="flex items-center gap-2.5 min-w-0 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
-              aria-label="Curavex home"
-            >
-              <img
-                src="/assets/curavex-mark.svg"
-                alt=""
-                width={28}
-                height={28}
-                className="size-7 rounded-md border border-[var(--cv-border)] object-contain shrink-0 bg-black"
-              />
-              <span className="text-heading font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
-                Curavex
-              </span>
-            </Link>
-          </div>
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-8 px-4 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
+            aria-label="Curavex home"
+          >
+            <img
+              src="/assets/curavex-mark.svg"
+              alt=""
+              width={26}
+              height={26}
+              className="size-[26px] rounded-md object-contain shrink-0"
+            />
+            <span className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--cv-text-primary)]">
+              Curavex
+            </span>
+          </Link>
 
+          {/* Desktop navigation — flat inline links */}
           <nav
             aria-label="Primary navigation"
-            className="hidden lg:inline-flex items-center gap-1 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-1 justify-self-center"
+            className="hidden lg:flex items-center gap-1"
           >
-            {NAV_PAGES.map((item) => {
+            {NAV_LINKS.map((item) => {
               const isActive = normalizedPath === item.href;
               return (
                 <Link
@@ -97,10 +96,10 @@ export function SiteHeader() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "inline-flex h-8 items-center rounded-lg px-3.5 text-label transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
+                    "relative inline-flex h-8 items-center rounded-md px-3 text-[13px] font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
                     isActive
-                      ? "bg-[var(--cv-surface)] font-medium text-[var(--cv-text-primary)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] ring-1 ring-[var(--cv-border)]"
-                      : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
+                      ? "text-[var(--cv-text-primary)] bg-[var(--cv-surface-raised)]"
+                      : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)]",
                   ].join(" ")}
                 >
                   {item.label}
@@ -109,24 +108,34 @@ export function SiteHeader() {
             })}
           </nav>
 
-          <div className="flex items-center gap-2 shrink-0 justify-self-end">
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Right-side actions */}
+          <div className="flex items-center gap-2 shrink-0">
             {clerkReady && (
               <>
                 <SignedOut>
                   <SignInButton mode="modal">
                     <button
                       type="button"
-                      className="inline-flex h-9 items-center rounded-lg bg-[var(--cv-accent)] px-3.5 text-label font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85 cursor-pointer"
+                      className="hidden sm:inline-flex h-8 items-center rounded-md px-3 text-[13px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
                     >
                       Sign in
                     </button>
                   </SignInButton>
+                  <Link
+                    href="/scoring"
+                    className="inline-flex h-8 items-center rounded-lg bg-[var(--cv-accent)] px-3.5 text-[13px] font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer shadow-sm"
+                  >
+                    Get started
+                  </Link>
                 </SignedOut>
                 <SignedIn>
                   <UserButton
                     appearance={{
                       elements: {
-                        avatarBox: "size-8",
+                        avatarBox: "size-7",
                       },
                     }}
                   />
@@ -142,14 +151,14 @@ export function SiteHeader() {
               }
               aria-pressed={theme === "dark"}
               title={theme === "dark" ? "Light theme" : "Dark theme"}
-              className="relative inline-flex size-9 items-center justify-center rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] text-[var(--cv-text-primary)] hover:border-[var(--cv-border-strong)] transition-colors cursor-pointer before:content-[''] before:absolute before:inset-[-4px]"
+              className="relative inline-flex size-8 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors cursor-pointer"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="size-[16px]"
+                className="size-4"
                 aria-hidden="true"
               >
                 <circle cx="12" cy="12" r="9" />
@@ -175,14 +184,27 @@ export function SiteHeader() {
           <SheetHeader>
             <SheetTitle>Curavex</SheetTitle>
             <SheetDescription>
-              Navigate between overview, scoring, models, monitoring, API keys, and pricing.
+              Navigate between scoring, models, monitoring, API keys, and pricing.
             </SheetDescription>
           </SheetHeader>
           <nav
             aria-label="Mobile navigation"
-            className="flex flex-col gap-1 px-4 py-4"
+            className="flex flex-col gap-0.5 px-4 py-4"
           >
-            {NAV_PAGES.map((item) => {
+            <Link
+              href="/"
+              onClick={() => setMobileOpen(false)}
+              aria-current={normalizedPath === "/" ? "page" : undefined}
+              className={[
+                "flex min-h-[44px] w-full items-center rounded-lg px-3 text-[14px] font-medium transition-colors",
+                normalizedPath === "/"
+                  ? "bg-[var(--cv-surface-raised)] text-[var(--cv-text-primary)]"
+                  : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
+              ].join(" ")}
+            >
+              Overview
+            </Link>
+            {NAV_LINKS.map((item) => {
               const isActive = normalizedPath === item.href;
               return (
                 <Link
@@ -191,9 +213,9 @@ export function SiteHeader() {
                   onClick={() => setMobileOpen(false)}
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "flex min-h-[44px] w-full items-center rounded-lg px-3 text-label transition-colors",
+                    "flex min-h-[44px] w-full items-center rounded-lg px-3 text-[14px] font-medium transition-colors",
                     isActive
-                      ? "bg-[var(--cv-surface-raised)] font-medium text-[var(--cv-text-primary)] ring-1 ring-[var(--cv-border)]"
+                      ? "bg-[var(--cv-surface-raised)] text-[var(--cv-text-primary)]"
                       : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
                   ].join(" ")}
                 >

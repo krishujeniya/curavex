@@ -71,7 +71,15 @@ export function HeroSection({
                 Score a patient
               </Button>
               <Button variant="outline" size="lg" asChild className="min-h-[44px]">
-                <a href="#architecture">
+                <a
+                  href="/"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById("architecture")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
                   <span>Inspect architecture</span>
                   <IconArrowUpRight size={16} />
                 </a>

@@ -47,6 +47,10 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function scrollToSection(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <footer className={`site-footer ${hasMotion ? "footer-motion" : ""}`}>
       <div className="footer-shell">
@@ -55,9 +59,33 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
             © 2026 Curavex — Clinical treatment-response regression and MLOps
           </p>
           <nav className="footer-links" aria-label="Footer">
-            <a href="#workspace">Workspace</a>
-            <a href="#architecture">Architecture</a>
-            <a href="#methodology">Methodology</a>
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("workspace");
+              }}
+            >
+              Workspace
+            </a>
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("architecture");
+              }}
+            >
+              Architecture
+            </a>
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("methodology");
+              }}
+            >
+              Methodology
+            </a>
             <a href={docsUrl} target="_blank" rel="noopener noreferrer">
               API docs
             </a>

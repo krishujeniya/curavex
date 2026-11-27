@@ -59,7 +59,7 @@ export function WorkspaceCommand({
         items: [
           {
             id: "tab-predict",
-            label: "Clinical decision support",
+            label: "Single patient",
             description: "Score a single patient regimen with 95% confidence interval",
             icon: <IconActivityHeartbeat size={16} />,
             shortcut: ["1"],
@@ -70,8 +70,8 @@ export function WorkspaceCommand({
           },
           {
             id: "tab-batch",
-            label: "Batch cohort scoring",
-            description: "Upload CSV cohorts or score the canonical sample cohort",
+            label: "Batch cohort",
+            description: "Upload CSV cohorts or score the 10-subject sample file",
             icon: <IconTable size={16} />,
             shortcut: ["2"],
             onSelect: () => {
@@ -81,7 +81,7 @@ export function WorkspaceCommand({
           },
           {
             id: "tab-mlops",
-            label: "Model governance",
+            label: "Model registry",
             description: "Compare candidate models, run benchmarks, or promote",
             icon: <IconCpu size={16} />,
             shortcut: ["3"],
@@ -92,7 +92,7 @@ export function WorkspaceCommand({
           },
           {
             id: "tab-monitoring",
-            label: "Observability and drift",
+            label: "Monitoring",
             description: "Inspect KS-test p-values, PSI shifts, and latency percentiles",
             icon: <IconChartBar size={16} />,
             shortcut: ["4"],
@@ -103,8 +103,8 @@ export function WorkspaceCommand({
           },
           {
             id: "tab-apikeys",
-            label: "Developer API",
-            description: "Provision X-API-Key credentials and copy SDK snippets",
+            label: "API keys",
+            description: "Provision X-API-Key credentials and copy code examples",
             icon: <IconKey size={16} />,
             shortcut: ["5"],
             onSelect: () => {

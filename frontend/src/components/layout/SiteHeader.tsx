@@ -43,27 +43,9 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
-  const [scrollRatio, setScrollRatio] = React.useState(0);
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
-  }, []);
-
-  React.useEffect(() => {
-    const updateProgress = () => {
-      const scrollable =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const ratio =
-        scrollable > 0 ? Math.max(0, Math.min(1, window.scrollY / scrollable)) : 0;
-      setScrollRatio(ratio);
-    };
-    updateProgress();
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
-    };
   }, []);
 
   function handleToggleTheme() {
@@ -74,16 +56,7 @@ export function SiteHeader({
 
   return (
     <>
-      <div
-        aria-hidden="true"
-        className="fixed inset-x-0 top-0 z-50 h-[2px] origin-left pointer-events-none"
-        style={{
-          background: "var(--cv-grad-progress)",
-          transform: `scaleX(${scrollRatio})`,
-        }}
-      />
-
-      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-canvas)_88%,transparent)] backdrop-blur-md">
+      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-canvas)_92%,transparent)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 min-w-0">
             <a
@@ -98,7 +71,7 @@ export function SiteHeader({
                 height={30}
                 className="size-8 rounded-lg border border-[var(--cv-border)] object-contain shrink-0 bg-black"
               />
-              <span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
+              <span className="text-heading font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
                 Curavex
               </span>
             </a>
@@ -151,7 +124,7 @@ export function SiteHeader({
               className="inline-flex h-10 min-w-[44px] items-center justify-center sm:justify-between gap-2.5 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
             >
               <IconSearch size={15} stroke={1.8} className="shrink-0" />
-              <span className="hidden sm:inline">Quick jump</span>
+              <span className="hidden sm:inline">Search</span>
               <Kbd size="sm" className="hidden md:inline-flex">
                 ⌘K
               </Kbd>
@@ -184,8 +157,7 @@ export function SiteHeader({
               href={docsUrl}
               target="_blank"
               rel="noreferrer"
-              className="hidden sm:inline-flex h-10 items-center gap-1.5 rounded-full border border-[#2e2e2e] px-4 text-caption font-medium text-white transition-opacity hover:opacity-90"
-              style={{ background: "var(--cv-grad-dark)" }}
+              className="hidden sm:inline-flex h-10 min-h-[44px] items-center gap-1.5 rounded-full bg-[var(--cv-accent)] px-4 text-caption font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85"
             >
               <span>API docs</span>
               <IconArrowUpRight size={14} stroke={2} aria-hidden="true" />

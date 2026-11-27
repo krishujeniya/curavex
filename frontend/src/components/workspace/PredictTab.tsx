@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/wensity/card";
-import { NumberTicker } from "@/components/wensity/count-up-animation";
 import { EmptyState } from "@/components/wensity/empty-state";
 import { Input } from "@/components/wensity/input";
 import { NativeSelect } from "@/components/wensity/native-select";
@@ -138,7 +137,7 @@ export function PredictTab({
       setResult(response);
       onPredictionComplete();
       toast.add({
-        title: "Prognosis computed",
+        title: "Patient scored",
         description: `${response.predicted_score.toFixed(2)} / 10.0 (${response.effectiveness_level} efficacy)`,
         data: { variant: "success" },
       });
@@ -149,7 +148,7 @@ export function PredictTab({
           : "We couldn't reach the scoring engine. Check your connection and try again.";
       setErrorMsg(message);
       toast.add({
-        title: "Prognosis request failed",
+        title: "Scoring failed",
         description: message,
         data: { variant: "error" },
       });
@@ -168,10 +167,7 @@ export function PredictTab({
   return (
     <TooltipProvider>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card
-          className="lg:col-span-7 min-w-0"
-          style={{ background: "var(--cv-grad-card)" }}
-        >
+        <Card className="lg:col-span-7 min-w-0">
           <CardHeader className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <CardTitle className="text-title">Score a patient regimen</CardTitle>
@@ -190,7 +186,7 @@ export function PredictTab({
                   key={preset.id}
                   type="button"
                   onClick={() => applyPreset(preset)}
-                  className="inline-flex min-h-[34px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 py-1 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
+                  className="inline-flex min-h-[44px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3.5 py-1.5 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
                 >
                   {preset.label}
                 </button>
@@ -326,7 +322,7 @@ export function PredictTab({
               {errorMsg && (
                 <Alert
                   variant="error"
-                  title="Prognosis request failed"
+                  title="Scoring failed"
                   description={errorMsg}
                   onDismiss={() => setErrorMsg(null)}
                 />
@@ -339,7 +335,7 @@ export function PredictTab({
                 loading={isPredicting}
                 className="w-full min-h-[44px]"
               >
-                {isPredicting ? "Evaluating prognosis…" : "Score patient"}
+                {isPredicting ? "Scoring patient…" : "Score patient"}
               </Button>
             </form>
           </CardContent>
@@ -347,7 +343,7 @@ export function PredictTab({
 
         <aside className="lg:col-span-5 min-w-0 space-y-6">
           <ShimmeringSkeletonWrapper loading={isPredicting} rounded="rounded-2xl">
-            <Card style={{ background: "var(--cv-grad-card)" }}>
+            <Card>
               <CardContent className="p-6">
                 {isPredicting ? (
                   <div className="space-y-4">
@@ -373,16 +369,9 @@ export function PredictTab({
                       <div className="text-caption text-[var(--cv-text-secondary)]">
                         Expected improvement score
                       </div>
-                      <div className="flex items-baseline gap-2 font-mono tabular-nums">
-                        <span className="font-[family-name:var(--font-display)] text-display text-[var(--cv-text-primary)]">
-                          <NumberTicker
-                            value={result.predicted_score}
-                            format={{
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }}
-                            trigger="mount"
-                          />
+                      <div className="flex items-baseline gap-2 tabular-nums">
+                        <span className="text-display text-[var(--cv-text-primary)]">
+                          {result.predicted_score.toFixed(2)}
                         </span>
                         <span className="text-body text-[var(--cv-text-secondary)]">
                           / 10.0

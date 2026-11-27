@@ -70,12 +70,12 @@ export function MethodologySection({
   return (
     <section
       id="methodology"
-      className="border-t border-[var(--cv-border)] py-12 sm:py-16 lg:py-24"
+      className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] py-12 sm:py-16 lg:py-20"
     >
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="space-y-3 max-w-[65ch]">
-          <h2 className="font-[family-name:var(--font-display)] text-title text-[var(--cv-text-primary)]">
-            Cohort baseline &amp; methodology
+          <h2 className="text-title text-[var(--cv-text-primary)]">
+            Cohort baseline and methodology
           </h2>
           <p className="text-body text-[var(--cv-text-secondary)]">
             Global feature weights for the production Gradient Boosting model and
@@ -85,7 +85,7 @@ export function MethodologySection({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-6 min-w-0 space-y-6">
-            <Card style={{ background: "var(--cv-grad-card)" }}>
+            <Card>
               <CardHeader>
                 <CardTitle className="text-heading">
                   Global feature importance (v2.0.0)
@@ -117,10 +117,10 @@ export function MethodologySection({
               </CardContent>
             </Card>
 
-            <Card style={{ background: "var(--cv-grad-card)" }}>
+            <Card>
               <CardHeader>
                 <CardTitle className="text-heading">
-                  Canonical cohort distribution
+                  Trial cohort distribution
                 </CardTitle>
                 <CardDescription>
                   Balanced indication coverage across {total.toLocaleString()} validated
@@ -131,12 +131,12 @@ export function MethodologySection({
                 {Object.entries(conditions).map(([name, count]) => (
                   <div
                     key={name}
-                    className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-3 space-y-1"
+                    className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-3 space-y-1"
                   >
                     <div className="text-caption text-[var(--cv-text-secondary)] truncate">
                       {name}
                     </div>
-                    <div className="font-mono text-heading tabular-nums text-[var(--cv-text-primary)]">
+                    <div className="text-heading font-semibold tabular-nums text-[var(--cv-text-primary)]">
                       {count}
                     </div>
                   </div>
@@ -146,10 +146,10 @@ export function MethodologySection({
           </div>
 
           <div className="lg:col-span-6 min-w-0">
-            <Card style={{ background: "var(--cv-grad-card)" }}>
+            <Card>
               <CardHeader>
                 <CardTitle className="text-heading">
-                  Clinical &amp; statistical questions
+                  Clinical and statistical questions
                 </CardTitle>
                 <CardDescription>
                   Direct answers on calibration, drift thresholds, and edge behavior.

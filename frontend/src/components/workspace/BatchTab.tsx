@@ -49,7 +49,7 @@ const BATCH_COLUMNS: DataTableColumn<BatchRow>[] = [
     accessorKey: "predicted_score",
     sortable: true,
     cell: ({ row }) => (
-      <span className="font-mono font-semibold tabular-nums text-[var(--cv-text-primary)]">
+      <span className="block text-end font-mono font-semibold tabular-nums text-[var(--cv-text-primary)]">
         {row.predicted_score.toFixed(2)}
       </span>
     ),
@@ -167,7 +167,7 @@ export function BatchTab() {
 
   return (
     <div className="space-y-6">
-      <Card style={{ background: "var(--cv-grad-card)" }}>
+      <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1.5">
             <CardTitle className="text-title">Score a cohort from CSV</CardTitle>
@@ -226,40 +226,40 @@ export function BatchTab() {
         </CardContent>
       </Card>
 
-      <Card style={{ background: "var(--cv-grad-card)" }}>
+      <Card>
         <CardContent className="p-6 space-y-6">
           {batchResult ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-4 space-y-1">
+                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-4 space-y-1">
                   <div className="text-caption text-[var(--cv-text-secondary)]">
                     Processed cohort
                   </div>
-                  <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+                  <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
                     {batchResult.total_processed}
                   </div>
                 </div>
-                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-4 space-y-1">
+                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-4 space-y-1">
                   <div className="text-caption text-[var(--cv-text-secondary)]">
                     Mean score
                   </div>
-                  <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+                  <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
                     {batchResult.mean_predicted_score.toFixed(2)}
                   </div>
                 </div>
-                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-4 space-y-1">
+                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-4 space-y-1">
                   <div className="text-caption text-[var(--cv-text-secondary)]">
                     Minimum score
                   </div>
-                  <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+                  <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
                     {batchResult.min_predicted_score.toFixed(2)}
                   </div>
                 </div>
-                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-4 space-y-1">
+                <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-4 space-y-1">
                   <div className="text-caption text-[var(--cv-text-secondary)]">
                     Maximum score
                   </div>
-                  <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+                  <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
                     {batchResult.max_predicted_score.toFixed(2)}
                   </div>
                 </div>

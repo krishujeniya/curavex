@@ -141,7 +141,7 @@ export function ApiKeysTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       <div className="lg:col-span-7 min-w-0 space-y-6">
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardHeader className="space-y-1">
             <CardTitle className="text-title">Manage developer API keys</CardTitle>
             <CardDescription>
@@ -191,7 +191,7 @@ export function ApiKeysTab({
                                 [record.api_key]: !prev[record.api_key],
                               }))
                             }
-                            className="inline-flex size-8 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+                            className="inline-flex size-11 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
                           >
                             {isVisible ? (
                               <IconEyeOff size={15} />
@@ -242,7 +242,7 @@ export function ApiKeysTab({
           </CardContent>
         </Card>
 
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardHeader>
             <CardTitle className="text-heading">Create a new API key</CardTitle>
           </CardHeader>
@@ -277,17 +277,17 @@ export function ApiKeysTab({
                 <RadioOption
                   value="standard"
                   label="Standard"
-                  description="300 req/min · 100,000 monthly requests"
+                  description="300 req/min, 100,000 monthly requests"
                 />
                 <RadioOption
                   value="enterprise"
                   label="Enterprise"
-                  description="1,200 req/min · 1,000,000 monthly requests"
+                  description="1,200 req/min, 1,000,000 monthly requests"
                 />
                 <RadioOption
                   value="free"
                   label="Free sandbox"
-                  description="60 req/min · 10,000 monthly requests"
+                  description="60 req/min, 10,000 monthly requests"
                 />
               </RadioGroup>
 
@@ -305,12 +305,9 @@ export function ApiKeysTab({
         </Card>
       </div>
 
-      <Card
-        className="lg:col-span-5 min-w-0"
-        style={{ background: "var(--cv-grad-card)" }}
-      >
+      <Card className="lg:col-span-5 min-w-0">
         <CardHeader>
-          <CardTitle className="text-heading">Programmatic integration</CardTitle>
+          <CardTitle className="text-heading">API integration</CardTitle>
           <CardDescription>
             Send authenticated JSON requests to the `/api/v1/predict` endpoint.
           </CardDescription>
@@ -326,7 +323,7 @@ export function ApiKeysTab({
             <TabsContent value="curl" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  terminal · sh
+                  Shell (cURL)
                 </span>
                 <CopyButton
                   value={CURL_SNIPPET}
@@ -342,7 +339,7 @@ export function ApiKeysTab({
             <TabsContent value="python" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  requests · python
+                  Python (requests)
                 </span>
                 <CopyButton
                   value={PYTHON_SNIPPET}
@@ -358,7 +355,7 @@ export function ApiKeysTab({
             <TabsContent value="ts" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  fetch · typescript
+                  TypeScript (fetch)
                 </span>
                 <CopyButton
                   value={TYPESCRIPT_SNIPPET}

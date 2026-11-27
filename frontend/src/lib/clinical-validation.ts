@@ -31,7 +31,7 @@ export interface ClinicalCasePreset {
 export const CLINICAL_PRESETS: ClinicalCasePreset[] = [
   {
     id: "hypertension",
-    label: "Hypertension · Amlodipine",
+    label: "Hypertension: Amlodipine",
     summary: "54y Male, 250 mg, 30 days",
     input: {
       Age: 54,
@@ -44,7 +44,7 @@ export const CLINICAL_PRESETS: ClinicalCasePreset[] = [
   },
   {
     id: "diabetes",
-    label: "Diabetes · Metformin",
+    label: "Diabetes: Metformin",
     summary: "62y Female, 500 mg, 45 days",
     input: {
       Age: 62,
@@ -57,7 +57,7 @@ export const CLINICAL_PRESETS: ClinicalCasePreset[] = [
   },
   {
     id: "infection",
-    label: "Infection · Ciprofloxacin",
+    label: "Infection: Ciprofloxacin",
     summary: "39y Female, 500 mg, 14 days",
     input: {
       Age: 39,
@@ -70,7 +70,7 @@ export const CLINICAL_PRESETS: ClinicalCasePreset[] = [
   },
   {
     id: "depression",
-    label: "Depression · Sertraline",
+    label: "Depression: Sertraline",
     summary: "46y Female, 100 mg, 50 days",
     input: {
       Age: 46,

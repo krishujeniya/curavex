@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/wensity/card";
-import { NumberTicker } from "@/components/wensity/count-up-animation";
 import {
   DataTable,
   type DataTableColumn,
@@ -66,7 +65,7 @@ const AUDIT_COLUMNS: DataTableColumn<AuditRow>[] = [
     accessorKey: "scoreText",
     sortable: true,
     cell: ({ row }) => (
-      <span className="font-mono font-semibold tabular-nums text-[var(--cv-text-primary)]">
+      <span className="block text-end font-mono font-semibold tabular-nums text-[var(--cv-text-primary)]">
         {row.scoreText}
       </span>
     ),
@@ -99,7 +98,7 @@ const AUDIT_COLUMNS: DataTableColumn<AuditRow>[] = [
     accessorKey: "latencyText",
     sortable: true,
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums text-[var(--cv-text-secondary)]">
+      <span className="block text-end font-mono tabular-nums text-[var(--cv-text-secondary)]">
         {row.latencyText}
       </span>
     ),
@@ -174,37 +173,34 @@ export function MonitoringTab({
       </div>
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardContent className="p-6 space-y-1">
             <div className="text-caption text-[var(--cv-text-secondary)]">
               Total live inferences
             </div>
-            <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
-              <NumberTicker
-                value={telemetry?.total_inferences ?? 0}
-                trigger="mount"
-              />
+            <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
+              {(telemetry?.total_inferences ?? 0).toLocaleString()}
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardContent className="p-6 space-y-1">
             <div className="text-caption text-[var(--cv-text-secondary)]">
               System throughput
             </div>
-            <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+            <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
               {telemetry?.throughput_req_per_min ?? 0} rpm
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardContent className="p-6 space-y-1">
             <div className="text-caption text-[var(--cv-text-secondary)]">
               Error rate
             </div>
-            <div className="font-[family-name:var(--font-display)] text-title font-mono tabular-nums text-[var(--cv-text-primary)]">
+            <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
               {telemetry?.error_rate_pct ?? 0}%
             </div>
           </CardContent>
@@ -212,7 +208,7 @@ export function MonitoringTab({
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="min-w-0" style={{ background: "var(--cv-grad-card)" }}>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle className="text-heading">
               Latency percentiles (ms)
@@ -238,7 +234,7 @@ export function MonitoringTab({
           </CardContent>
         </Card>
 
-        <Card className="min-w-0" style={{ background: "var(--cv-grad-card)" }}>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between gap-2">
             <CardTitle className="text-heading">
               Kolmogorov-Smirnov drift test
@@ -269,7 +265,7 @@ export function MonitoringTab({
       </section>
 
       {categoricalEntries.length > 0 && (
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardHeader>
             <CardTitle className="text-heading">
               Categorical PSI stability
@@ -305,7 +301,7 @@ export function MonitoringTab({
         </Card>
       )}
 
-      <Card style={{ background: "var(--cv-grad-card)" }}>
+      <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-heading">
             Live inference audit trail

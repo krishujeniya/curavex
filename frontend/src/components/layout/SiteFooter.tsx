@@ -4,118 +4,84 @@ import * as React from "react";
 import { IconArrowUp } from "@tabler/icons-react";
 
 export function SiteFooter({ docsUrl }: { docsUrl: string }) {
-  const wordmarkRef = React.useRef<HTMLDivElement | null>(null);
-  const [inView, setInView] = React.useState(false);
-  const [hasMotion, setHasMotion] = React.useState(false);
-
-  React.useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setInView(true);
-      setHasMotion(false);
-      return;
-    }
-
-    setHasMotion(true);
-    const el = wordmarkRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setInView(true);
-          }
-        }
-      },
-      { threshold: 0.25 },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
-    <footer className={`site-footer ${hasMotion ? "footer-motion" : ""}`}>
-      <div className="footer-shell">
-        <div className="footer-top">
-          <div className="footer-tagline">
-            © 2026 · Clinical treatment-response regression &amp; MLOps
+    <footer className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] text-[var(--cv-text-secondary)]">
+      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-1">
+            <div className="text-label font-semibold text-[var(--cv-text-primary)]">
+              Curavex
+            </div>
+            <p className="text-caption text-[var(--cv-text-secondary)]">
+              Clinical treatment-response regression and MLOps governance.
+            </p>
           </div>
-          <nav className="footer-links" aria-label="Footer">
-            <a href="#workspace">Workspace</a>
-            <a href="#architecture">Architecture</a>
-            <a href="#methodology">Methodology</a>
-            <a href={docsUrl} target="_blank" rel="noopener noreferrer">
+
+          <nav
+            className="flex flex-wrap items-center gap-x-6 gap-y-2 text-label"
+            aria-label="Footer"
+          >
+            <a
+              href="#workspace"
+              className="min-h-[44px] inline-flex items-center hover:text-[var(--cv-text-primary)] transition-colors"
+            >
+              Workspace
+            </a>
+            <a
+              href="#architecture"
+              className="min-h-[44px] inline-flex items-center hover:text-[var(--cv-text-primary)] transition-colors"
+            >
+              Architecture
+            </a>
+            <a
+              href="#methodology"
+              className="min-h-[44px] inline-flex items-center hover:text-[var(--cv-text-primary)] transition-colors"
+            >
+              Methodology
+            </a>
+            <a
+              href={docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-[44px] inline-flex items-center hover:text-[var(--cv-text-primary)] transition-colors"
+            >
               API docs
-            </a>
-            <a
-              href="https://agyos.pages.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              AGYOS
-            </a>
-            <a
-              href="https://amberclaw.pages.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              AmberClaw
             </a>
             <a
               href="https://github.com/krishujeniya/curavex"
               target="_blank"
               rel="noopener noreferrer"
+              className="min-h-[44px] inline-flex items-center hover:text-[var(--cv-text-primary)] transition-colors"
             >
               GitHub
             </a>
           </nav>
         </div>
 
-        <div className="footer-banner">
-          <div
-            ref={wordmarkRef}
-            className={`footer-wordmark ${inView ? "in-view" : ""}`}
-            aria-label="Curavex"
-          >
-            <span className="footer-part footer-left">
-              <span className="footer-letter">C</span>
-              <span className="footer-letter">u</span>
-              <span className="footer-letter">r</span>
-              <span className="footer-letter">a</span>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--cv-border)] pt-6 text-caption">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>© 2026 Curavex</span>
+            <span aria-hidden="true" className="text-[var(--cv-border-strong)]">
+              /
             </span>
-            <span className="footer-part footer-right">
-              <span className="footer-letter footer-float-1">v</span>
-              <span className="footer-letter footer-float-2">e</span>
-              <span className="footer-letter footer-float-3">x</span>
-            </span>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <div className="footer-meta">
-            <span>Curavex</span>
-            <span className="footer-sep">/</span>
             <a
               href="https://github.com/krishujeniya"
               target="_blank"
               rel="noopener noreferrer"
+              className="hover:text-[var(--cv-text-primary)] transition-colors"
             >
               Built by Krish Ujeniya
             </a>
           </div>
+
           <button
             type="button"
             onClick={scrollToTop}
-            className="back-top"
+            className="inline-flex min-h-[44px] items-center gap-2 text-caption font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
             aria-label="Back to top"
           >
             <span>Back to top</span>

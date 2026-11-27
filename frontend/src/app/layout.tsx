@@ -1,23 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import {
-  JetBrains_Mono,
-  Plus_Jakarta_Sans,
-  Space_Grotesk,
-} from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { ToastList, ToastProvider } from "@/components/wensity/toast";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plus-jakarta",
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-space-grotesk",
+  axes: ["opsz"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -182,7 +171,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />

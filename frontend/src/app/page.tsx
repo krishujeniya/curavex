@@ -36,11 +36,11 @@ import {
 import type { ClinicalCasePreset } from "@/lib/clinical-validation";
 
 const WORKSPACE_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
-  { id: "predict", label: "Clinical decision support" },
-  { id: "batch", label: "Batch cohort scoring" },
-  { id: "mlops", label: "Model governance" },
-  { id: "monitoring", label: "Observability and drift" },
-  { id: "apikeys", label: "Developer API" },
+  { id: "predict", label: "Single patient" },
+  { id: "batch", label: "Batch cohort" },
+  { id: "mlops", label: "Model registry" },
+  { id: "monitoring", label: "Monitoring" },
+  { id: "apikeys", label: "API keys" },
 ];
 
 export default function CuravexWorkspacePage() {

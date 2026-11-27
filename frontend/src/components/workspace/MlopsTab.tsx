@@ -253,7 +253,7 @@ export function MlopsTab({
         accessorKey: "rmseValue",
         sortable: true,
         cell: ({ row: m }) => (
-          <span className="font-mono tabular-nums text-[var(--cv-text-secondary)]">
+          <span className="block text-end font-mono tabular-nums text-[var(--cv-text-secondary)]">
             {m.metrics?.rmse?.toFixed(4) ?? "N/A"}
           </span>
         ),
@@ -283,22 +283,22 @@ export function MlopsTab({
 
   return (
     <div className="space-y-6">
-      <Card style={{ background: "var(--cv-grad-card)" }}>
+      <Card>
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-title text-[var(--cv-text-primary)] capitalize">
+                <h2 className="text-title text-[var(--cv-text-primary)]">
                   {activeModel?.algorithm.replace(/_/g, " ") ??
-                    "Gradient Boosting"}
+                    "Gradient boosting"}
                 </h2>
                 <Badge variant="success" dot>
-                  {activeModel?.version ?? "v2.0.0"} · Production
+                  {activeModel?.version ?? "v2.0.0"} (Production)
                 </Badge>
               </div>
               <p className="text-body text-[var(--cv-text-secondary)] max-w-[65ch]">
                 Directing live clinical inference traffic. Evaluated against
-                holdout validation on the canonical cohort.
+                holdout validation on the trial dataset.
               </p>
             </div>
 
@@ -368,7 +368,7 @@ export function MlopsTab({
       )}
 
       {benchmarks && (
-        <Card style={{ background: "var(--cv-grad-card)" }}>
+        <Card>
           <CardHeader>
             <CardTitle className="text-heading">
               Live regressor benchmark suite
@@ -412,7 +412,7 @@ export function MlopsTab({
         </Card>
       )}
 
-      <Card style={{ background: "var(--cv-grad-card)" }}>
+      <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-heading">Manage registered models</CardTitle>
           <CardDescription>

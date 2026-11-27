@@ -307,15 +307,25 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
           <div className="flex items-center gap-2 shrink-0 min-[950px]:ml-0">
             <button
               type="button"
-              onClick={() => setCommandOpen(true)}
-              aria-label="Search Curavex"
-              className="inline-flex h-[34px] w-[34px] min-[1181px]:w-auto min-[1181px]:min-w-[132px] items-center justify-center gap-2 rounded-full border border-[var(--cv-border)] px-0 min-[1181px]:pl-3 min-[1181px]:pr-2.5 text-[12px] font-medium text-[var(--cv-text-secondary)] transition-colors hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+              onClick={handleToggleTheme}
+              aria-label={
+                theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
+              }
+              aria-pressed={theme === "dark"}
+              title={theme === "dark" ? "Light theme" : "Dark theme"}
+              className="inline-flex size-[34px] items-center justify-center rounded-full border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] cursor-pointer"
             >
-              <IconSearch size={16} stroke={1.8} aria-hidden="true" />
-              <span className="hidden min-[1181px]:inline">Search</span>
-              <kbd className="hidden min-[1181px]:inline-flex h-5 min-w-[1.4rem] items-center justify-center rounded-md border border-[var(--cv-border)] px-1.5 font-mono text-[10px] text-[var(--cv-text-secondary)]">
-                ⌘K
-              </kbd>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="size-4"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" />
+              </svg>
             </button>
 
             {clerkReady ? (
@@ -324,19 +334,11 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
                   <SignInButton mode="modal">
                     <button
                       type="button"
-                      className="hidden min-[950px]:inline-flex h-[34px] items-center rounded-full px-3 text-[13px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
-                    >
-                      Sign in
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button
-                      type="button"
                       className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
                     >
-                      Sign up
+                      Login
                     </button>
-                  </SignUpButton>
+                  </SignInButton>
                 </SignedOut>
                 <SignedIn>
                   <UserButton
@@ -362,57 +364,14 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
                 </button>
               </div>
             ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => openAuthModal("signin")}
-                  className="hidden min-[950px]:inline-flex h-[34px] items-center rounded-full px-3 text-[13px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
-                >
-                  Sign in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openAuthModal("signup")}
-                  className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
-                >
-                  Sign up
-                </button>
-              </>
-            )}
-
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Curavex on GitHub"
-              className="hidden min-[950px]:inline-flex h-[34px] items-center gap-1.5 rounded-full border border-[var(--cv-border)] px-3 text-[12px] font-semibold text-[var(--cv-text-primary)] transition-colors hover:border-[var(--cv-border-strong)]"
-            >
-              <IconBrandGithub size={14} stroke={1.8} aria-hidden="true" />
-              GitHub ↗
-            </a>
-
-            <button
-              type="button"
-              onClick={handleToggleTheme}
-              aria-label={
-                theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
-              }
-              aria-pressed={theme === "dark"}
-              title={theme === "dark" ? "Light theme" : "Dark theme"}
-              className="inline-flex size-[34px] items-center justify-center rounded-full border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] cursor-pointer"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="size-4"
-                aria-hidden="true"
+              <button
+                type="button"
+                onClick={() => openAuthModal("signin")}
+                className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
               >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" />
-              </svg>
-            </button>
+                Login
+              </button>
+            )}
 
             <div className="min-[950px]:hidden">
               <HamburgerMenu

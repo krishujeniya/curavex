@@ -12,7 +12,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/wensity/sheet";
-import { UnderlineAnimation } from "@/components/wensity/underline-animation";
 import {
   persistTheme,
   readCurrentTheme,
@@ -43,9 +42,19 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
+  const [scrolled, setScrolled] = React.useState(false);
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
+  }, []);
+
+  React.useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   function handleToggleTheme() {
@@ -56,20 +65,27 @@ export function SiteHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-canvas)_92%,transparent)] backdrop-blur-md">
+      <header
+        className={[
+          "sticky top-0 z-[var(--z-sticky)] border-b transition-colors duration-150",
+          scrolled
+            ? "border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-surface)_90%,transparent)] backdrop-blur-md"
+            : "border-transparent bg-[var(--cv-surface)]",
+        ].join(" ")}
+      >
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-6 min-w-0">
+          <div className="flex items-center gap-8 min-w-0">
             <a
               href="#top"
-              className="flex items-center gap-2.5 min-w-0 shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)] rounded-md"
+              className="flex items-center gap-2.5 min-w-0 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
               aria-label="Curavex home"
             >
               <img
                 src="./assets/curavex-mark.svg"
                 alt=""
-                width={30}
-                height={30}
-                className="size-8 rounded-lg border border-[var(--cv-border)] object-contain shrink-0 bg-black"
+                width={28}
+                height={28}
+                className="size-7 rounded-md border border-[var(--cv-border)] object-contain shrink-0 bg-black"
               />
               <span className="text-heading font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
                 Curavex
@@ -78,25 +94,25 @@ export function SiteHeader({
 
             <nav
               aria-label="Primary sections"
-              className="hidden lg:flex items-center gap-6"
+              className="hidden lg:flex items-center gap-1"
             >
               {NAV_LINKS.map((item) => (
-                <UnderlineAnimation
+                <a
                   key={item.href}
                   href={item.href}
-                  variant="slide"
-                  thickness={1.5}
-                  offset={4}
-                  className="text-label text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] transition-colors"
+                  className="inline-flex h-9 items-center rounded-md px-3 text-label text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]"
                 >
                   {item.label}
-                </UnderlineAnimation>
+                </a>
               ))}
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            <div className="hidden xl:flex items-center gap-2 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 py-1.5 text-caption text-[var(--cv-text-secondary)]">
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              className="hidden xl:inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-3 text-caption text-[var(--cv-text-secondary)]"
+              title={activeModelId ?? undefined}
+            >
               <Marker
                 variant={apiStatus === "live" ? "pulse" : "dot"}
                 tone={
@@ -108,12 +124,12 @@ export function SiteHeader({
                 }
                 size="sm"
               />
-              <span className="font-mono truncate max-w-[180px]">
-                {apiStatus === "live" && activeModelId
-                  ? activeModelId
+              <span>
+                {apiStatus === "live"
+                  ? "Live API"
                   : apiStatus === "connecting"
                     ? "Connecting"
-                    : "Reference mode"}
+                    : "Reference"}
               </span>
             </div>
 
@@ -121,10 +137,12 @@ export function SiteHeader({
               type="button"
               onClick={onOpenCommand}
               aria-label="Search workspace and commands"
-              className="inline-flex h-10 min-w-[44px] items-center justify-center sm:justify-between gap-2.5 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
+              className="relative inline-flex h-9 min-w-[36px] sm:w-44 items-center justify-center sm:justify-between gap-2 rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-2.5 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer before:content-[''] before:absolute before:inset-[-4px]"
             >
-              <IconSearch size={15} stroke={1.8} className="shrink-0" />
-              <span className="hidden sm:inline">Search</span>
+              <span className="inline-flex items-center gap-2">
+                <IconSearch size={15} stroke={1.8} className="shrink-0" />
+                <span className="hidden sm:inline">Search…</span>
+              </span>
               <Kbd size="sm" className="hidden md:inline-flex">
                 ⌘K
               </Kbd>
@@ -138,14 +156,14 @@ export function SiteHeader({
               }
               aria-pressed={theme === "dark"}
               title={theme === "dark" ? "Light theme" : "Dark theme"}
-              className="inline-flex size-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] text-[var(--cv-text-primary)] hover:border-[var(--cv-accent)] transition-colors cursor-pointer"
+              className="relative inline-flex size-9 items-center justify-center rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] text-[var(--cv-text-primary)] hover:border-[var(--cv-border-strong)] transition-colors cursor-pointer before:content-[''] before:absolute before:inset-[-4px]"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="size-[17px]"
+                className="size-[16px]"
                 aria-hidden="true"
               >
                 <circle cx="12" cy="12" r="9" />
@@ -157,7 +175,7 @@ export function SiteHeader({
               href={docsUrl}
               target="_blank"
               rel="noreferrer"
-              className="hidden sm:inline-flex h-10 min-h-[44px] items-center gap-1.5 rounded-full bg-[var(--cv-accent)] px-4 text-caption font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85"
+              className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--cv-accent)] px-3.5 text-label font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85"
             >
               <span>API docs</span>
               <IconArrowUpRight size={14} stroke={2} aria-hidden="true" />
@@ -179,9 +197,9 @@ export function SiteHeader({
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="right" id="mobile-workspace-sheet">
           <SheetHeader>
-            <SheetTitle>Curavex navigation</SheetTitle>
+            <SheetTitle>Navigation</SheetTitle>
             <SheetDescription>
-              Jump to clinical scoring, architecture, or API references.
+              Jump to clinical scoring, architecture, or API documentation.
             </SheetDescription>
           </SheetHeader>
           <nav
@@ -201,23 +219,24 @@ export function SiteHeader({
                 {item.label}
               </a>
             ))}
+            <div className="my-2 border-t border-[var(--cv-border)]" />
             <a
               href={docsUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 flex min-h-[44px] items-center justify-between rounded-lg border border-[var(--cv-border)] px-3 text-label text-[var(--cv-text-primary)] hover:border-[var(--cv-border-strong)] transition-colors"
+              className="flex min-h-[44px] items-center justify-between rounded-lg px-3 text-label text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors"
             >
-              <span>OpenAPI docs</span>
-              <IconArrowUpRight size={16} />
+              <span>API docs</span>
+              <IconArrowUpRight size={16} aria-hidden="true" />
             </a>
             <a
               href="https://github.com/krishujeniya/curavex"
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-[44px] items-center justify-between rounded-lg border border-[var(--cv-border)] px-3 text-label text-[var(--cv-text-primary)] hover:border-[var(--cv-border-strong)] transition-colors"
+              className="flex min-h-[44px] items-center justify-between rounded-lg px-3 text-label text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors"
             >
-              <span>GitHub repository</span>
-              <IconArrowUpRight size={16} />
+              <span>GitHub</span>
+              <IconArrowUpRight size={16} aria-hidden="true" />
             </a>
           </nav>
         </SheetContent>

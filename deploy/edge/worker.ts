@@ -560,6 +560,10 @@ export default {
       return jsonResponse(request, OPENAPI_SPEC);
     }
 
+    if (path.startsWith("/api/v1/auth/")) {
+      return handleEdgeAuth(request, env, path);
+    }
+
     if (path === "/docs") {
       const html = `<!doctype html>
 <html lang="en">
@@ -1044,3 +1048,158 @@ export default {
     return jsonResponse(request, { detail: "Not found." }, 404);
   },
 };
+
+const EDGE_AUTH_TTL_SECONDS = 86400;
+
+function toBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function fromBase64Url(str: string): Uint8Array {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
+  const binary = atob(padded);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
+async function hashEdgePassword(password: string, salt?: Uint8Array): Promise<string> {
+  const saltBytes = salt ?? crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: saltBytes, iterations: 100000, hash: "SHA-256" },
+    key,
+    256,
+  );
+  return `${toBase64Url(saltBytes)}$${toBase64Url(new Uint8Array(bits))}`;
+}
+
+async function verifyEdgePassword(password: string, stored: string): Promise<boolean> {
+  const [saltB64, hashB64] = stored.split("$");
+  if (!saltB64 || !hashB64) return false;
+  const derived = await hashEdgePassword(password, fromBase64Url(saltB64));
+  return derived === stored;
+}
+
+async function getHmacKey(env: Env): Promise<CryptoKey> {
+  const secret = (env as unknown as Record<string, string>).CURAVEX_AUTH_SECRET || "curavex-edge-auth-v1";
+  return crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"],
+  );
+}
+
+async function signEdgeToken(user: { id: string; name: string; email: string; tier: string }, env: Env): Promise<string> {
+  const payload = {
+    sub: user.id,
+    name: user.name,
+    email: user.email,
+    tier: user.tier,
+    exp: Math.floor(Date.now() / 1000) + EDGE_AUTH_TTL_SECONDS,
+  };
+  const payloadB64 = toBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const key = await getHmacKey(env);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadB64));
+  return `${payloadB64}.${toBase64Url(new Uint8Array(sig))}`;
+}
+
+async function verifyEdgeToken(token: string, env: Env): Promise<{ id: string; name: string; email: string; tier: string } | null> {
+  const [payloadB64, sigB64] = token.split(".");
+  if (!payloadB64 || !sigB64) return null;
+  const key = await getHmacKey(env);
+  const ok = await crypto.subtle.verify("HMAC", key, fromBase64Url(sigB64), new TextEncoder().encode(payloadB64));
+  if (!ok) return null;
+  const payload = JSON.parse(new TextDecoder().decode(fromBase64Url(payloadB64)));
+  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+  return { id: payload.sub, name: payload.name, email: payload.email, tier: payload.tier || "free" };
+}
+
+async function handleEdgeAuth(request: Request, env: Env, path: string): Promise<Response> {
+  const kv = env.SHARED_CONFIG_KV;
+  if (!kv) {
+    return jsonResponse(request, { detail: "Auth storage not configured." }, 500);
+  }
+
+  if (request.method === "POST" && path === "/api/v1/auth/signup") {
+    const body = (await request.json().catch(() => null)) as { name?: string; email?: string; password?: string } | null;
+    const name = (body?.name || "").trim();
+    const email = (body?.email || "").trim().toLowerCase();
+    const password = body?.password || "";
+    if (name.length < 2 || !email.includes("@") || password.length < 8) {
+      return jsonResponse(request, { detail: "Valid name, email, and password (min 8 chars) required." }, 400);
+    }
+    const existing = await kv.get(`auth:user:${email}`);
+    if (existing) {
+      return jsonResponse(request, { detail: "An account with this email already exists." }, 409);
+    }
+    const user = {
+      id: `usr_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
+      name,
+      email,
+      password_hash: await hashEdgePassword(password),
+      tier: "free",
+    };
+    await kv.put(`auth:user:${email}`, JSON.stringify(user));
+    const access_token = await signEdgeToken(user, env);
+    return jsonResponse(
+      request,
+      {
+        access_token,
+        token_type: "bearer",
+        expires_in: EDGE_AUTH_TTL_SECONDS,
+        user: { id: user.id, name: user.name, email: user.email, tier: user.tier },
+      },
+      201,
+    );
+  }
+
+  if (request.method === "POST" && path === "/api/v1/auth/signin") {
+    const body = (await request.json().catch(() => null)) as { email?: string; password?: string } | null;
+    const email = (body?.email || "").trim().toLowerCase();
+    const password = body?.password || "";
+    const raw = await kv.get(`auth:user:${email}`);
+    if (!raw) {
+      return jsonResponse(request, { detail: "Invalid email or password." }, 401);
+    }
+    const user = JSON.parse(raw);
+    if (!(await verifyEdgePassword(password, user.password_hash))) {
+      return jsonResponse(request, { detail: "Invalid email or password." }, 401);
+    }
+    const access_token = await signEdgeToken(user, env);
+    return jsonResponse(request, {
+      access_token,
+      token_type: "bearer",
+      expires_in: EDGE_AUTH_TTL_SECONDS,
+      user: { id: user.id, name: user.name, email: user.email, tier: user.tier },
+    });
+  }
+
+  if (request.method === "GET" && path === "/api/v1/auth/me") {
+    const authHeader = request.headers.get("Authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const user = token ? await verifyEdgeToken(token, env) : null;
+    if (!user) {
+      return jsonResponse(request, { detail: "Authentication required." }, 401);
+    }
+    return jsonResponse(request, user);
+  }
+
+  if (request.method === "POST" && path === "/api/v1/auth/signout") {
+    return jsonResponse(request, { status: "signed_out" });
+  }
+
+  return jsonResponse(request, { detail: "Method or endpoint not found." }, 404);
+}

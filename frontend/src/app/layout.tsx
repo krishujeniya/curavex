@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ToastList, ToastProvider } from "@/components/wensity/toast";
+import { CuravexProvider } from "@/components/providers/CuravexProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
     canonical: "https://curavex.pages.dev/",
   },
   icons: {
-    icon: "./assets/curavex-mark.svg",
+    icon: "/assets/curavex-mark.svg",
   },
   openGraph: {
     type: "website",
@@ -187,7 +188,7 @@ export default function RootLayout({
           Skip to workspace
         </a>
         <ToastProvider>
-          {children}
+          <CuravexProvider>{children}</CuravexProvider>
           <ToastList placement="bottom-right" />
         </ToastProvider>
       </body>

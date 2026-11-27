@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { IconArrowUp } from "@tabler/icons-react";
 
 export function SiteFooter({ docsUrl }: { docsUrl: string }) {
@@ -47,10 +48,6 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function scrollToSection(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   return (
     <footer className={`site-footer ${hasMotion ? "footer-motion" : ""}`}>
       <div className="footer-shell">
@@ -59,33 +56,11 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
             © 2026 Curavex — Clinical treatment-response regression and MLOps
           </p>
           <nav className="footer-links" aria-label="Footer">
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection("workspace");
-              }}
-            >
-              Workspace
-            </a>
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection("architecture");
-              }}
-            >
-              Architecture
-            </a>
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection("methodology");
-              }}
-            >
-              Methodology
-            </a>
+            <Link href="/">Overview</Link>
+            <Link href="/scoring">Scoring</Link>
+            <Link href="/models">Models</Link>
+            <Link href="/monitoring">Monitoring</Link>
+            <Link href="/api-keys">API keys</Link>
             <a href={docsUrl} target="_blank" rel="noopener noreferrer">
               API docs
             </a>

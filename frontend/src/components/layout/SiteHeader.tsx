@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
 import {
   Sheet,
@@ -9,26 +11,23 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/wensity/sheet";
-import type { WorkspaceTabId } from "@/components/layout/WorkspaceCommand";
 import {
   persistTheme,
   readCurrentTheme,
   type ThemeMode,
 } from "@/lib/theme";
 
-export interface SiteHeaderProps {
-  activeTab: WorkspaceTabId;
-  onSelectTab: (tab: WorkspaceTabId) => void;
-}
-
-const NAV_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
-  { id: "predict", label: "Clinical scoring" },
-  { id: "mlops", label: "Model registry" },
-  { id: "monitoring", label: "Monitoring" },
-  { id: "apikeys", label: "API keys" },
+const NAV_PAGES = [
+  { href: "/", label: "Overview" },
+  { href: "/scoring", label: "Scoring" },
+  { href: "/models", label: "Models" },
+  { href: "/monitoring", label: "Monitoring" },
+  { href: "/api-keys", label: "API keys" },
 ];
 
-export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
+export function SiteHeader() {
+  const pathname = usePathname();
+  const normalizedPath = (pathname || "/").replace(/\/$/, "") || "/";
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
   const [scrolled, setScrolled] = React.useState(false);
@@ -64,17 +63,13 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
       >
         <div className="mx-auto grid h-16 max-w-[1440px] grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center min-w-0 justify-self-start">
-            <a
+            <Link
               href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
               className="flex items-center gap-2.5 min-w-0 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
               aria-label="Curavex home"
             >
               <img
-                src="./assets/curavex-mark.svg"
+                src="/assets/curavex-mark.svg"
                 alt=""
                 width={28}
                 height={28}
@@ -83,30 +78,29 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
               <span className="text-heading font-semibold tracking-tight text-[var(--cv-text-primary)] truncate">
                 Curavex
               </span>
-            </a>
+            </Link>
           </div>
 
           <nav
-            aria-label="Workspace tabs"
+            aria-label="Primary navigation"
             className="hidden md:inline-flex items-center gap-1 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-1 justify-self-center"
           >
-            {NAV_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
+            {NAV_PAGES.map((item) => {
+              const isActive = normalizedPath === item.href;
               return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => onSelectTab(tab.id)}
+                <Link
+                  key={item.href}
+                  href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "inline-flex h-8 items-center rounded-lg px-3.5 text-label transition-all cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
+                    "inline-flex h-8 items-center rounded-lg px-3.5 text-label transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
                     isActive
                       ? "bg-[var(--cv-surface)] font-medium text-[var(--cv-text-primary)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] ring-1 ring-[var(--cv-border)]"
                       : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
                   ].join(" ")}
                 >
-                  {tab.label}
-                </button>
+                  {item.label}
+                </Link>
               );
             })}
           </nav>
@@ -151,34 +145,32 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="right" id="mobile-workspace-sheet">
           <SheetHeader>
-            <SheetTitle>Workspace tabs</SheetTitle>
+            <SheetTitle>Curavex</SheetTitle>
             <SheetDescription>
-              Switch between scoring, model registry, monitoring, and API keys.
+              Navigate between overview, scoring, models, monitoring, and API keys.
             </SheetDescription>
           </SheetHeader>
           <nav
-            aria-label="Mobile workspace tabs"
+            aria-label="Mobile navigation"
             className="flex flex-col gap-1 px-4 py-4"
           >
-            {NAV_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
+            {NAV_PAGES.map((item) => {
+              const isActive = normalizedPath === item.href;
               return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    onSelectTab(tab.id);
-                  }}
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={isActive ? "page" : undefined}
                   className={[
-                    "flex min-h-[44px] w-full items-center rounded-lg px-3 text-start text-label transition-colors cursor-pointer",
+                    "flex min-h-[44px] w-full items-center rounded-lg px-3 text-label transition-colors",
                     isActive
                       ? "bg-[var(--cv-surface-raised)] font-medium text-[var(--cv-text-primary)] ring-1 ring-[var(--cv-border)]"
                       : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
                   ].join(" ")}
                 >
-                  {tab.label}
-                </button>
+                  {item.label}
+                </Link>
               );
             })}
           </nav>

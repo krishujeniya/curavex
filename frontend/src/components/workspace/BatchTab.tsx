@@ -134,7 +134,7 @@ export function BatchTab() {
     setIsRunningSample(true);
     setErrorMessage(null);
     try {
-      const res = await fetch("./demo_batch_cohort.csv");
+      const res = await fetch("/demo_batch_cohort.csv");
       if (!res.ok) throw new Error("Could not load sample cohort CSV.");
       const csvText = await res.text();
       const sampleFile = new File([csvText], "demo_batch_cohort.csv", {
@@ -189,7 +189,7 @@ export function BatchTab() {
               Score sample cohort
             </Button>
             <Button variant="outline" size="md" asChild className="min-h-[44px]">
-              <a href="./demo_batch_cohort.csv" download>
+              <a href="/demo_batch_cohort.csv" download>
                 <IconDownload size={16} />
                 <span>Download template</span>
               </a>

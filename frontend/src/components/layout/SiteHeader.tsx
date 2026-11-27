@@ -9,6 +9,7 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
+  useAuth,
 } from "@clerk/clerk-react";
 import {
   IconBook,
@@ -45,6 +46,31 @@ const DEFAULT_DOCS_URL = "https://curavex-api.curavex.workers.dev/docs";
 
 interface SiteHeaderProps {
   docsUrl?: string;
+}
+
+function ClerkHeaderAuth() {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <SignInButton mode="modal">
+        <button
+          type="button"
+          className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
+        >
+          Login
+        </button>
+      </SignInButton>
+    );
+  }
+  return (
+    <UserButton
+      appearance={{
+        elements: {
+          avatarBox: "size-7",
+        },
+      }}
+    />
+  );
 }
 
 export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
@@ -329,27 +355,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
             </button>
 
             {clerkReady ? (
-              <>
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button
-                      type="button"
-                      className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
-                    >
-                      Login
-                    </button>
-                  </SignInButton>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "size-7",
-                      },
-                    }}
-                  />
-                </SignedIn>
-              </>
+              <ClerkHeaderAuth />
             ) : localUser ? (
               <div className="flex items-center gap-2">
                 <span className="hidden min-[950px]:inline-block text-[12px] font-medium text-[var(--cv-text-secondary)]">

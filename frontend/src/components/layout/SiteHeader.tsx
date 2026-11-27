@@ -56,14 +56,14 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
     <>
       <header
         className={[
-          "sticky top-0 z-[var(--z-sticky)] border-b transition-colors duration-150",
+          "sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] transition-colors duration-150",
           scrolled
-            ? "border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-surface)_90%,transparent)] backdrop-blur-md"
-            : "border-transparent bg-[var(--cv-surface)]",
+            ? "bg-[color-mix(in_srgb,var(--cv-surface)_88%,transparent)] backdrop-blur-md"
+            : "bg-[var(--cv-surface)]",
         ].join(" ")}
       >
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-6 min-w-0">
+        <div className="mx-auto grid h-16 max-w-[1440px] grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center min-w-0 justify-self-start">
             <a
               href="/"
               onClick={(e) => {
@@ -84,34 +84,34 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
                 Curavex
               </span>
             </a>
-
-            <nav
-              aria-label="Workspace tabs"
-              className="hidden md:flex items-center gap-1"
-            >
-              {NAV_TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => onSelectTab(tab.id)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={[
-                      "inline-flex h-9 items-center rounded-lg px-3 text-label transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
-                      isActive
-                        ? "bg-[var(--cv-accent)] font-medium text-[var(--cv-on-accent)]"
-                        : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
-                    ].join(" ")}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <nav
+            aria-label="Workspace tabs"
+            className="hidden md:inline-flex items-center gap-1 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-1 justify-self-center"
+          >
+            {NAV_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => onSelectTab(tab.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={[
+                    "inline-flex h-8 items-center rounded-lg px-3.5 text-label transition-all cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
+                    isActive
+                      ? "bg-[var(--cv-surface)] font-medium text-[var(--cv-text-primary)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] ring-1 ring-[var(--cv-border)]"
+                      : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
+                  ].join(" ")}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2 shrink-0 justify-self-end">
             <button
               type="button"
               onClick={handleToggleTheme}
@@ -173,8 +173,8 @@ export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
                   className={[
                     "flex min-h-[44px] w-full items-center rounded-lg px-3 text-start text-label transition-colors cursor-pointer",
                     isActive
-                      ? "bg-[var(--cv-accent)] font-medium text-[var(--cv-on-accent)]"
-                      : "text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)]",
+                      ? "bg-[var(--cv-surface-raised)] font-medium text-[var(--cv-text-primary)] ring-1 ring-[var(--cv-border)]"
+                      : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
                   ].join(" ")}
                 >
                   {tab.label}

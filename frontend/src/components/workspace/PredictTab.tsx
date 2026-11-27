@@ -31,6 +31,8 @@ import {
   TooltipTrigger,
 } from "@/components/wensity/tooltip";
 import { FeatureAttributionChart } from "@/components/charts/ClinicalCharts";
+import { BatchTab } from "@/components/workspace/BatchTab";
+import { RadioGroup as ModeGroup, RadioOption as ModeOption } from "@/components/wensity/radio-group";
 import {
   curavexApi,
   type ClinicalMetadata,
@@ -45,15 +47,24 @@ import {
   type ClinicalCasePreset,
 } from "@/lib/clinical-validation";
 
+export type ScoringMode = "single" | "batch";
+
 export function PredictTab({
   clinicalMeta,
   selectedPreset,
+  mode = "single",
+  onModeChange,
   onPredictionComplete,
 }: {
   clinicalMeta: ClinicalMetadata | null;
   selectedPreset?: { preset: ClinicalCasePreset; nonce: number } | null;
+  mode?: ScoringMode;
+  onModeChange?: (mode: ScoringMode) => void;
   onPredictionComplete: () => void;
 }) {
+  const [internalMode, setInternalMode] = React.useState<ScoringMode>(mode);
+  const activeMode = onModeChange ? mode : internalMode;
+  const setMode = onModeChange ?? setInternalMode;
   const toast = useToastManager();
   const conditionDrugMap =
     clinicalMeta?.condition_drug_mapping ?? CANONICAL_CONDITION_DRUG_MAP;
@@ -166,7 +177,33 @@ export function PredictTab({
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <h2 className="text-title text-[var(--cv-text-primary)]">
+              Clinical scoring
+            </h2>
+            <p className="text-body text-[var(--cv-text-secondary)]">
+              Evaluate an individual patient regimen or score a multi-patient CSV cohort.
+            </p>
+          </div>
+          <ModeGroup
+            aria-label="Scoring mode"
+            variant="segment"
+            orientation="horizontal"
+            value={activeMode}
+            onValueChange={(val) => setMode(val === "batch" ? "batch" : "single")}
+            className="shrink-0"
+          >
+            <ModeOption value="single" label="Single patient" />
+            <ModeOption value="batch" label="Batch cohort (CSV)" />
+          </ModeGroup>
+        </div>
+
+        {activeMode === "batch" ? (
+          <BatchTab />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <Card className="lg:col-span-7 min-w-0">
           <CardHeader className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -461,6 +498,8 @@ export function PredictTab({
             description="Predictions reflect historical trial-cohort patterns (Low 1.0–4.5, Medium 4.6–7.5, High 7.6–10.0). Review confidence bounds alongside clinical judgment."
           />
         </aside>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );

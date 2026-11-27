@@ -18,10 +18,9 @@ import {
   TabsTrigger,
 } from "@/components/wensity/tabs";
 import { ApiKeysTab } from "@/components/workspace/ApiKeysTab";
-import { BatchTab } from "@/components/workspace/BatchTab";
 import { MlopsTab } from "@/components/workspace/MlopsTab";
 import { MonitoringTab } from "@/components/workspace/MonitoringTab";
-import { PredictTab } from "@/components/workspace/PredictTab";
+import { PredictTab, type ScoringMode } from "@/components/workspace/PredictTab";
 import {
   curavexApi,
   getApiBaseUrl,
@@ -36,8 +35,7 @@ import {
 import type { ClinicalCasePreset } from "@/lib/clinical-validation";
 
 const WORKSPACE_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
-  { id: "predict", label: "Single patient" },
-  { id: "batch", label: "Batch cohort" },
+  { id: "predict", label: "Clinical scoring" },
   { id: "mlops", label: "Model registry" },
   { id: "monitoring", label: "Monitoring" },
   { id: "apikeys", label: "API keys" },
@@ -45,6 +43,7 @@ const WORKSPACE_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
 
 export default function CuravexWorkspacePage() {
   const [activeTab, setActiveTab] = React.useState<WorkspaceTabId>("predict");
+  const [scoringMode, setScoringMode] = React.useState<ScoringMode>("single");
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [docsUrl, setDocsUrl] = React.useState(
     "https://api-curavex.pages.dev/docs",
@@ -139,13 +138,20 @@ export default function CuravexWorkspacePage() {
   }, [activeTab, refreshTelemetry, refreshDrift]);
 
   function scrollToWorkspace(targetTab?: WorkspaceTabId) {
-    if (targetTab) setActiveTab(targetTab);
+    if (targetTab === "batch") {
+      setActiveTab("predict");
+      setScoringMode("batch");
+    } else if (targetTab) {
+      setActiveTab(targetTab);
+      if (targetTab === "predict") setScoringMode("single");
+    }
     const el = document.getElementById("workspace");
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleSelectPreset(preset: ClinicalCasePreset) {
     setSelectedPreset({ preset, nonce: Date.now() });
+    setScoringMode("single");
     scrollToWorkspace("predict");
   }
 
@@ -202,14 +208,12 @@ export default function CuravexWorkspacePage() {
               <PredictTab
                 clinicalMeta={clinicalMeta}
                 selectedPreset={selectedPreset}
+                mode={scoringMode}
+                onModeChange={setScoringMode}
                 onPredictionComplete={() => {
                   void Promise.allSettled([refreshTelemetry(), refreshDrift()]);
                 }}
               />
-            </TabsContent>
-
-            <TabsContent value="batch">
-              <BatchTab />
             </TabsContent>
 
             <TabsContent value="mlops">

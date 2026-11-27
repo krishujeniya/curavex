@@ -4,88 +4,104 @@ import * as React from "react";
 import { IconArrowUp } from "@tabler/icons-react";
 
 export function SiteFooter({ docsUrl }: { docsUrl: string }) {
+  const wordmarkRef = React.useRef<HTMLDivElement | null>(null);
+  const [inView, setInView] = React.useState(false);
+  const [hasMotion, setHasMotion] = React.useState(false);
+
+  React.useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setInView(true);
+      setHasMotion(false);
+      return;
+    }
+
+    setHasMotion(true);
+    const el = wordmarkRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setInView(true);
+          }
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
-    <footer className="border-t border-[var(--cv-border)] bg-[#050505] text-[#f4f4f5]">
-      <div className="mx-auto max-w-[1440px] px-4 pt-12 pb-8 sm:px-6 sm:pt-16 lg:px-8 space-y-10">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-white/10 pb-8">
-          <p className="text-caption text-[#a8a8a8]">
+    <footer className={`site-footer ${hasMotion ? "footer-motion" : ""}`}>
+      <div className="footer-shell">
+        <div className="footer-top">
+          <div className="footer-tagline">
             © 2026 Curavex — Clinical treatment-response regression and MLOps
-          </p>
-
-          <nav
-            className="flex flex-wrap items-center gap-x-6 gap-y-2 text-label text-[#a8a8a8]"
-            aria-label="Footer"
-          >
-            <a
-              href="#workspace"
-              className="min-h-[44px] inline-flex items-center hover:text-white transition-colors"
-            >
-              Workspace
-            </a>
-            <a
-              href="#architecture"
-              className="min-h-[44px] inline-flex items-center hover:text-white transition-colors"
-            >
-              Architecture
-            </a>
-            <a
-              href="#methodology"
-              className="min-h-[44px] inline-flex items-center hover:text-white transition-colors"
-            >
-              Methodology
-            </a>
-            <a
-              href={docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="min-h-[44px] inline-flex items-center hover:text-white transition-colors"
-            >
+          </div>
+          <nav className="footer-links" aria-label="Footer">
+            <a href="#workspace">Workspace</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#methodology">Methodology</a>
+            <a href={docsUrl} target="_blank" rel="noopener noreferrer">
               API docs
             </a>
             <a
               href="https://github.com/krishujeniya/curavex"
               target="_blank"
               rel="noopener noreferrer"
-              className="min-h-[44px] inline-flex items-center hover:text-white transition-colors"
             >
               GitHub
             </a>
           </nav>
         </div>
 
-        <div
-          aria-hidden="true"
-          className="select-none overflow-hidden py-4 sm:py-6 flex justify-center"
-        >
-          <div className="text-[clamp(3.25rem,15vw,13rem)] font-semibold leading-[0.9] tracking-[-0.045em] text-white whitespace-nowrap">
-            Curavex
+        <div className="footer-banner">
+          <div
+            ref={wordmarkRef}
+            className={`footer-wordmark ${inView ? "in-view" : ""}`}
+            aria-label="Curavex"
+          >
+            <span className="footer-part footer-left">
+              <span className="footer-letter">C</span>
+              <span className="footer-letter">u</span>
+              <span className="footer-letter">r</span>
+              <span className="footer-letter">a</span>
+            </span>
+            <span className="footer-part footer-right">
+              <span className="footer-letter footer-float-1">v</span>
+              <span className="footer-letter footer-float-2">e</span>
+              <span className="footer-letter footer-float-3">x</span>
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-caption text-[#a8a8a8]">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="footer-bottom">
+          <div className="footer-meta">
             <span>Curavex</span>
-            <span aria-hidden="true" className="text-white/25">
-              /
-            </span>
+            <span className="footer-sep">/</span>
             <a
               href="https://github.com/krishujeniya"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
             >
               Built by Krish Ujeniya
             </a>
           </div>
-
           <button
             type="button"
             onClick={scrollToTop}
-            className="inline-flex min-h-[44px] items-center gap-2 text-caption font-medium text-[#a8a8a8] hover:text-white transition-colors cursor-pointer"
+            className="back-top"
             aria-label="Back to top"
           >
             <span>Back to top</span>

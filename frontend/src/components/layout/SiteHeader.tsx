@@ -1,10 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconArrowUpRight, IconSearch } from "@tabler/icons-react";
 import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
-import { Kbd } from "@/components/wensity/kbd";
-import { Marker } from "@/components/wensity/marker";
 import {
   Sheet,
   SheetContent,
@@ -12,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/wensity/sheet";
+import type { WorkspaceTabId } from "@/components/layout/WorkspaceCommand";
 import {
   persistTheme,
   readCurrentTheme,
@@ -19,27 +17,18 @@ import {
 } from "@/lib/theme";
 
 export interface SiteHeaderProps {
-  activeModelId?: string | null;
-  apiStatus: "live" | "connecting" | "offline";
-  docsUrl: string;
-  onOpenCommand: () => void;
-  onJumpToWorkspace: () => void;
+  activeTab: WorkspaceTabId;
+  onSelectTab: (tab: WorkspaceTabId) => void;
 }
 
-const NAV_LINKS = [
-  { href: "#top", label: "Overview" },
-  { href: "#workspace", label: "Workspace" },
-  { href: "#architecture", label: "Architecture" },
-  { href: "#methodology", label: "Methodology" },
+const NAV_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
+  { id: "predict", label: "Clinical scoring" },
+  { id: "mlops", label: "Model registry" },
+  { id: "monitoring", label: "Monitoring" },
+  { id: "apikeys", label: "API keys" },
 ];
 
-export function SiteHeader({
-  activeModelId,
-  apiStatus,
-  docsUrl,
-  onOpenCommand,
-  onJumpToWorkspace,
-}: SiteHeaderProps) {
+export function SiteHeader({ activeTab, onSelectTab }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
   const [scrolled, setScrolled] = React.useState(false);
@@ -74,7 +63,7 @@ export function SiteHeader({
         ].join(" ")}
       >
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8 min-w-0">
+          <div className="flex items-center gap-6 min-w-0">
             <a
               href="#top"
               className="flex items-center gap-2.5 min-w-0 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
@@ -93,61 +82,32 @@ export function SiteHeader({
             </a>
 
             <nav
-              aria-label="Primary sections"
-              className="hidden lg:flex items-center gap-1"
+              aria-label="Workspace tabs"
+              className="hidden md:flex items-center gap-1"
             >
-              {NAV_LINKS.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="inline-flex h-9 items-center rounded-md px-3 text-label text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]"
-                >
-                  {item.label}
-                </a>
-              ))}
+              {NAV_TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => onSelectTab(tab.id)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={[
+                      "inline-flex h-9 items-center rounded-lg px-3 text-label transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
+                      isActive
+                        ? "bg-[var(--cv-accent)] font-medium text-[var(--cv-on-accent)]"
+                        : "text-[var(--cv-text-secondary)] hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]",
+                    ].join(" ")}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <div
-              className="hidden xl:inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-3 text-caption text-[var(--cv-text-secondary)]"
-              title={activeModelId ?? undefined}
-            >
-              <Marker
-                variant={apiStatus === "live" ? "pulse" : "dot"}
-                tone={
-                  apiStatus === "live"
-                    ? "success"
-                    : apiStatus === "connecting"
-                      ? "info"
-                      : "warning"
-                }
-                size="sm"
-              />
-              <span>
-                {apiStatus === "live"
-                  ? "Live API"
-                  : apiStatus === "connecting"
-                    ? "Connecting"
-                    : "Reference"}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={onOpenCommand}
-              aria-label="Search workspace and commands"
-              className="relative inline-flex h-9 min-w-[36px] sm:w-44 items-center justify-center sm:justify-between gap-2 rounded-lg border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-2.5 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer before:content-[''] before:absolute before:inset-[-4px]"
-            >
-              <span className="inline-flex items-center gap-2">
-                <IconSearch size={15} stroke={1.8} className="shrink-0" />
-                <span className="hidden sm:inline">Search…</span>
-              </span>
-              <Kbd size="sm" className="hidden md:inline-flex">
-                ⌘K
-              </Kbd>
-            </button>
-
             <button
               type="button"
               onClick={handleToggleTheme}
@@ -171,17 +131,7 @@ export function SiteHeader({
               </svg>
             </button>
 
-            <a
-              href={docsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--cv-accent)] px-3.5 text-label font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85"
-            >
-              <span>API docs</span>
-              <IconArrowUpRight size={14} stroke={2} aria-hidden="true" />
-            </a>
-
-            <div className="lg:hidden">
+            <div className="md:hidden">
               <HamburgerMenu
                 variant="squeeze"
                 open={mobileOpen}
@@ -197,47 +147,36 @@ export function SiteHeader({
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="right" id="mobile-workspace-sheet">
           <SheetHeader>
-            <SheetTitle>Navigation</SheetTitle>
+            <SheetTitle>Workspace tabs</SheetTitle>
             <SheetDescription>
-              Jump to clinical scoring, architecture, or API documentation.
+              Switch between scoring, model registry, monitoring, and API keys.
             </SheetDescription>
           </SheetHeader>
           <nav
-            aria-label="Mobile sections"
+            aria-label="Mobile workspace tabs"
             className="flex flex-col gap-1 px-4 py-4"
           >
-            {NAV_LINKS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => {
-                  setMobileOpen(false);
-                  if (item.href === "#workspace") onJumpToWorkspace();
-                }}
-                className="flex min-h-[44px] items-center rounded-lg px-3 text-label text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
-            <div className="my-2 border-t border-[var(--cv-border)]" />
-            <a
-              href={docsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-[44px] items-center justify-between rounded-lg px-3 text-label text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors"
-            >
-              <span>API docs</span>
-              <IconArrowUpRight size={16} aria-hidden="true" />
-            </a>
-            <a
-              href="https://github.com/krishujeniya/curavex"
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-[44px] items-center justify-between rounded-lg px-3 text-label text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors"
-            >
-              <span>GitHub</span>
-              <IconArrowUpRight size={16} aria-hidden="true" />
-            </a>
+            {NAV_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    onSelectTab(tab.id);
+                  }}
+                  className={[
+                    "flex min-h-[44px] w-full items-center rounded-lg px-3 text-start text-label transition-colors cursor-pointer",
+                    isActive
+                      ? "bg-[var(--cv-accent)] font-medium text-[var(--cv-on-accent)]"
+                      : "text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)]",
+                  ].join(" ")}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </nav>
         </SheetContent>
       </Sheet>

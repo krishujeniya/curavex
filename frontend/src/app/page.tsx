@@ -13,8 +13,6 @@ import { MethodologySection } from "@/components/sections/MethodologySection";
 import {
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
 } from "@/components/wensity/tabs";
 import { ApiKeysTab } from "@/components/workspace/ApiKeysTab";
 import { MlopsTab } from "@/components/workspace/MlopsTab";
@@ -32,13 +30,6 @@ import {
   type TelemetryMetrics,
 } from "@/lib/api";
 import type { ClinicalCasePreset } from "@/lib/clinical-validation";
-
-const WORKSPACE_TABS: Array<{ id: WorkspaceTabId; label: string }> = [
-  { id: "predict", label: "Clinical scoring" },
-  { id: "mlops", label: "Model registry" },
-  { id: "monitoring", label: "Monitoring" },
-  { id: "apikeys", label: "API keys" },
-];
 
 export default function CuravexWorkspacePage() {
   const [activeTab, setActiveTab] = React.useState<WorkspaceTabId>("predict");
@@ -157,11 +148,8 @@ export default function CuravexWorkspacePage() {
   return (
     <>
       <SiteHeader
-        activeModelId={activeModel?.model_id}
-        apiStatus={apiStatus}
-        docsUrl={docsUrl}
-        onOpenCommand={() => setCommandOpen(true)}
-        onJumpToWorkspace={() => scrollToWorkspace()}
+        activeTab={activeTab}
+        onSelectTab={(tab) => scrollToWorkspace(tab)}
       />
 
       <WorkspaceCommand
@@ -193,16 +181,6 @@ export default function CuravexWorkspacePage() {
             onValueChange={(val) => setActiveTab(val as WorkspaceTabId)}
             className="space-y-6"
           >
-            <div className="border-b border-[var(--cv-border)] overflow-x-auto">
-              <TabsList className="min-w-max">
-                {WORKSPACE_TABS.map((tab) => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="min-h-[44px]">
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
             <TabsContent value="predict">
               <PredictTab
                 clinicalMeta={clinicalMeta}

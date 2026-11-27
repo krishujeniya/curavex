@@ -398,14 +398,77 @@ export default {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Curavex API Docs</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <title>Curavex API Reference</title>
+  <style>
+    :root { color-scheme: light dark; --bg: #f7f7f7; --surface: #ffffff; --text: #050505; --muted: #525252; --border: #dcdcdc; --code: #0a0a0a; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #050505; --surface: #101010; --text: #f4f4f5; --muted: #a8a8a8; --border: #242424; --code: #141414; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    main { max-width: 760px; margin: 0 auto; padding: 48px 20px 80px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 32px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    h2 { margin: 32px 0 12px; font-size: 16px; font-weight: 600; }
+    p { margin: 0 0 12px; color: var(--muted); }
+    a { color: var(--text); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+    pre { background: var(--code); color: #f4f4f5; padding: 14px 16px; border-radius: 10px; overflow-x: auto; border: 1px solid var(--border); margin: 12px 0; }
+    .endpoints { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+    .row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
+    .row:last-child { border-bottom: 0; }
+    .method { display: inline-block; min-width: 48px; font: 600 12px/1 ui-monospace, monospace; color: var(--text); }
+    .desc { color: var(--muted); font-size: 14px; }
+    button { font: 500 14px/1 inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--text); color: var(--bg); cursor: pointer; }
+    button:hover { opacity: 0.85; }
+  </style>
 </head>
 <body>
-  <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <main>
+    <header>
+      <div>
+        <h1>Curavex API</h1>
+        <p>Clinical treatment-response regression and MLOps endpoints.</p>
+      </div>
+      <a href="/openapi.json"><code>openapi.json</code></a>
+    </header>
+
+    <h2>Authentication</h2>
+    <p>Send <code>X-API-Key: demo_key_public_guest</code> (or a generated key) on API requests.</p>
+
+    <h2>Endpoints</h2>
+    <div class="endpoints">
+      <div class="row"><div><span class="method">GET</span><code>/healthz</code></div><div class="desc">Service health and active model</div></div>
+      <div class="row"><div><span class="method">GET</span><code>/api/v1/metadata/clinical</code></div><div class="desc">Supported conditions and compounds</div></div>
+      <div class="row"><div><span class="method">GET</span><code>/api/v1/metadata/dataset-stats</code></div><div class="desc">Reference cohort statistics</div></div>
+      <div class="row"><div><span class="method">POST</span><code>/api/v1/predict</code></div><div class="desc">Score a single patient regimen</div></div>
+      <div class="row"><div><span class="method">POST</span><code>/api/v1/predict/upload-csv</code></div><div class="desc">Score a CSV cohort</div></div>
+      <div class="row"><div><span class="method">GET</span><code>/api/v1/models</code></div><div class="desc">List registered models</div></div>
+      <div class="row"><div><span class="method">GET</span><code>/api/v1/monitoring/metrics</code></div><div class="desc">Latency percentiles and counts</div></div>
+      <div class="row"><div><span class="method">GET</span><code>/api/v1/monitoring/drift</code></div><div class="desc">KS-test and PSI drift status</div></div>
+    </div>
+
+    <h2>Example request</h2>
+    <pre><code>curl -X POST https://api-curavex.pages.dev/api/v1/predict \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: demo_key_public_guest" \\
+  -d '{"Age":54,"Gender":"Male","Condition":"Hypertension","Drug_Name":"Amlodipine","Dosage_mg":250,"Treatment_Duration_days":30}'</code></pre>
+
+    <button id="try-btn" type="button">Test /api/v1/predict</button>
+    <pre id="try-out" hidden><code></code></pre>
+  </main>
   <script>
-    window.ui = SwaggerUIBundle({ url: '/openapi.json', dom_id: '#swagger-ui' });
+    document.getElementById('try-btn').addEventListener('click', async () => {
+      const out = document.getElementById('try-out');
+      out.hidden = false;
+      out.textContent = 'Running...';
+      const res = await fetch('/api/v1/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': 'demo_key_public_guest' },
+        body: JSON.stringify({ Age: 54, Gender: 'Male', Condition: 'Hypertension', Drug_Name: 'Amlodipine', Dosage_mg: 250, Treatment_Duration_days: 30 })
+      });
+      out.textContent = JSON.stringify(await res.json(), null, 2);
+    });
   </script>
 </body>
 </html>`;

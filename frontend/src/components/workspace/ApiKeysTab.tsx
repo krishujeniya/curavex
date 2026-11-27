@@ -140,176 +140,153 @@ export function ApiKeysTab({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <div className="lg:col-span-7 min-w-0 space-y-6">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-title">Manage developer API keys</CardTitle>
-            <CardDescription>
-              Send keys in the{" "}
-              <code className="rounded bg-[var(--cv-surface)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--cv-text-primary)] border border-[var(--cv-border)]">
-                X-API-Key
-              </code>{" "}
-              header to query the clinical scoring API.
-            </CardDescription>
-          </CardHeader>
+      <Card className="lg:col-span-7 min-w-0">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-title">API keys</CardTitle>
+          <CardDescription>
+            Include your key in the{" "}
+            <code className="rounded bg-[var(--cv-canvas)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--cv-text-primary)] border border-[var(--cv-border)]">
+              X-API-Key
+            </code>{" "}
+            header when calling{" "}
+            <code className="rounded bg-[var(--cv-canvas)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--cv-text-primary)] border border-[var(--cv-border)]">
+              /api/v1/predict
+            </code>
+            .
+          </CardDescription>
+        </CardHeader>
 
-          <CardContent className="space-y-4">
-            <Separator />
+        <CardContent className="space-y-6">
+          {feedback && (
+            <Alert
+              variant={feedback.variant}
+              title={feedback.title}
+              description={feedback.description}
+              onDismiss={() => setFeedback(null)}
+            />
+          )}
 
-            {apiKeys.length > 0 ? (
-              <div className="space-y-3">
-                {apiKeys.map((record) => {
-                  const isVisible = Boolean(revealedKeys[record.api_key]);
-                  return (
-                    <div
-                      key={record.api_key}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-4"
-                    >
-                      <div className="min-w-0 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-label font-mono text-[var(--cv-text-primary)]">
-                            {record.name}
-                          </span>
-                          <Badge variant="outline" size="sm">
-                            {record.tier}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <code className="truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
-                            {isVisible ? record.api_key : maskKey(record.api_key)}
-                          </code>
-                          <button
-                            type="button"
-                            aria-label={
-                              isVisible
-                                ? `Hide API key for ${record.name}`
-                                : `Reveal API key for ${record.name}`
-                            }
-                            onClick={() =>
-                              setRevealedKeys((prev) => ({
-                                ...prev,
-                                [record.api_key]: !prev[record.api_key],
-                              }))
-                            }
-                            className="inline-flex size-11 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
-                          >
-                            {isVisible ? (
-                              <IconEyeOff size={15} />
-                            ) : (
-                              <IconEye size={15} />
-                            )}
-                          </button>
-                          <CopyButton
-                            value={record.api_key}
-                            variant="icon"
-                            aria-label={`Copy API key for ${record.name}`}
-                          />
-                        </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+              <div className="sm:col-span-8">
+                <Input
+                  id="new-key-name"
+                  type="text"
+                  label="New key name"
+                  placeholder="Oncology clinical site 4"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="sm:col-span-4">
+                <Button
+                  type="submit"
+                  variant="default"
+                  size="lg"
+                  loading={isGenerating}
+                  className="w-full min-h-[44px]"
+                >
+                  {isGenerating ? "Creating…" : "Create key"}
+                </Button>
+              </div>
+            </div>
+
+            <RadioGroup
+              label="Tier"
+              variant="segment"
+              orientation="horizontal"
+              value={tier}
+              onValueChange={setTier}
+            >
+              <RadioOption value="free" label="Free (60 rpm)" />
+              <RadioOption value="standard" label="Standard (300 rpm)" />
+              <RadioOption value="enterprise" label="Enterprise (1,200 rpm)" />
+            </RadioGroup>
+          </form>
+
+          <Separator />
+
+          {apiKeys.length > 0 ? (
+            <div className="divide-y divide-[var(--cv-border)] rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)]">
+              {apiKeys.map((record) => {
+                const isVisible = Boolean(revealedKeys[record.api_key]);
+                return (
+                  <div
+                    key={record.api_key}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3.5"
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-label font-medium text-[var(--cv-text-primary)]">
+                          {record.name}
+                        </span>
+                        <Badge variant="outline" size="sm">
+                          {record.tier}
+                        </Badge>
                       </div>
-
-                      <div className="text-start sm:text-end font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0">
-                        <div>
-                          Limit:{" "}
-                          <span className="text-[var(--cv-text-primary)]">
-                            {record.requests_per_minute} rpm
-                          </span>
-                        </div>
-                        <div>
-                          Monthly:{" "}
-                          <span className="text-[var(--cv-text-primary)]">
-                            {record.monthly_limit.toLocaleString()}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-1.5">
+                        <code className="truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
+                          {isVisible ? record.api_key : maskKey(record.api_key)}
+                        </code>
+                        <button
+                          type="button"
+                          aria-label={
+                            isVisible
+                              ? `Hide API key for ${record.name}`
+                              : `Reveal API key for ${record.name}`
+                          }
+                          onClick={() =>
+                            setRevealedKeys((prev) => ({
+                              ...prev,
+                              [record.api_key]: !prev[record.api_key],
+                            }))
+                          }
+                          className="inline-flex size-11 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+                        >
+                          {isVisible ? (
+                            <IconEyeOff size={15} />
+                          ) : (
+                            <IconEye size={15} />
+                          )}
+                        </button>
+                        <CopyButton
+                          value={record.api_key}
+                          variant="icon"
+                          aria-label={`Copy API key for ${record.name}`}
+                        />
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <EmptyState
-                icon={
-                  <IconKey
-                    size={28}
-                    stroke={1.6}
-                    className="text-[var(--cv-text-secondary)]"
-                  />
-                }
-                title="No API keys listed"
-                description="Provision a new key below to integrate external clinical tools."
-                className="py-6"
-              />
-            )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-heading">Create a new API key</CardTitle>
-          </CardHeader>
-
-          <CardContent className="space-y-5">
-            {feedback && (
-              <Alert
-                variant={feedback.variant}
-                title={feedback.title}
-                description={feedback.description}
-                onDismiss={() => setFeedback(null)}
-              />
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <Input
-                id="new-key-name"
-                type="text"
-                label="Key name or team"
-                placeholder="Oncology clinical site 4"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-
-              <RadioGroup
-                label="Service tier"
-                variant="tile"
-                value={tier}
-                onValueChange={setTier}
-              >
-                <RadioOption
-                  value="standard"
-                  label="Standard"
-                  description="300 req/min, 100,000 monthly requests"
+                    <div className="text-start sm:text-end font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0">
+                      {record.requests_per_minute} rpm
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              icon={
+                <IconKey
+                  size={24}
+                  stroke={1.6}
+                  className="text-[var(--cv-text-secondary)]"
                 />
-                <RadioOption
-                  value="enterprise"
-                  label="Enterprise"
-                  description="1,200 req/min, 1,000,000 monthly requests"
-                />
-                <RadioOption
-                  value="free"
-                  label="Free sandbox"
-                  description="60 req/min, 10,000 monthly requests"
-                />
-              </RadioGroup>
-
-              <Button
-                type="submit"
-                variant="default"
-                size="lg"
-                loading={isGenerating}
-                className="w-full min-h-[44px]"
-              >
-                {isGenerating ? "Creating key…" : "Create API key"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+              }
+              title="No API keys yet"
+              description="Create a key above to authenticate API requests."
+              className="py-6"
+            />
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="lg:col-span-5 min-w-0">
-        <CardHeader>
-          <CardTitle className="text-heading">API integration</CardTitle>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-heading">Quickstart</CardTitle>
           <CardDescription>
-            Send authenticated JSON requests to the `/api/v1/predict` endpoint.
+            Send a JSON request to score a patient regimen.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -323,7 +300,7 @@ export function ApiKeysTab({
             <TabsContent value="curl" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  Shell (cURL)
+                  Shell
                 </span>
                 <CopyButton
                   value={CURL_SNIPPET}
@@ -331,7 +308,7 @@ export function ApiKeysTab({
                   aria-label="Copy cURL example"
                 />
               </div>
-              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.65] text-[#f0f0f0]">
+              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.6] text-[#f0f0f0]">
                 <code>{CURL_SNIPPET}</code>
               </pre>
             </TabsContent>
@@ -339,7 +316,7 @@ export function ApiKeysTab({
             <TabsContent value="python" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  Python (requests)
+                  Python
                 </span>
                 <CopyButton
                   value={PYTHON_SNIPPET}
@@ -347,7 +324,7 @@ export function ApiKeysTab({
                   aria-label="Copy Python example"
                 />
               </div>
-              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.65] text-[#f0f0f0]">
+              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.6] text-[#f0f0f0]">
                 <code>{PYTHON_SNIPPET}</code>
               </pre>
             </TabsContent>
@@ -355,7 +332,7 @@ export function ApiKeysTab({
             <TabsContent value="ts" className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-                  TypeScript (fetch)
+                  TypeScript
                 </span>
                 <CopyButton
                   value={TYPESCRIPT_SNIPPET}
@@ -363,7 +340,7 @@ export function ApiKeysTab({
                   aria-label="Copy TypeScript example"
                 />
               </div>
-              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.65] text-[#f0f0f0]">
+              <pre className="overflow-x-auto rounded-xl border border-[#2e2e2e] bg-[#0a0a0a] p-4 font-mono text-caption leading-[1.6] text-[#f0f0f0]">
                 <code>{TYPESCRIPT_SNIPPET}</code>
               </pre>
             </TabsContent>

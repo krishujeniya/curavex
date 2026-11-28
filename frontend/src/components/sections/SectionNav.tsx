@@ -1,6 +1,5 @@
 const SECTIONS = [
   { href: "#platform", label: "Platform" },
-  { href: "#products", label: "Products" },
   { href: "#architecture", label: "Architecture" },
   { href: "#pricing", label: "Pricing" },
 ];

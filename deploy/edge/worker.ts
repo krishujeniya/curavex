@@ -621,7 +621,7 @@ export default {
     </div>
 
     <h2>Example request</h2>
-    <pre><code>curl -X POST https://api-curavex.workers.dev/api/v1/predict \\
+    <pre><code>curl -X POST https://api.curavex.workers.dev/api/v1/predict \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: demo_key_public_guest" \\
   -d '{"Age":54,"Gender":"Male","Condition":"Hypertension","Drug_Name":"Amlodipine","Dosage_mg":250,"Treatment_Duration_days":30}'</code></pre>

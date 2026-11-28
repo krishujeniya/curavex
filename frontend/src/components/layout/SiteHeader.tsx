@@ -40,7 +40,7 @@ const NAV_LINKS = [
 ];
 
 const GITHUB_URL = "https://github.com/krishujeniya/curavex";
-const DEFAULT_DOCS_URL = "https://api-curavex.workers.dev/docs";
+const DEFAULT_DOCS_URL = "https://api.curavex.workers.dev/docs";
 
 interface SiteHeaderProps {
   docsUrl?: string;

@@ -21,6 +21,6 @@
   ],
   "vars": {
     "ENVIRONMENT": "production",
-    "UPSTREAM_API": "https://api-curavex.workers.dev"
+    "UPSTREAM_API": "https://api.curavex.workers.dev"
   }
 }

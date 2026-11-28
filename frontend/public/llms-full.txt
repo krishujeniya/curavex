@@ -5,8 +5,8 @@
 - Author: Krish Ujeniya (`krishujeniya`, `@krishujeniya`)
 - GitHub Repository: https://github.com/krishujeniya/curavex
 - Production Frontend (Cloudflare Pages): https://curavex.pages.dev/
-- Production API Gateway (Cloudflare): https://api-curavex.workers.dev/
-- OpenAPI Specification: https://api-curavex.workers.dev/docs
+- Production API Gateway (Cloudflare): https://api.curavex.workers.dev/
+- OpenAPI Specification: https://api.curavex.workers.dev/docs
 
 ## Architecture Summary
 - Frontend (`frontend/`): Next.js 15 App Router static export, Tailwind CSS v4, Wensity UI components, and Chart.js visualizations.

@@ -1001,7 +1001,9 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/api-keys") {
-      const list = Array.from(API_KEYS_STORE.entries()).map(([token, meta]) => ({
+      const list = Array.from(API_KEYS_STORE.entries())
+        .filter(([token]) => token !== "demo_key_public_guest")
+        .map(([token, meta]) => ({
         api_key: maskKey(token),
         name: meta.name,
         tier: meta.tier,

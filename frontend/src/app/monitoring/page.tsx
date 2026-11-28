@@ -16,7 +16,9 @@ import {
 function MonitoringContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") === "keys" ? "keys" : "metrics";
+  const rawTab = searchParams.get("tab");
+  const tab =
+    rawTab === "dashboard" || rawTab === "metrics" ? "dashboard" : "create";
   const {
     telemetry,
     drift,
@@ -35,7 +37,7 @@ function MonitoringContent() {
   }, [refreshTelemetry, refreshDrift]);
 
   function handleTabChange(value: string) {
-    if (value === "keys") router.replace("/monitoring?tab=keys");
+    if (value === "dashboard") router.replace("/monitoring?tab=dashboard");
     else router.replace("/monitoring");
   }
 
@@ -43,17 +45,26 @@ function MonitoringContent() {
     <div className="space-y-8">
       <div className="space-y-3 max-w-[65ch]">
         <h1 className="text-display leading-[1.05] tracking-[-0.03em] text-[var(--cv-text-primary)]">
-          Monitoring &amp; access
+          API Keys
         </h1>
       </div>
 
       <Tabs variant="segmented" value={tab} onValueChange={handleTabChange}>
       <TabsList>
-        <TabsTrigger value="metrics">Monitoring</TabsTrigger>
-        <TabsTrigger value="keys">API keys</TabsTrigger>
+        <TabsTrigger value="create">Create</TabsTrigger>
+        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="metrics" className="pt-2">
+      <TabsContent value="create" className="pt-2">
+        <AuthGate
+          title="Sign in to manage API keys"
+          description="Sign in with your Curavex account to provision and view API keys."
+        >
+          <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
+        </AuthGate>
+      </TabsContent>
+
+      <TabsContent value="dashboard" className="pt-2">
         <MonitoringTab
           telemetry={telemetry}
           drift={drift}
@@ -62,15 +73,6 @@ function MonitoringContent() {
             await Promise.allSettled([refreshTelemetry(), refreshDrift()]);
           }}
         />
-      </TabsContent>
-
-      <TabsContent value="keys" className="pt-2">
-        <AuthGate
-          title="Sign in to manage API keys"
-          description="Sign in with your Curavex account to provision and view API keys."
-        >
-          <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
-        </AuthGate>
       </TabsContent>
       </Tabs>
     </div>

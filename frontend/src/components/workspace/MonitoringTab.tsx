@@ -148,16 +148,7 @@ export function MonitoringTab({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-title text-[var(--cv-text-primary)]">
-            Live telemetry &amp; drift diagnostics
-          </h2>
-          <p className="text-body text-[var(--cv-text-secondary)]">
-            Polls every 6 seconds while active. Evaluates KS-test numeric shifts
-            and PSI categorical stability.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-4">
         {onRefresh && (
           <Button
             variant="outline"

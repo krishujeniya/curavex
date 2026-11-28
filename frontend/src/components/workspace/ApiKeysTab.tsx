@@ -138,22 +138,7 @@ export function ApiKeysTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       <Card className="lg:col-span-7 min-w-0">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-title">API keys</CardTitle>
-          <CardDescription>
-            Include your key in the{" "}
-            <code className="rounded bg-[var(--cv-canvas)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--cv-text-primary)] border border-[var(--cv-border)]">
-              X-API-Key
-            </code>{" "}
-            header when calling{" "}
-            <code className="rounded bg-[var(--cv-canvas)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--cv-text-primary)] border border-[var(--cv-border)]">
-              /api/v1/predict
-            </code>
-            .
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pt-6">
           {feedback && (
             <Alert
               variant={feedback.variant}

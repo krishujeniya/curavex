@@ -11,10 +11,6 @@ import {
 import {
   IconBook,
   IconChevronDown,
-  IconTable,
-  IconChartBar,
-  IconCpu,
-  IconKey,
 } from "@tabler/icons-react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useLocalAuth } from "@/components/auth/AuthProvider";
@@ -26,30 +22,11 @@ import {
 } from "@/lib/theme";
 
 const PRODUCTS = [
-  {
-    href: "/scoring",
-    label: "Single patient scoring",
-    description: "Score one patient regimen",
-    icon: IconChartBar,
-  },
-  {
-    href: "/scoring?tab=models",
-    label: "Batch cohort & registry",
-    description: "CSV cohorts and model versions",
-    icon: IconTable,
-  },
-  {
-    href: "/monitoring",
-    label: "Monitoring & drift",
-    description: "Drift checks and audit trail",
-    icon: IconCpu,
-  },
-  {
-    href: "/monitoring?tab=keys",
-    label: "API keys",
-    description: "X-API-Key credentials and quotas",
-    icon: IconKey,
-  },
+  { href: "/scoring", label: "Score a patient" },
+  { href: "/scoring", label: "Score a cohort" },
+  { href: "/scoring?tab=models", label: "Model registry" },
+  { href: "/monitoring", label: "Monitoring" },
+  { href: "/monitoring?tab=keys", label: "API keys" },
 ];
 
 const NAV_LINKS = [
@@ -263,31 +240,18 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
               {productsOpen && (
                 <div className="absolute left-1/2 top-full z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pt-3">
                   <div className="overflow-hidden rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-2 shadow-[0_24px_60px_rgba(0,0,0,0.14)]">
-                    <div className="grid grid-cols-1 sm:grid-cols-2">
-                      {PRODUCTS.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setProductsOpen(false)}
-                            className="group flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-[var(--cv-surface-raised)] sm:border-b sm:border-[var(--cv-border)] sm:[&:nth-child(odd)]:border-r"
-                          >
-                            <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors group-hover:text-[var(--cv-text-primary)]">
-                              <Icon size={15} stroke={1.8} aria-hidden="true" />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block text-[13px] font-medium text-[var(--cv-text-primary)]">
-                                {item.label}
-                              </span>
-                              <span className="block text-[12px] leading-snug text-[var(--cv-text-secondary)]">
-                                {item.description}
-                              </span>
-                            </span>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    <div className="grid grid-cols-2 gap-0.5 p-1.5">
+                    {PRODUCTS.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setProductsOpen(false)}
+                        className="rounded-lg px-3.5 py-2.5 text-[13px] font-medium text-[var(--cv-text-secondary)] transition-colors hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                   </div>
                 </div>
               )}
@@ -416,28 +380,19 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
               </button>
               {mobileProductsOpen && (
                 <div className="flex flex-col pb-1">
-                  {PRODUCTS.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => {
-                          setMobileOpen(false);
-                          setMobileProductsOpen(false);
-                        }}
-                        className="flex min-h-[44px] items-center gap-3 border-b border-[var(--cv-border)] py-2 pl-4 text-[14px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
-                      >
-                        <Icon size={16} stroke={1.8} aria-hidden="true" className="text-[var(--cv-text-secondary)]" />
-                        <span className="flex flex-col">
-                          <span>{item.label}</span>
-                          <span className="text-[12px] font-normal text-[var(--cv-text-secondary)]">
-                            {item.description}
-                          </span>
-                        </span>
-                      </Link>
-                    );
-                  })}
+                  {PRODUCTS.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        setMobileProductsOpen(false);
+                      }}
+                      className="flex min-h-[44px] items-center border-b border-[var(--cv-border)] px-4 text-[14px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
                 </div>
               )}
 

@@ -8,6 +8,14 @@ import {
   UserButton,
   useAuth,
 } from "@clerk/react";
+import {
+  IconBook,
+  IconChevronDown,
+  IconTable,
+  IconChartBar,
+  IconCpu,
+  IconKey,
+} from "@tabler/icons-react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useLocalAuth } from "@/components/auth/AuthProvider";
 import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
@@ -17,10 +25,35 @@ import {
   type ThemeMode,
 } from "@/lib/theme";
 
+const PRODUCTS = [
+  {
+    href: "/scoring",
+    label: "Single patient scoring",
+    description: "Score one patient regimen",
+    icon: IconChartBar,
+  },
+  {
+    href: "/scoring?tab=models",
+    label: "Batch cohort & registry",
+    description: "CSV cohorts and model versions",
+    icon: IconTable,
+  },
+  {
+    href: "/monitoring",
+    label: "Monitoring & drift",
+    description: "Drift checks and audit trail",
+    icon: IconCpu,
+  },
+  {
+    href: "/monitoring?tab=keys",
+    label: "API keys",
+    description: "X-API-Key credentials and quotas",
+    icon: IconKey,
+  },
+];
+
 const NAV_LINKS = [
-  { href: "/", label: "Overview" },
-  { href: "/scoring", label: "Scoring" },
-  { href: "/monitoring", label: "Monitoring" },
+  { href: "/#pricing", label: "Pricing" },
 ];
 
 interface SiteHeaderProps {
@@ -56,9 +89,12 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
   const pathname = usePathname();
   const normalizedPath = (pathname || "/").replace(/\/$/, "") || "/";
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [productsOpen, setProductsOpen] = React.useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
   const clerkReady = isClerkConfigured();
   const { user: localUser, openAuthModal, signOut } = useLocalAuth();
+  const productsRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
@@ -83,11 +119,44 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
     };
   }, [mobileOpen]);
 
+  React.useEffect(() => {
+    if (!productsOpen) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setProductsOpen(false);
+    }
+
+    function onPointerDown(event: MouseEvent) {
+      if (
+        productsRef.current &&
+        !productsRef.current.contains(event.target as Node)
+      ) {
+        setProductsOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+    };
+  }, [productsOpen]);
+
   function handleToggleTheme() {
     const next: ThemeMode = theme === "dark" ? "light" : "dark";
     setTheme(next);
     persistTheme(next);
   }
+
+  const navLinkClass = (isActive: boolean) =>
+    [
+      "inline-flex h-9 items-center text-[14px] font-medium tracking-[0.01em] transition-colors whitespace-nowrap",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
+      isActive
+        ? "text-[var(--cv-text-primary)]"
+        : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
+    ].join(" ");
 
   return (
     <>
@@ -115,6 +184,63 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
             aria-label="Primary navigation"
             className="hidden min-[950px]:flex items-center gap-7 ml-auto"
           >
+            {/* Products dropdown */}
+            <div
+              ref={productsRef}
+              className="relative"
+              onMouseEnter={() => setProductsOpen(true)}
+              onMouseLeave={() => setProductsOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setProductsOpen((o) => !o)}
+                aria-expanded={productsOpen}
+                aria-haspopup="true"
+                className={[
+                  navLinkClass(false),
+                  "gap-1 cursor-pointer",
+                  productsOpen ? "text-[var(--cv-text-primary)]" : "",
+                ].join(" ")}
+              >
+                Products
+                <IconChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {productsOpen && (
+                <div className="absolute left-0 top-full pt-2">
+                  <div className="w-[300px] rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
+                    {PRODUCTS.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setProductsOpen(false)}
+                          className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--cv-surface-raised)]"
+                        >
+                          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[var(--cv-border)] text-[var(--cv-text-secondary)]">
+                            <Icon size={15} stroke={1.8} aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-[13px] font-medium text-[var(--cv-text-primary)]">
+                              {item.label}
+                            </span>
+                            <span className="block text-[12px] text-[var(--cv-text-secondary)]">
+                              {item.description}
+                            </span>
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {NAV_LINKS.map((item) => {
               const isActive = normalizedPath === item.href;
               return (
@@ -122,21 +248,26 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={[
-                    "inline-flex h-9 items-center text-[14px] font-medium tracking-[0.01em] transition-colors whitespace-nowrap",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
-                    isActive
-                      ? "text-[var(--cv-text-primary)]"
-                      : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
-                  ].join(" ")}
+                  className={navLinkClass(isActive)}
                 >
                   {item.label}
                 </Link>
               );
             })}
+
+            {docsUrl ? (
+              <a
+                href={docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={navLinkClass(false)}
+              >
+                Documentation
+              </a>
+            ) : null}
           </nav>
 
-          <div className="flex items-center gap-2.5 shrink-0 min-[950px]:ml-0 ml-auto min-[950px]:ml-0">
+          <div className="flex items-center gap-2.5 shrink-0 ml-auto min-[950px]:ml-0">
             <button
               type="button"
               onClick={handleToggleTheme}
@@ -159,17 +290,6 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
                 <path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" />
               </svg>
             </button>
-
-            {docsUrl ? (
-              <a
-                href={docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden min-[950px]:inline-flex h-[38px] items-center rounded-full border border-[var(--cv-border)] px-4 text-[13px] font-medium text-[var(--cv-text-primary)] transition-colors hover:border-[var(--cv-border-strong)] hover:bg-[var(--cv-surface-raised)]"
-              >
-                Docs
-              </a>
-            ) : null}
 
             {clerkReady ? (
               <span className="hidden min-[950px]:inline-flex">
@@ -229,38 +349,72 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
             className="absolute left-0 right-0 top-full border-b border-[var(--cv-border)] bg-[var(--cv-surface)] px-4 pb-4 pt-2 shadow-[0_18px_50px_rgba(0,0,0,0.14)] min-[950px]:hidden"
           >
             <div className="flex flex-col">
-              {NAV_LINKS.map((item) => {
-                const isActive = normalizedPath === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={[
-                      "flex min-h-[44px] items-center border-b border-[var(--cv-border)] px-1 text-[15px] font-medium transition-colors last:border-b-0",
-                      isActive
-                        ? "text-[var(--cv-text-primary)]"
-                        : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
+              <button
+                type="button"
+                onClick={() => setMobileProductsOpen((o) => !o)}
+                aria-expanded={mobileProductsOpen}
+                className="flex min-h-[44px] items-center justify-between border-b border-[var(--cv-border)] px-1 text-[15px] font-medium text-[var(--cv-text-primary)]"
+              >
+                Products
+                <IconChevronDown
+                  size={16}
+                  className={`transition-transform duration-200 ${mobileProductsOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+              {mobileProductsOpen && (
+                <div className="flex flex-col pb-1">
+                  {PRODUCTS.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => {
+                          setMobileOpen(false);
+                          setMobileProductsOpen(false);
+                        }}
+                        className="flex min-h-[44px] items-center gap-3 border-b border-[var(--cv-border)] py-2 pl-4 text-[14px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
+                      >
+                        <Icon size={16} stroke={1.8} aria-hidden="true" className="text-[var(--cv-text-secondary)]" />
+                        <span className="flex flex-col">
+                          <span>{item.label}</span>
+                          <span className="text-[12px] font-normal text-[var(--cv-text-secondary)]">
+                            {item.description}
+                          </span>
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
 
-            <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
+              {NAV_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex min-h-[44px] items-center border-b border-[var(--cv-border)] px-1 text-[15px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+
               {docsUrl ? (
                 <a
                   href={docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)]"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex min-h-[44px] items-center gap-2 border-b border-[var(--cv-border)] px-1 text-[15px] font-medium text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]"
                 >
-                  Docs
+                  <IconBook size={16} stroke={1.8} aria-hidden="true" />
+                  Documentation
                 </a>
               ) : null}
+            </div>
+
+            <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
               {clerkReady ? (
                 <div className="flex min-h-[44px] flex-1 items-center justify-center">
                   <ClerkHeaderAuth />

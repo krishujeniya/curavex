@@ -198,10 +198,14 @@ async function apiRequest<T>(
     "Content-Type": "application/json",
     "X-API-Key": apiKey,
   };
+  let token: string | null = null;
   if (authTokenGetter) {
-    const token = await authTokenGetter().catch(() => null);
-    if (token) headers.Authorization = `Bearer ${token}`;
+    token = await authTokenGetter().catch(() => null);
   }
+  if (!token && typeof window !== "undefined") {
+    token = window.localStorage.getItem("curavex_auth_token");
+  }
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const options: RequestInit = { method, headers };
   if (body !== null) {

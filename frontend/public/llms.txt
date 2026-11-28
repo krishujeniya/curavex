@@ -3,7 +3,7 @@
 > Clinical treatment-response regression and MLOps governance platform.
 > Author: Krish Ujeniya (@krishujeniya)
 > Live Site: https://curavex.pages.dev/
-> API Docs: https://api-curavex.pages.dev/docs
+> API Docs: https://api-curavex.workers.dev/docs
 > Source Repository: https://github.com/krishujeniya/curavex
 > Extended Context: https://curavex.pages.dev/llms-full.txt
 

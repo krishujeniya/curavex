@@ -249,11 +249,18 @@ async function fetchStaticJson<T>(path: string): Promise<T> {
 }
 
 export const curavexApi = {
-  getClinicalMetadata: () =>
-    fetchStaticJson<ClinicalMetadata>("/static/metadata/clinical.json"),
+  getClinicalMetadata: async (): Promise<ClinicalMetadata> => {
+    try {
+      return await fetchStaticJson<ClinicalMetadata>(
+        "/static/metadata/clinical.json",
+      );
+    } catch {
+      return apiRequest<ClinicalMetadata>("/metadata/clinical");
+    }
+  },
 
   getDatasetStats: () =>
-    apiRequest<DatasetStats>("/metadata/dataset-stats"),
+    fetchStaticJson<DatasetStats>("/static/metadata/dataset-stats.json"),
 
   predictSingle: (payload: PredictionRequest) =>
     apiRequest<PredictionResponse>("/predict", "POST", payload),
@@ -285,7 +292,7 @@ export const curavexApi = {
     return res.json() as Promise<BatchPredictionResponse>;
   },
 
-  listModels: () => apiRequest<RegisteredModel[]>("/models"),
+  listModels: () => fetchStaticJson<RegisteredModel[]>("/static/models.json"),
 
   getModelDetails: (modelId: string) =>
     apiRequest<ModelDetailResponse>(`/models/${modelId}`),
@@ -310,7 +317,8 @@ export const curavexApi = {
 
   getTelemetry: () => apiRequest<TelemetryMetrics>("/monitoring/metrics"),
 
-  getDrift: () => apiRequest<DriftMetrics>("/monitoring/drift"),
+  getDrift: () =>
+    fetchStaticJson<DriftMetrics>("/static/monitoring/drift.json"),
 
   getAuditLogs: (limit: number = 15) =>
     apiRequest<AuditLogEntry[]>(`/monitoring/logs?limit=${limit}`),

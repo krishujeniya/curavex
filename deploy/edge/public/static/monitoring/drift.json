@@ -1,0 +1,20 @@
+{
+  "total_features_evaluated": 6,
+  "drifted_features_count": 0,
+  "drifted_features": [],
+  "overall_drift_detected": false,
+  "numeric_metrics": {
+    "Age": { "p_value": 0.74, "statistic": 0.041, "drift_detected": false },
+    "Dosage_mg": { "p_value": 0.68, "statistic": 0.048, "drift_detected": false },
+    "Treatment_Duration_days": {
+      "p_value": 0.81,
+      "statistic": 0.036,
+      "drift_detected": false
+    }
+  },
+  "categorical_metrics": {
+    "Gender": { "psi": 0.012, "drift_detected": false, "status": "Stable" },
+    "Condition": { "psi": 0.018, "drift_detected": false, "status": "Stable" },
+    "Drug_Name": { "psi": 0.024, "drift_detected": false, "status": "Stable" }
+  }
+}

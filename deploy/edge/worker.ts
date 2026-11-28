@@ -1,8 +1,10 @@
 import modelsDataRaw from "./models_data.json";
-import datasetStatsRaw from "./dataset_stats.json";
+import datasetStatsRaw from "./public/static/metadata/dataset-stats.json";
 import featureImportancesRaw from "./feature_importances.json";
 import registryDataRaw from "../../backend/models/registry/registry.json";
 import clinicalMetadataStatic from "./public/static/metadata/clinical.json";
+import modelsStaticRaw from "./public/static/models.json";
+import driftStaticRaw from "./public/static/monitoring/drift.json";
 
 export interface Env {
   AI?: unknown;
@@ -73,8 +75,8 @@ const FEATURE_IMPORTANCES = featureImportancesRaw as unknown as Record<
   Array<{ feature: string; importance: number }>
 >;
 const REGISTRY_MODELS: RegistryModel[] = (
-  registryDataRaw as unknown as { models: RegistryModel[] }
-).models.map((m) => ({ ...m }));
+  modelsStaticRaw as unknown as RegistryModel[]
+).map((m) => ({ ...m }));
 
 let activeProductionId: string =
   (registryDataRaw as unknown as { active_production_id?: string })
@@ -835,7 +837,10 @@ export default {
 </html>`;
       return new Response(html, {
         status: 200,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
       });
     }
 
@@ -1239,26 +1244,7 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/monitoring/drift") {
-      return jsonResponse(request, {
-        total_features_evaluated: 6,
-        drifted_features_count: 0,
-        drifted_features: [],
-        overall_drift_detected: false,
-        numeric_metrics: {
-          Age: { p_value: 0.74, statistic: 0.041, drift_detected: false },
-          Dosage_mg: { p_value: 0.68, statistic: 0.048, drift_detected: false },
-          Treatment_Duration_days: {
-            p_value: 0.81,
-            statistic: 0.036,
-            drift_detected: false,
-          },
-        },
-        categorical_metrics: {
-          Gender: { psi: 0.012, drift_detected: false, status: "Stable" },
-          Condition: { psi: 0.018, drift_detected: false, status: "Stable" },
-          Drug_Name: { psi: 0.024, drift_detected: false, status: "Stable" },
-        },
-      }, 200, {
+      return jsonResponse(request, driftStaticRaw, 200, {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       });
     }

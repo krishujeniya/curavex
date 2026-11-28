@@ -62,7 +62,7 @@ docker run -d --restart unless-stopped -p 8000:8000 ghcr.io/krishujeniya/curavex
 
 ```bash
 curl -f http://localhost:8000/healthz
-curl -f https://curavex-api.curavex.workers.dev/healthz
+curl -f https://api.curavex.workers.dev/healthz
 curl -f https://curavex.pages.dev/
 ```
 
@@ -79,4 +79,4 @@ Expected HTTP response: `200 OK`.
    docker compose -f deploy/docker/docker-compose.yml up -d
    ```
 2. **Cloudflare Pages rollback**: Re-deploy the previous commit's `frontend/out/` via `wrangler pages deploy` or promote the previous deployment in Cloudflare Pages.
-3. **Verify**: Re-run `curl -f https://curavex-api.curavex.workers.dev/healthz` and `curl -f https://curavex.pages.dev/`.
+3. **Verify**: Re-run `curl -f https://api.curavex.workers.dev/healthz` and `curl -f https://curavex.pages.dev/`.

@@ -179,7 +179,7 @@ export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null
 
 export function getApiBaseUrl(): string {
   if (typeof window === "undefined") {
-    return "https://curavex-api.curavex.workers.dev";
+    return "https://api.curavex.workers.dev";
   }
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -193,7 +193,7 @@ export function getApiBaseUrl(): string {
     window.location.hostname.includes("pages.dev") ||
     window.location.hostname.includes("curavex")
   ) {
-    return "https://curavex-api.curavex.workers.dev";
+    return "https://api.curavex.workers.dev";
   }
 
   return "";

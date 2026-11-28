@@ -26,7 +26,7 @@ import {
 import { useToastManager } from "@/components/wensity/toast";
 import { curavexApi, type ApiKeyRecord } from "@/lib/api";
 
-const CURL_SNIPPET = `curl -X POST https://curavex-api.curavex.workers.dev/api/v1/predict \\
+const CURL_SNIPPET = `curl -X POST https://api.curavex.workers.dev/api/v1/predict \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: <YOUR_CURAVEX_API_KEY>" \\
   -d '{
@@ -41,7 +41,7 @@ const CURL_SNIPPET = `curl -X POST https://curavex-api.curavex.workers.dev/api/v
 const PYTHON_SNIPPET = `import requests
 
 res = requests.post(
-    "https://curavex-api.curavex.workers.dev/api/v1/predict",
+    "https://api.curavex.workers.dev/api/v1/predict",
     headers={"X-API-Key": "<YOUR_CURAVEX_API_KEY>"},
     json={
         "Age": 52,
@@ -55,7 +55,7 @@ res = requests.post(
 )
 print(res.json()["predicted_score"])`;
 
-const TYPESCRIPT_SNIPPET = `const response = await fetch("https://curavex-api.curavex.workers.dev/api/v1/predict", {
+const TYPESCRIPT_SNIPPET = `const response = await fetch("https://api.curavex.workers.dev/api/v1/predict", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",

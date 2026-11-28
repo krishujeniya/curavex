@@ -164,6 +164,30 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
+const API_KEY_CACHE_TTL_MS = 60_000;
+const API_KEY_CACHE_MAX = 500;
+const API_KEY_CACHE = new Map<
+  string,
+  { row: ApiKeyRow | null; expires: number }
+>();
+
+function cacheApiKey(keyHash: string, row: ApiKeyRow | null): void {
+  if (API_KEY_CACHE.size >= API_KEY_CACHE_MAX) {
+    const oldest = API_KEY_CACHE.keys().next().value;
+    if (oldest !== undefined) API_KEY_CACHE.delete(oldest);
+  }
+  API_KEY_CACHE.set(keyHash, {
+    row,
+    expires: Date.now() + API_KEY_CACHE_TTL_MS,
+  });
+}
+
+function invalidateApiKeyCache(keyId: string): void {
+  for (const [hash, entry] of API_KEY_CACHE) {
+    if (entry.row?.key_id === keyId) API_KEY_CACHE.delete(hash);
+  }
+}
+
 async function findApiKey(
   db: D1Database,
   token: string,
@@ -171,7 +195,12 @@ async function findApiKey(
   if (!token.startsWith(API_KEY_PREFIX)) return null;
   await ensureApiKeySchema(db);
   const keyHash = await sha256Hex(token);
-  return db
+  const cached = API_KEY_CACHE.get(keyHash);
+  if (cached) {
+    if (cached.expires > Date.now()) return cached.row;
+    API_KEY_CACHE.delete(keyHash);
+  }
+  const row = await db
     .prepare(
       `SELECT key_hash, key_id, key_prefix, key_suffix, name, tier,
               owner_id, requests_per_minute, monthly_limit, created_at
@@ -180,6 +209,8 @@ async function findApiKey(
     )
     .bind(keyHash)
     .first<ApiKeyRow>();
+  cacheApiKey(keyHash, row);
+  return row;
 }
 
 async function lookupApiKey(
@@ -443,6 +474,21 @@ function resolveAllowedOrigin(request: Request): string {
   return "https://curavex.pages.dev";
 }
 
+const REQUEST_IDS = new WeakMap<Request, string>();
+
+function requestId(request: Request): string {
+  let id = REQUEST_IDS.get(request);
+  if (!id) {
+    const incoming = request.headers.get("X-Request-Id");
+    id =
+      incoming && /^[A-Za-z0-9_-]{8,64}$/.test(incoming)
+        ? incoming
+        : crypto.randomUUID();
+    REQUEST_IDS.set(request, id);
+  }
+  return id;
+}
+
 function jsonResponse(
   request: Request,
   data: unknown,
@@ -456,6 +502,7 @@ function jsonResponse(
       "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
       "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization",
+      "X-Request-Id": requestId(request),
       Vary: "Origin",
       ...SECURITY_HEADERS,
       ...extraHeaders,
@@ -659,6 +706,19 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    const contentLength = Number(request.headers.get("Content-Length") || "0");
+    if (
+      (request.method === "POST" || request.method === "PUT") &&
+      Number.isFinite(contentLength) &&
+      contentLength > 1_048_576
+    ) {
+      return jsonResponse(
+        request,
+        { detail: "Request body too large.", code: "PAYLOAD_TOO_LARGE" },
+        413,
+      );
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, {
@@ -891,7 +951,14 @@ export default {
             );
           }
         } catch (err) {
-          console.warn("api-key quota check failed; allowing request", err);
+          console.warn(
+            JSON.stringify({
+              evt: "quota_check_failed",
+              scope: "api_key",
+              rid: requestId(request),
+              err: String(err),
+            }),
+          );
         }
       }
 
@@ -914,7 +981,14 @@ export default {
             );
           }
         } catch (err) {
-          console.warn("billing quota check failed; allowing request", err);
+          console.warn(
+            JSON.stringify({
+              evt: "quota_check_failed",
+              scope: "billing",
+              rid: requestId(request),
+              err: String(err),
+            }),
+          );
         }
       }
 
@@ -943,6 +1017,15 @@ export default {
         input,
       });
       if (AUDIT_LOGS.length > 200) AUDIT_LOGS.pop();
+      console.log(
+        JSON.stringify({
+          evt: "predict",
+          rid: requestId(request),
+          model_id: out.modelId,
+          latency_ms: latency,
+          auth: apiKey ? "api_key" : auth ? "session" : "none",
+        }),
+      );
 
       return jsonResponse(request, {
         predicted_score: out.score,
@@ -985,7 +1068,14 @@ export default {
             );
           }
         } catch (err) {
-          console.warn("api-key quota check failed; allowing request", err);
+          console.warn(
+            JSON.stringify({
+              evt: "quota_check_failed",
+              scope: "api_key",
+              rid: requestId(request),
+              err: String(err),
+            }),
+          );
         }
       }
 
@@ -1008,7 +1098,14 @@ export default {
             );
           }
         } catch (err) {
-          console.warn("billing quota check failed; allowing request", err);
+          console.warn(
+            JSON.stringify({
+              evt: "quota_check_failed",
+              scope: "billing",
+              rid: requestId(request),
+              err: String(err),
+            }),
+          );
         }
       }
 
@@ -1295,6 +1392,7 @@ export default {
       if (!res.meta.changes) {
         return jsonResponse(request, { detail: "API key not found." }, 404);
       }
+      invalidateApiKeyCache(keyId);
       return jsonResponse(request, { status: "deleted" }, 200, {
         "Cache-Control": "no-store",
       });

@@ -29,20 +29,6 @@ export function PlatformSection() {
       className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] scroll-mt-20"
     >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
-        <div className="max-w-[65ch] space-y-4 mb-12">
-          <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
-            Platform
-          </p>
-          <h2 className="text-title text-[var(--cv-text-primary)]">
-            One system of record for clinical inference
-          </h2>
-          <p className="text-body text-[var(--cv-text-secondary)]">
-            Built for the teams who act on predictions — clinicians who need
-            confidence bounds, engineers who need governance, and platform
-            teams who need control.
-          </p>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
           {AUDIENCES.map((item) => {
             const Icon = item.icon;

@@ -9,7 +9,6 @@ const PIPELINE_STAGES = [
     title: "Cloudflare Worker and FastAPI gateway",
     summary:
       "Caches public clinical metadata and deterministic SHA-256 single predictions while enforcing CORS, security headers, and tiered X-API-Key rate limits.",
-    artifacts: ["deploy/edge/worker.ts", "backend/src/api/main.py"],
   },
   {
     step: "02",
@@ -17,10 +16,6 @@ const PIPELINE_STAGES = [
     title: "Clinical bounds and ColumnTransformer",
     summary:
       "Verifies Age (1 to 120), Dosage (5 to 2,000 mg), Duration (1 to 365 days), and approved Indication-to-Compound pairs before StandardScaler and OneHotEncoder transforms.",
-    artifacts: [
-      "backend/src/data/validator.py",
-      "backend/src/features/build_features.py",
-    ],
   },
   {
     step: "03",
@@ -28,10 +23,6 @@ const PIPELINE_STAGES = [
     title: "Serialized .joblib pipeline and XAI",
     summary:
       "Scores expected improvement (1.0 to 10.0), computes calibrated 95% confidence bounds (±1.96 × RMSE), and returns per-feature local attribution impacts.",
-    artifacts: [
-      "backend/src/models/predict_model.py",
-      "backend/src/explainability/attributions.py",
-    ],
   },
   {
     step: "04",
@@ -39,10 +30,6 @@ const PIPELINE_STAGES = [
     title: "Model registry and KS/PSI observability",
     summary:
       "Logs every prediction to an append-only JSONL audit trail, runs 2-sample Kolmogorov-Smirnov and PSI drift checks, and governs STAGING to PRODUCTION promotion.",
-    artifacts: [
-      "backend/src/models/registry.py",
-      "backend/src/monitoring/drift_detector.py",
-    ],
   },
 ];
 
@@ -92,16 +79,6 @@ export function ArchitectureSection() {
                 <p className="text-body text-[var(--cv-text-secondary)] max-w-[58ch]">
                   {stage.summary}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {stage.artifacts.map((path) => (
-                    <code
-                      key={path}
-                      className="rounded-md border border-[var(--cv-border)] bg-[var(--cv-surface)] px-2.5 py-1 font-mono text-caption text-[var(--cv-text-secondary)]"
-                    >
-                      {path}
-                    </code>
-                  ))}
-                </div>
               </div>
             </li>
           ))}

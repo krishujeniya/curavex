@@ -68,7 +68,7 @@ flowchart TD
 | **FastAPI Gateway** | `backend/src/api/` | Versioned `/api/v1` REST endpoints, API key authentication, tiered rate limiting, and OpenAPI docs |
 | **ML & ETL Pipeline** | `backend/src/data/`, `features/`, `models/` | Clinical bounds validation, `ColumnTransformer` preprocessing, training, and `.joblib` registry |
 | **Observability** | `backend/src/monitoring/`, `explainability/` | Kolmogorov-Smirnov and PSI drift detection, latency percentiles, and feature impact attribution |
-| **Deployment** | `deploy/`, `wrangler.jsonc` | Multi-stage Docker parity (`deploy/Dockerfile`) and Cloudflare Worker edge proxy (`deploy/edge/`) |
+| **Deployment** | `deploy/`, `wrangler.jsonc` | Multi-stage Docker parity (`deploy/docker/Dockerfile`) and Cloudflare Worker edge proxy (`deploy/edge/`) |
 | **Tests & CI** | `backend/tests/`, `.github/workflows/ci.yml` | Automated pytest suite with an enforced >= 80% coverage ratchet |
 
 ---

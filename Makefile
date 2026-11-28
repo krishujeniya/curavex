@@ -31,10 +31,10 @@ run:
 	$(UVICORN) src.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 docker-build:
-	docker build -f deploy/Dockerfile -t curavex:latest .
+	docker build -f deploy/docker/Dockerfile -t curavex:latest .
 
 docker-run:
-	docker compose -f deploy/docker-compose.yml up --build
+	docker compose -f deploy/docker/docker-compose.yml up --build
 
 clean:
 	find . -type f -name "*.py[co]" -delete

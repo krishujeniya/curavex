@@ -1,5 +1,5 @@
 # Multi-stage production container for Agyos Clinical MLOps Platform
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim@sha256:5b5fe805d367f8f5a359ded6ab2652b7f9a206453ee6ee789c0045ba6ec15016 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY backend/requirements.txt .
 RUN pip install --prefix=/install -r requirements.txt
 
 # Final Runtime Image
-FROM python:3.12-slim AS runner
+FROM python:3.12-slim@sha256:5b5fe805d367f8f5a359ded6ab2652b7f9a206453ee6ee789c0045ba6ec15016 AS runner
 
 WORKDIR /app
 

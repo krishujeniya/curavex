@@ -13,5 +13,5 @@ The repository is organized into four top-level workspaces:
   - `src/api/`: FastAPI REST serving, API key auth, rate limiting, and static frontend hosting.
   - `data/`, `models/registry/`, `logs/`, `tests/`: Datasets, serialized `.joblib` models, audit logs, and pytest suite.
 - **`frontend/`**: Next.js 15 App Router static SPA using Tailwind CSS v4, Chart.js, and Wensity UI components.
-- **`deploy/`**: `Dockerfile`, `docker-compose.yml`, and Cloudflare Worker edge configuration (`deploy/edge/`).
+- **`deploy/`**: `docker/Dockerfile`, `docker/docker-compose.yml`, and Cloudflare Worker edge configuration (`deploy/edge/`).
 - **`docs/`**: Architecture overview, deployment runbook, data dictionary (`docs/references/`), and brand assets (`docs/reports/brand/`).

@@ -1,8 +1,8 @@
 services:
   curavex-saas:
     build:
-      context: ..
-      dockerfile: deploy/Dockerfile
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
     container_name: curavex
     restart: unless-stopped
     ports:
@@ -11,12 +11,15 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    env_file:
+      - path: ../../.env
+        required: false
     environment:
       - PORT=8000
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./models/registry:/app/models/registry
-      - ./logs:/app/logs
+      - ../../backend/models/registry:/app/models/registry
+      - ../../backend/logs:/app/logs
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
       interval: 30s

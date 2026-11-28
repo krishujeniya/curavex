@@ -78,54 +78,12 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
-  const [scrolled, setScrolled] = React.useState(false);
-  const [hidden, setHidden] = React.useState(false);
-  const lastScrollY = React.useRef(0);
-  const scrollRaf = React.useRef(0);
   const clerkReady = isClerkConfigured();
   const { user: localUser, openAuthModal, signOut } = useLocalAuth();
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
   }, []);
-
-  React.useEffect(() => {
-    lastScrollY.current = Math.max(0, window.scrollY || 0);
-    setScrolled(lastScrollY.current > 0);
-
-    const updateNavbar = () => {
-      scrollRaf.current = 0;
-      const y = Math.max(0, window.scrollY || 0);
-      const nextScrolled = y > 0;
-      if (nextScrolled !== scrolled) setScrolled(nextScrolled);
-
-      if (y <= 0 || mobileOpen) {
-        if (hidden) setHidden(false);
-        lastScrollY.current = y;
-        return;
-      }
-
-      const delta = y - lastScrollY.current;
-      if (delta > 5 && !hidden) setHidden(true);
-      else if (delta < -5 && hidden) setHidden(false);
-      if (Math.abs(delta) > 5) lastScrollY.current = y;
-    };
-
-    const queueNavbar = () => {
-      if (!scrollRaf.current) {
-        scrollRaf.current = window.requestAnimationFrame(updateNavbar);
-      }
-    };
-
-    updateNavbar();
-    window.addEventListener("scroll", queueNavbar, { passive: true });
-    window.addEventListener("resize", queueNavbar, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", queueNavbar);
-      window.removeEventListener("resize", queueNavbar);
-      if (scrollRaf.current) window.cancelAnimationFrame(scrollRaf.current);
-    };
-  }, [hidden, mobileOpen, scrolled]);
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -275,15 +233,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
 
   return (
     <>
-      <header
-        className={[
-          "sticky top-0 z-[var(--z-sticky)] border-b transition-[background-color,border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(.165,.84,.44,1)]",
-          scrolled
-            ? "border-[var(--cv-border)] bg-[color-mix(in_srgb,var(--cv-surface)_94%,transparent)] backdrop-blur-xl shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-            : "border-transparent bg-[color-mix(in_srgb,var(--cv-surface)_88%,transparent)]",
-          hidden ? "-translate-y-full" : "translate-y-0",
-        ].join(" ")}
-      >
+      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[var(--cv-surface)]">
         <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-4 px-4 sm:px-6 lg:px-8 min-[950px]:gap-5">
           <Link
             href="/"

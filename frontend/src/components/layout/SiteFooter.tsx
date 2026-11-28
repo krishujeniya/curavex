@@ -5,51 +5,12 @@ import Link from "next/link";
 import { IconArrowUp } from "@tabler/icons-react";
 
 export function SiteFooter({ docsUrl }: { docsUrl: string }) {
-  const wordmarkRef = React.useRef<HTMLDivElement | null>(null);
-  const [inView, setInView] = React.useState(false);
-  const [hasMotion, setHasMotion] = React.useState(false);
-
-  React.useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setInView(true);
-      setHasMotion(false);
-      return;
-    }
-
-    setHasMotion(true);
-    let rafId = 0;
-
-    const updateFooterWordmark = () => {
-      rafId = 0;
-      const el = wordmarkRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 800;
-      const halfLine = rect.top + rect.height * 0.5;
-      setInView(halfLine <= vh);
-    };
-
-    const queueFooter = () => {
-      if (!rafId) rafId = window.requestAnimationFrame(updateFooterWordmark);
-    };
-
-    updateFooterWordmark();
-    window.addEventListener("scroll", queueFooter, { passive: true });
-    window.addEventListener("resize", queueFooter, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", queueFooter);
-      window.removeEventListener("resize", queueFooter);
-      if (rafId) window.cancelAnimationFrame(rafId);
-    };
-  }, []);
-
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
-    <footer className={`site-footer ${hasMotion ? "footer-motion" : ""}`}>
+    <footer className="site-footer">
       <div className="footer-shell">
         <div className="footer-top">
           <p className="footer-tagline">
@@ -73,26 +34,6 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
               GitHub
             </a>
           </nav>
-        </div>
-
-        <div className="footer-banner">
-          <div
-            ref={wordmarkRef}
-            className={`footer-wordmark ${inView ? "in-view" : ""}`}
-            aria-label="Curavex"
-          >
-            <span className="footer-part footer-left">
-              <span className="footer-letter">C</span>
-              <span className="footer-letter">u</span>
-              <span className="footer-letter">r</span>
-              <span className="footer-letter">a</span>
-            </span>
-            <span className="footer-part footer-right">
-              <span className="footer-letter footer-float-1">v</span>
-              <span className="footer-letter footer-float-2">e</span>
-              <span className="footer-letter footer-float-3">x</span>
-            </span>
-          </div>
         </div>
 
         <div className="footer-bottom">

@@ -1,7 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { IconActivityHeartbeat, IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconActivityHeartbeat,
+  IconInfoCircle,
+  IconLock,
+} from "@tabler/icons-react";
 import { Alert } from "@/components/wensity/alert";
 import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
@@ -34,6 +38,7 @@ import { FeatureAttributionChart } from "@/components/charts/ClinicalCharts";
 import { BatchTab } from "@/components/workspace/BatchTab";
 import { RadioGroup as ModeGroup, RadioOption as ModeOption } from "@/components/wensity/radio-group";
 import {
+  ApiError,
   curavexApi,
   type BillingStatus,
   type ClinicalMetadata,
@@ -89,6 +94,11 @@ export function PredictTab({
   const [isPredicting, setIsPredicting] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [result, setResult] = React.useState<PredictionResponse | null>(null);
+  const [quotaNotice, setQuotaNotice] = React.useState<string | null>(null);
+
+  const quotaExhausted = Boolean(
+    billingStatus && billingStatus.limit !== null && billingStatus.remaining === 0,
+  );
 
   React.useEffect(() => {
     if (!conditions.includes(condition)) {
@@ -145,6 +155,7 @@ export function PredictTab({
 
     setIsPredicting(true);
     setErrorMsg(null);
+    setQuotaNotice(null);
 
     try {
       const response = await curavexApi.predictSingle(payload);
@@ -160,12 +171,17 @@ export function PredictTab({
         err instanceof Error
           ? err.message
           : "We couldn't reach the scoring engine. Check your connection and try again.";
-      setErrorMsg(message);
-      toast.add({
-        title: "Scoring failed",
-        description: message,
-        data: { variant: "error" },
-      });
+      if (err instanceof ApiError && err.code === "QUOTA_EXCEEDED") {
+        setQuotaNotice(message);
+        onPredictionComplete();
+      } else {
+        setErrorMsg(message);
+        toast.add({
+          title: "Scoring failed",
+          description: message,
+          data: { variant: "error" },
+        });
+      }
     } finally {
       setIsPredicting(false);
     }
@@ -403,6 +419,27 @@ export function PredictTab({
                     <SkeletonLine width="100%" />
                     <SkeletonLine width="85%" />
                   </div>
+                ) : quotaNotice || (quotaExhausted && !result) ? (
+                  <EmptyState
+                    icon={
+                      <IconLock
+                        size={28}
+                        stroke={1.6}
+                        className="text-[var(--cv-text-secondary)]"
+                      />
+                    }
+                    title="Monthly requests used"
+                    description={
+                      quotaNotice ??
+                      "You've used all free scoring requests for this month. Upgrade your plan to keep scoring patients."
+                    }
+                    action={
+                      <Button asChild variant="outline" size="md" className="min-h-[44px]">
+                        <a href="/pricing">View plans</a>
+                      </Button>
+                    }
+                    className="py-8"
+                  />
                 ) : result ? (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between gap-4">

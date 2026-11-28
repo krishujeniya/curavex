@@ -156,6 +156,18 @@ export interface EnterpriseInquiryRequest {
   requirements: string;
 }
 
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export const DEFAULT_API_KEY =
   process.env.NEXT_PUBLIC_API_KEY || "demo_key_public_guest";
 
@@ -215,7 +227,7 @@ async function apiRequest<T>(
   const res = await fetch(`${base}/api/v1${endpoint}`, options);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || "Request failed");
+    throw new ApiError(err.detail || "Request failed", res.status, err.code);
   }
   return res.json() as Promise<T>;
 }
@@ -252,7 +264,7 @@ export const curavexApi = {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail || "Upload failed");
+      throw new ApiError(err.detail || "Upload failed", res.status, err.code);
     }
     return res.json() as Promise<BatchPredictionResponse>;
   },

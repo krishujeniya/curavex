@@ -1226,6 +1226,15 @@ export default {
     }
 
     if (request.method === "POST" && path === "/api/v1/models/benchmark") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
       const suite: Record<string, unknown> = {};
       for (const m of REGISTRY_MODELS) {
         suite[m.algorithm] = {
@@ -1246,6 +1255,15 @@ export default {
 
     const promoteMatch = path.match(/^\/api\/v1\/models\/([^/]+)\/promote$/);
     if (request.method === "POST" && promoteMatch) {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
       const modelId = decodeURIComponent(promoteMatch[1]);
       const target = REGISTRY_MODELS.find((m) => m.model_id === modelId);
       if (!target) {
@@ -1278,6 +1296,15 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/monitoring/metrics") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
       const sorted = [...LATENCIES].sort((a, b) => a - b);
       const avg =
         sorted.length > 0
@@ -1304,6 +1331,15 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/monitoring/logs") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
       const limit = Math.min(
         500,
         Math.max(1, Number(url.searchParams.get("limit") || "15")),

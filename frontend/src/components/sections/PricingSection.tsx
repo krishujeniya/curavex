@@ -10,7 +10,6 @@ import { Button } from "@/components/wensity/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/wensity/card";
@@ -92,9 +91,6 @@ export function PricingSection() {
                   / month
                 </span>
               </div>
-              <CardDescription>
-                Includes 5 clinical scoring requests per calendar month.
-              </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
@@ -162,10 +158,6 @@ export function PricingSection() {
                   / month
                 </span>
               </div>
-              <CardDescription>
-                Built for hospitals, research groups, and clinical platforms that
-                need higher volume, custom models, or dedicated hosting.
-              </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">

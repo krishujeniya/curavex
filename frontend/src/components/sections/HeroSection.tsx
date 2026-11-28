@@ -1,3 +1,5 @@
+import { LogoAnatomy } from "@/components/sections/LogoAnatomy";
+
 export function HeroSection() {
   return (
     <section className="border-b border-[var(--cv-border)] bg-[var(--cv-canvas)]">
@@ -16,50 +18,7 @@ export function HeroSection() {
           </div>
 
           <div className="lg:col-span-5 min-w-0">
-            <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
-              <div className="relative aspect-square w-full overflow-hidden bg-[var(--cv-canvas)]">
-                <svg
-                  viewBox="0 0 400 400"
-                  className="absolute inset-0 size-full"
-                  aria-hidden="true"
-                >
-                  {[60, 110, 160, 210].map((r) => (
-                    <circle
-                      key={r}
-                      cx="200"
-                      cy="200"
-                      r={r}
-                      fill="none"
-                      stroke="var(--cv-border)"
-                      strokeWidth="1"
-                    />
-                  ))}
-                  <line x1="200" y1="0" x2="200" y2="400" stroke="var(--cv-border)" strokeWidth="1" />
-                  <line x1="0" y1="200" x2="400" y2="200" stroke="var(--cv-border)" strokeWidth="1" />
-                  <g
-                    style={{
-                      transformOrigin: "200px 200px",
-                      animation: "cv-radar-sweep 4s linear infinite",
-                    }}
-                  >
-                    <path
-                      d="M200 200 L200 20 A180 180 0 0 1 320 95 Z"
-                      fill="var(--cv-accent)"
-                      opacity="0.08"
-                    />
-                    <line
-                      x1="200"
-                      y1="200"
-                      x2="200"
-                      y2="20"
-                      stroke="var(--cv-accent)"
-                      strokeWidth="1.5"
-                      opacity="0.5"
-                    />
-                  </g>
-                </svg>
-              </div>
-            </div>
+            <LogoAnatomy />
           </div>
         </div>
       </div>

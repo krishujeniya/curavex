@@ -281,55 +281,16 @@ p, li, figcaption {
   }
 }
 
-@keyframes cv-radar-sweep {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes cv-logo-accent {
+  0%, 48% { opacity: 0; }
+  60%, 88% { opacity: 1; }
+  96%, 100% { opacity: 0; }
 }
 
-/* Product demo stage: pausing the stage freezes every descendant animation */
-.demo-paused,
-.demo-paused * {
-  animation-play-state: paused !important;
-}
-
-@keyframes cv-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.cv-enter {
-  animation: cv-fade-up 0.45s ease both;
-}
-
-@keyframes cv-demo-bar {
-  0%, 100% { width: 18%; }
-  50% { width: 86%; }
-}
-
-@keyframes cv-demo-row {
-  0%, 18% { opacity: 0; transform: translateY(6px); }
-  30%, 82% { opacity: 1; transform: translateY(0); }
-  94%, 100% { opacity: 0; transform: translateY(-4px); }
-}
-
-@keyframes cv-demo-spark {
-  0% { stroke-dashoffset: 240; }
-  55%, 100% { stroke-dashoffset: 0; }
-}
-
-@keyframes cv-demo-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes cv-logo-label {
+  0%, 50% { opacity: 0; transform: translateY(4px); }
+  60%, 90% { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; }
 }
 
 .footer-bottom {
@@ -1165,13 +1126,3 @@ input[type="radio"][aria-hidden="true"][tabindex="-1"] {
   }
 }
 /* ── End Wensity Primitive Tokens ── */
-
-@media (prefers-reduced-motion: reduce) {
-  .cv-enter {
-    animation: none;
-  }
-  .demo-paused,
-  .demo-paused * {
-    animation-play-state: running !important;
-  }
-}

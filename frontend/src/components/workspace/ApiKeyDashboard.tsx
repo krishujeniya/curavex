@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { IconKey, IconRefresh } from "@tabler/icons-react";
-import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/wensity/card";
 import { EmptyState } from "@/components/wensity/empty-state";
@@ -69,7 +68,7 @@ export function ApiKeyDashboard() {
         <Card>
           <CardContent className="p-6 space-y-1">
             <div className="text-caption text-[var(--cv-text-secondary)]">
-              Calls this month
+              Calls per month
             </div>
             <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
               {usage?.total_calls_month ?? 0}
@@ -109,21 +108,15 @@ export function ApiKeyDashboard() {
                   <div key={key.key_id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-label font-medium text-[var(--cv-text-primary)]">
-                            {key.name}
-                          </span>
-                          <Badge variant="outline" size="sm">
-                            {key.tier}
-                          </Badge>
-                        </div>
+                        <span className="text-label font-medium text-[var(--cv-text-primary)]">
+                          {key.name}
+                        </span>
                         <code className="block truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
                           {key.key_prefix}••••••{key.key_suffix}
                         </code>
                       </div>
                       <div className="font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0">
-                        {key.calls_month ?? 0}/{monthlyLimit} this month ·{" "}
-                        {key.calls_total ?? 0} total · {key.requests_per_minute} rpm
+                        {key.calls_month ?? 0}/{monthlyLimit} per month
                       </div>
                     </div>
                     <Progress

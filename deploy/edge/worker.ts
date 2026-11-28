@@ -101,27 +101,124 @@ const TIERS: Record<string, { rpm: number; monthly_limit: number }> = {
   enterprise: { rpm: 1200, monthly_limit: 1000000 },
 };
 
-const API_KEYS_STORE = new Map<
-  string,
-  {
-    id?: string;
-    name: string;
-    tier: string;
-    ownerId?: string;
-    requests_per_minute: number;
-    monthly_limit: number;
+const API_KEY_PREFIX = "live_curavex_";
+const API_KEY_DAILY_LIMIT = 10;
+
+interface ApiKeyRow {
+  key_hash: string;
+  key_id: string;
+  key_prefix: string;
+  key_suffix: string;
+  name: string;
+  tier: string;
+  owner_id: string | null;
+  requests_per_minute: number;
+  monthly_limit: number;
+  created_at: string;
+}
+
+let apiKeySchemaReady = false;
+
+async function ensureApiKeySchema(db: D1Database): Promise<void> {
+  if (apiKeySchemaReady) return;
+  await db.batch([
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS curavex_api_keys (
+        key_hash TEXT PRIMARY KEY,
+        key_id TEXT NOT NULL UNIQUE,
+        key_prefix TEXT NOT NULL,
+        key_suffix TEXT NOT NULL,
+        name TEXT NOT NULL,
+        tier TEXT NOT NULL,
+        owner_id TEXT,
+        requests_per_minute INTEGER NOT NULL,
+        monthly_limit INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        revoked INTEGER NOT NULL DEFAULT 0
+      )`,
+    ),
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS curavex_api_key_usage (
+        key_hash TEXT NOT NULL,
+        usage_date TEXT NOT NULL,
+        calls INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (key_hash, usage_date)
+      )`,
+    ),
+    db.prepare(
+      `CREATE INDEX IF NOT EXISTS idx_curavex_api_keys_owner
+       ON curavex_api_keys(owner_id)`,
+    ),
+  ]);
+  apiKeySchemaReady = true;
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(input),
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function findApiKey(
+  db: D1Database,
+  token: string,
+): Promise<ApiKeyRow | null> {
+  if (!token.startsWith(API_KEY_PREFIX)) return null;
+  await ensureApiKeySchema(db);
+  const keyHash = await sha256Hex(token);
+  return db
+    .prepare(
+      `SELECT key_hash, key_id, key_prefix, key_suffix, name, tier,
+              owner_id, requests_per_minute, monthly_limit, created_at
+       FROM curavex_api_keys
+       WHERE key_hash = ? AND revoked = 0`,
+    )
+    .bind(keyHash)
+    .first<ApiKeyRow>();
+}
+
+async function consumeApiKeyQuota(
+  db: D1Database,
+  key: ApiKeyRow,
+): Promise<{ allowed: boolean; used: number; limit: number }> {
+  await ensureApiKeySchema(db);
+  const today = new Date().toISOString().slice(0, 10);
+  let used = 0;
+  if (key.owner_id) {
+    const row = await db
+      .prepare(
+        `SELECT COALESCE(SUM(u.calls), 0) AS total
+         FROM curavex_api_key_usage u
+         JOIN curavex_api_keys k ON u.key_hash = k.key_hash
+         WHERE k.owner_id = ? AND u.usage_date = ?`,
+      )
+      .bind(key.owner_id, today)
+      .first<{ total: number }>();
+    used = row?.total ?? 0;
+  } else {
+    const row = await db
+      .prepare(
+        `SELECT calls FROM curavex_api_key_usage
+         WHERE key_hash = ? AND usage_date = ?`,
+      )
+      .bind(key.key_hash, today)
+      .first<{ calls: number }>();
+    used = row?.calls ?? 0;
   }
->([
-  [
-    "demo_key_public_guest",
-    {
-      name: "Public Demo Guest",
-      tier: "standard",
-      requests_per_minute: 300,
-      monthly_limit: 100000,
-    },
-  ],
-]);
+  await db
+    .prepare(
+      `INSERT INTO curavex_api_key_usage (key_hash, usage_date, calls)
+       VALUES (?, ?, 1)
+       ON CONFLICT(key_hash, usage_date) DO UPDATE SET calls = calls + 1`,
+    )
+    .bind(key.key_hash, today)
+    .run();
+  return { allowed: used < API_KEY_DAILY_LIMIT, used, limit: API_KEY_DAILY_LIMIT };
+}
 
 const AUDIT_LOGS: AuditLogEntry[] = [];
 const LATENCIES: number[] = [];
@@ -508,11 +605,6 @@ function parseCsvRows(csvText: string): ClinicalInput[] {
   return rows;
 }
 
-function maskKey(token: string): string {
-  if (token.length <= 8) return "••••";
-  return `${token.slice(0, 6)}••••••${token.slice(-4)}`;
-}
-
 function computePercentile(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0;
   const idx = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length));
@@ -752,15 +844,34 @@ export default {
     if (request.method === "POST" && path === "/api/v1/predict") {
       const auth = await verifyClerkJwt(request, env);
       const apiKeyHeader = request.headers.get("X-API-Key") || "";
-      const hasCustomApiKey =
-        apiKeyHeader.startsWith("live_curavex_") && API_KEYS_STORE.has(apiKeyHeader);
+      const apiKey =
+        !auth && env.DB && apiKeyHeader
+          ? await findApiKey(env.DB, apiKeyHeader)
+          : null;
 
-      if (!auth && !hasCustomApiKey) {
+      if (!auth && !apiKey) {
         return jsonResponse(
           request,
           { detail: "Sign in required to score patients.", code: "UNAUTHORIZED" },
           401,
         );
+      }
+
+      if (apiKey && env.DB) {
+        const quota = await consumeApiKeyQuota(env.DB, apiKey);
+        if (!quota.allowed) {
+          return jsonResponse(
+            request,
+            {
+              detail: `Daily API key limit reached (${quota.limit}/${quota.limit} calls used). Try again tomorrow.`,
+              code: "QUOTA_EXCEEDED",
+              used: quota.used,
+              limit: quota.limit,
+            },
+            429,
+            { "Cache-Control": "no-store" },
+          );
+        }
       }
 
       if (auth) {
@@ -822,15 +933,34 @@ export default {
     if (request.method === "POST" && path === "/api/v1/predict/upload-csv") {
       const auth = await verifyClerkJwt(request, env);
       const apiKeyHeader = request.headers.get("X-API-Key") || "";
-      const hasCustomApiKey =
-        apiKeyHeader.startsWith("live_curavex_") && API_KEYS_STORE.has(apiKeyHeader);
+      const apiKey =
+        !auth && env.DB && apiKeyHeader
+          ? await findApiKey(env.DB, apiKeyHeader)
+          : null;
 
-      if (!auth && !hasCustomApiKey) {
+      if (!auth && !apiKey) {
         return jsonResponse(
           request,
           { detail: "Sign in required to score cohorts.", code: "UNAUTHORIZED" },
           401,
         );
+      }
+
+      if (apiKey && env.DB) {
+        const quota = await consumeApiKeyQuota(env.DB, apiKey);
+        if (!quota.allowed) {
+          return jsonResponse(
+            request,
+            {
+              detail: `Daily API key limit reached (${quota.limit}/${quota.limit} calls used). Try again tomorrow.`,
+              code: "QUOTA_EXCEEDED",
+              used: quota.used,
+              limit: quota.limit,
+            },
+            429,
+            { "Cache-Control": "no-store" },
+          );
+        }
       }
 
       if (auth) {
@@ -1017,19 +1147,35 @@ export default {
           { "Cache-Control": "no-store" },
         );
       }
-      const list = Array.from(API_KEYS_STORE.entries())
-        .filter(
-          ([token, meta]) =>
-            token !== "demo_key_public_guest" && meta.ownerId === auth.userId,
-        )
-        .map(([token, meta]) => ({
-          id: meta.id ?? token,
-          api_key: maskKey(token),
-          name: meta.name,
-          tier: meta.tier,
-          requests_per_minute: meta.requests_per_minute,
-          monthly_limit: meta.monthly_limit,
-        }));
+      if (!env.DB) {
+        return jsonResponse(request, { detail: "Storage unavailable." }, 503);
+      }
+      await ensureApiKeySchema(env.DB);
+      const result = await env.DB.prepare(
+        `SELECT key_id, key_prefix, key_suffix, name, tier,
+                requests_per_minute, monthly_limit
+         FROM curavex_api_keys
+         WHERE owner_id = ? AND revoked = 0
+         ORDER BY created_at DESC`,
+      )
+        .bind(auth.userId)
+        .all<{
+          key_id: string;
+          key_prefix: string;
+          key_suffix: string;
+          name: string;
+          tier: string;
+          requests_per_minute: number;
+          monthly_limit: number;
+        }>();
+      const list = (result.results ?? []).map((row) => ({
+        id: row.key_id,
+        api_key: `${row.key_prefix}••••••${row.key_suffix}`,
+        name: row.name,
+        tier: row.tier,
+        requests_per_minute: row.requests_per_minute,
+        monthly_limit: row.monthly_limit,
+      }));
       return jsonResponse(request, list, 200, { "Cache-Control": "no-store" });
     }
 
@@ -1043,14 +1189,20 @@ export default {
           { "Cache-Control": "no-store" },
         );
       }
+      if (!env.DB) {
+        return jsonResponse(request, { detail: "Storage unavailable." }, 503);
+      }
       const keyId = decodeURIComponent(path.slice("/api/v1/api-keys/".length));
-      const entry = Array.from(API_KEYS_STORE.entries()).find(
-        ([, meta]) => (meta.id ?? "") === keyId && meta.ownerId === auth.userId,
-      );
-      if (!entry) {
+      await ensureApiKeySchema(env.DB);
+      const res = await env.DB.prepare(
+        `UPDATE curavex_api_keys SET revoked = 1
+         WHERE key_id = ? AND owner_id = ? AND revoked = 0`,
+      )
+        .bind(keyId, auth.userId)
+        .run();
+      if (!res.meta.changes) {
         return jsonResponse(request, { detail: "API key not found." }, 404);
       }
-      API_KEYS_STORE.delete(entry[0]);
       return jsonResponse(request, { status: "deleted" }, 200, {
         "Cache-Control": "no-store",
       });
@@ -1066,10 +1218,17 @@ export default {
           { "Cache-Control": "no-store" },
         );
       }
-      const ownedCount = Array.from(API_KEYS_STORE.values()).filter(
-        (meta) => meta.ownerId === auth.userId,
-      ).length;
-      if (ownedCount >= 3) {
+      if (!env.DB) {
+        return jsonResponse(request, { detail: "Storage unavailable." }, 503);
+      }
+      await ensureApiKeySchema(env.DB);
+      const owned = await env.DB.prepare(
+        `SELECT COUNT(*) AS total FROM curavex_api_keys
+         WHERE owner_id = ? AND revoked = 0`,
+      )
+        .bind(auth.userId)
+        .first<{ total: number }>();
+      if ((owned?.total ?? 0) >= 3) {
         return jsonResponse(
           request,
           { detail: "Maximum of 3 API keys per user reached." },
@@ -1088,21 +1247,33 @@ export default {
       if (!cfg) {
         return jsonResponse(request, { detail: `Invalid tier '${tier}'.` }, 400);
       }
-      const name = (body.name || "Clinical Client").trim();
+      const name = (body.name || "Clinical Client").trim().slice(0, 120);
       const bytes = new Uint8Array(12);
       crypto.getRandomValues(bytes);
       const token =
-        "live_curavex_" +
+        API_KEY_PREFIX +
         Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
       const keyId = crypto.randomUUID();
-      API_KEYS_STORE.set(token, {
-        id: keyId,
-        name,
-        tier,
-        ownerId: auth.userId,
-        requests_per_minute: cfg.rpm,
-        monthly_limit: cfg.monthly_limit,
-      });
+      const keyHash = await sha256Hex(token);
+      await env.DB.prepare(
+        `INSERT INTO curavex_api_keys
+         (key_hash, key_id, key_prefix, key_suffix, name, tier, owner_id,
+          requests_per_minute, monthly_limit, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+        .bind(
+          keyHash,
+          keyId,
+          token.slice(0, 12),
+          token.slice(-4),
+          name,
+          tier,
+          auth.userId,
+          cfg.rpm,
+          cfg.monthly_limit,
+          new Date().toISOString(),
+        )
+        .run();
       return jsonResponse(
         request,
         {

@@ -1,12 +1,16 @@
 services:
   curavex-saas:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: deploy/Dockerfile
     container_name: curavex
     restart: unless-stopped
     ports:
       - "8000:8000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     environment:
       - PORT=8000
       - PYTHONUNBUFFERED=1

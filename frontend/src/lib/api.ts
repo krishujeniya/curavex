@@ -295,7 +295,7 @@ export const curavexApi = {
   listModels: () => fetchStaticJson<RegisteredModel[]>("/static/models.json"),
 
   getModelDetails: (modelId: string) =>
-    apiRequest<ModelDetailResponse>(`/models/${modelId}`),
+    fetchStaticJson<ModelDetailResponse>(`/static/models/${modelId}.json`),
 
   runBenchmarkSuite: () =>
     apiRequest<{ benchmark_suite: Record<string, BenchmarkReport> }>(

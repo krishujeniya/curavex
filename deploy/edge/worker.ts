@@ -13,6 +13,19 @@ export interface Env {
   UPSTREAM_API?: string;
   CLERK_JWKS_URL?: string;
   CLERK_ISSUER?: string;
+  RL_FREE?: RateLimiter;
+  RL_STANDARD?: RateLimiter;
+  RL_ENTERPRISE?: RateLimiter;
+}
+
+interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
+function rateLimiterFor(env: Env, tier?: string): RateLimiter | undefined {
+  if (tier === "enterprise") return env.RL_ENTERPRISE;
+  if (tier === "standard") return env.RL_STANDARD;
+  return env.RL_FREE;
 }
 
 interface TreeNodeData {
@@ -227,6 +240,41 @@ async function lookupApiKey(
     console.warn("api-key lookup failed; treating as unauthenticated", err);
     return null;
   }
+}
+
+async function enforceRateLimit(
+  request: Request,
+  env: Env,
+  apiKey: ApiKeyRow | null,
+  auth: { userId: string } | null,
+): Promise<Response | null> {
+  const limiter = rateLimiterFor(env, apiKey?.tier);
+  if (!limiter) return null;
+  const subject = apiKey
+    ? `key:${apiKey.key_hash}`
+    : auth
+      ? `user:${auth.userId}`
+      : null;
+  if (!subject) return null;
+  try {
+    const { success } = await limiter.limit({ key: subject });
+    if (success) return null;
+  } catch (err) {
+    console.warn(
+      JSON.stringify({
+        evt: "rate_limit_check_failed",
+        rid: requestId(request),
+        err: String(err),
+      }),
+    );
+    return null;
+  }
+  return jsonResponse(
+    request,
+    { detail: "Rate limit exceeded. Retry shortly.", code: "RATE_LIMITED" },
+    429,
+    { "Cache-Control": "no-store", "Retry-After": "60" },
+  );
 }
 
 async function consumeApiKeyQuota(
@@ -939,6 +987,9 @@ export default {
         );
       }
 
+      const rateLimited = await enforceRateLimit(request, env, apiKey, auth);
+      if (rateLimited) return rateLimited;
+
       if (apiKey && env.DB) {
         try {
           const quota = await consumeApiKeyQuota(env.DB, apiKey);
@@ -1055,6 +1106,9 @@ export default {
           401,
         );
       }
+
+      const rateLimited = await enforceRateLimit(request, env, apiKey, auth);
+      if (rateLimited) return rateLimited;
 
       if (apiKey && env.DB) {
         try {

@@ -1,9 +1,3 @@
-const RADAR_NODES = [
-  { label: "support-agent", top: "18%", left: "62%" },
-  { label: "treatment-planner", top: "58%", left: "78%" },
-  { label: "triage-v3", top: "66%", left: "30%" },
-];
-
 export function HeroSection() {
   return (
     <section className="border-b border-[var(--cv-border)] bg-[var(--cv-canvas)]">
@@ -64,15 +58,6 @@ export function HeroSection() {
                     />
                   </g>
                 </svg>
-                {RADAR_NODES.map((node) => (
-                  <span
-                    key={node.label}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-2.5 py-1 font-mono text-[10px] text-[var(--cv-text-secondary)] shadow-sm whitespace-nowrap"
-                    style={{ top: node.top, left: node.left }}
-                  >
-                    {node.label}
-                  </span>
-                ))}
               </div>
             </div>
           </div>

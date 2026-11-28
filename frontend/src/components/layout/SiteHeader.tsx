@@ -92,6 +92,8 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
   const [productsOpen, setProductsOpen] = React.useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
+  const [scrolled, setScrolled] = React.useState(false);
+  const [navHidden, setNavHidden] = React.useState(false);
   const clerkReady = isClerkConfigured();
   const { user: localUser, openAuthModal, signOut } = useLocalAuth();
   const productsRef = React.useRef<HTMLDivElement>(null);
@@ -99,6 +101,46 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
   React.useEffect(() => {
     setTheme(readCurrentTheme());
   }, []);
+
+  React.useEffect(() => {
+    let lastY = Math.max(0, window.scrollY || 0);
+    let hidden = false;
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const y = Math.max(0, window.scrollY || 0);
+      setScrolled(y > 0);
+      if (y <= 0 || mobileOpen) {
+        if (hidden) {
+          hidden = false;
+          setNavHidden(false);
+        }
+        lastY = y;
+        return;
+      }
+      const delta = y - lastY;
+      if (delta > 5 && !hidden) {
+        hidden = true;
+        setNavHidden(true);
+      } else if (delta < -5 && hidden) {
+        hidden = false;
+        setNavHidden(false);
+      }
+      if (Math.abs(delta) > 5) lastY = y;
+    };
+
+    const queue = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", queue, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", queue);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [mobileOpen]);
 
   React.useEffect(() => {
     if (!mobileOpen) return;
@@ -160,7 +202,15 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[var(--cv-surface)]/85 backdrop-blur-md">
+      <header
+        className={`sticky top-0 z-[var(--z-sticky)] border-b bg-[var(--cv-surface)]/85 backdrop-blur-md transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.165,0.84,0.44,1)] will-change-transform ${
+          navHidden ? "-translate-y-full" : "translate-y-0"
+        } ${
+          scrolled
+            ? "border-[var(--cv-border)] bg-[var(--cv-surface)]/95"
+            : "border-transparent bg-[var(--cv-surface)]/70"
+        }`}
+      >
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"

@@ -1,21 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { AuthGate } from "@/components/auth/AuthGate";
-import { useCuravex } from "@/components/providers/CuravexProvider";
-import { ApiKeysTab } from "@/components/workspace/ApiKeysTab";
+import { useRouter } from "next/navigation";
 
 export default function ApiKeysPage() {
-  const { apiKeys, refreshApiKeys } = useCuravex();
+  const router = useRouter();
 
-  return (
-    <section className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-      <AuthGate
-        title="Sign in to manage API keys"
-        description="Sign in with your Curavex account to provision and view API keys."
-      >
-        <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
-      </AuthGate>
-    </section>
-  );
+  React.useEffect(() => {
+    router.replace("/monitoring?tab=keys");
+  }, [router]);
+
+  return null;
 }

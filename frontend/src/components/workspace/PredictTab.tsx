@@ -210,7 +210,7 @@ export function PredictTab({
                   <span className="font-medium text-[var(--cv-text-primary)] tabular-nums">
                     {billingStatus.remaining} of {billingStatus.limit} free requests remaining this month.
                   </span>{" "}
-                  <a href="/pricing" className="text-[var(--cv-text-primary)]">
+                  <a href="/#pricing" className="text-[var(--cv-text-primary)]">
                     View plans
                   </a>
                 </>
@@ -435,7 +435,7 @@ export function PredictTab({
                     }
                     action={
                       <Button asChild variant="outline" size="md" className="min-h-[44px]">
-                        <a href="/pricing">View plans</a>
+                        <a href="/#pricing">View plans</a>
                       </Button>
                     }
                     className="py-8"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArchitectureSection } from "@/components/sections/ArchitectureSection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { MethodologySection } from "@/components/sections/MethodologySection";
+import { PricingSection } from "@/components/sections/PricingSection";
 import { useCuravex } from "@/components/providers/CuravexProvider";
 import type { ClinicalCasePreset } from "@/lib/clinical-validation";
 
@@ -34,6 +35,7 @@ export default function OverviewPage() {
       />
       <ArchitectureSection />
       <MethodologySection datasetStats={datasetStats} />
+      <PricingSection />
     </>
   );
 }

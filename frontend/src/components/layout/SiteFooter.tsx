@@ -58,10 +58,7 @@ export function SiteFooter({ docsUrl }: { docsUrl: string }) {
           <nav className="footer-links" aria-label="Footer">
             <Link href="/">Overview</Link>
             <Link href="/scoring">Scoring</Link>
-            <Link href="/models">Models</Link>
             <Link href="/monitoring">Monitoring</Link>
-            <Link href="/api-keys">API keys</Link>
-            <Link href="/pricing">Pricing</Link>
             <a href={docsUrl} target="_blank" rel="noopener noreferrer">
               API docs
             </a>

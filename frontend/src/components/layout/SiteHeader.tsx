@@ -33,10 +33,7 @@ import {
 const NAV_LINKS = [
   { href: "/", label: "Overview" },
   { href: "/scoring", label: "Scoring" },
-  { href: "/models", label: "Models" },
   { href: "/monitoring", label: "Monitoring" },
-  { href: "/api-keys", label: "API keys" },
-  { href: "/pricing", label: "Pricing" },
 ];
 
 const GITHUB_URL = "https://github.com/krishujeniya/curavex";
@@ -173,7 +170,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
             label: "Model registry",
             description: "Compare, benchmark, and promote models",
             icon: <IconCpu size={16} />,
-            onSelect: () => goTo("/models"),
+            onSelect: () => goTo("/scoring?tab=models"),
           },
           {
             id: "workspace-monitoring",
@@ -187,7 +184,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
             label: "API keys",
             description: "Provision X-API-Key credentials",
             icon: <IconKey size={16} />,
-            onSelect: () => goTo("/api-keys"),
+            onSelect: () => goTo("/monitoring?tab=keys"),
           },
         ],
       },

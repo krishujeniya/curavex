@@ -24,7 +24,10 @@ const AUDIENCES = [
 
 export function PlatformSection() {
   return (
-    <section className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)]">
+    <section
+      id="platform"
+      className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] scroll-mt-20"
+    >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
         <div className="max-w-[65ch] space-y-4 mb-12">
           <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">

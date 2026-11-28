@@ -70,16 +70,20 @@ export function MethodologySection({
   return (
     <section
       id="methodology"
-      className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] py-12 sm:py-16 lg:py-20"
+      className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] py-16 sm:py-24 lg:py-28 scroll-mt-20"
     >
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="space-y-3 max-w-[65ch]">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
+        <div className="space-y-4 max-w-[65ch]">
+          <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
+            Methodology
+          </p>
           <h2 className="text-title text-[var(--cv-text-primary)]">
-            Cohort baseline and methodology
+            Cohort baseline and reference distributions
           </h2>
           <p className="text-body text-[var(--cv-text-secondary)]">
-            Global feature weights for the production Gradient Boosting model and
-            reference distribution across the {total.toLocaleString()} trial subjects.
+            Global feature weights for the production Gradient Boosting model
+            and the reference distribution across the{" "}
+            {total.toLocaleString()} trial subjects.
           </p>
         </div>
 

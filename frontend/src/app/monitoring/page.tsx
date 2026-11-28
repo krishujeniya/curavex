@@ -40,7 +40,21 @@ function MonitoringContent() {
   }
 
   return (
-    <Tabs variant="segmented" value={tab} onValueChange={handleTabChange}>
+    <div className="space-y-8">
+      <div className="space-y-3 max-w-[65ch]">
+        <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
+          Workspace
+        </p>
+        <h1 className="text-title text-[var(--cv-text-primary)]">
+          Monitoring &amp; access
+        </h1>
+        <p className="text-body text-[var(--cv-text-secondary)]">
+          Live telemetry, statistical drift diagnostics, the audit trail, and
+          API credentials.
+        </p>
+      </div>
+
+      <Tabs variant="segmented" value={tab} onValueChange={handleTabChange}>
       <TabsList>
         <TabsTrigger value="metrics">Monitoring</TabsTrigger>
         <TabsTrigger value="keys">API keys</TabsTrigger>
@@ -65,13 +79,14 @@ function MonitoringContent() {
           <ApiKeysTab apiKeys={apiKeys} onKeysUpdated={refreshApiKeys} />
         </AuthGate>
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }
 
 export default function MonitoringPage() {
   return (
-    <section className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+    <section className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
       <React.Suspense fallback={null}>
         <MonitoringContent />
       </React.Suspense>

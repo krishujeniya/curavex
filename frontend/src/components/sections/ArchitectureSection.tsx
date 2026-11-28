@@ -50,60 +50,62 @@ export function ArchitectureSection() {
   return (
     <section
       id="architecture"
-      className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] py-12 sm:py-16 lg:py-20"
+      className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] py-16 sm:py-24 lg:py-28 scroll-mt-20"
     >
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="space-y-3 max-w-[65ch]">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[65ch] space-y-4 pb-12 sm:pb-16">
+          <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
+            Architecture
+          </p>
           <h2 className="text-title text-[var(--cv-text-primary)]">
-            End-to-end clinical inference architecture
+            End-to-end clinical inference pipeline
           </h2>
           <p className="text-body text-[var(--cv-text-secondary)]">
             Every prediction passes through deterministic edge caching, schema
-            validation, calibrated ensemble regression, and continuous statistical
-            drift auditing.
+            validation, calibrated ensemble regression, and continuous
+            statistical drift auditing.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 border border-[var(--cv-border)] rounded-xl bg-[var(--cv-surface)] overflow-hidden divide-y md:divide-y-0">
-          {PIPELINE_STAGES.map((stage, idx) => (
-            <div
+        <ol className="border-t border-[var(--cv-border)]">
+          {PIPELINE_STAGES.map((stage) => (
+            <li
               key={stage.step}
-              className={[
-                "p-6 sm:p-8 flex flex-col justify-between gap-6 border-[var(--cv-border)]",
-                idx % 2 === 1 ? "md:border-l" : "",
-                idx >= 2 ? "md:border-t" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+              className="grid grid-cols-1 gap-4 border-b border-[var(--cv-border)] py-8 sm:grid-cols-12 sm:gap-8 sm:py-10"
             >
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-caption text-[var(--cv-text-secondary)]">
-                  <span className="font-mono tabular-nums font-medium text-[var(--cv-text-primary)]">
-                    {stage.step}
-                  </span>
-                  <span>{stage.layer}</span>
-                </div>
+              <div className="sm:col-span-2">
+                <span className="font-mono text-title tabular-nums text-[var(--cv-text-secondary)]">
+                  {stage.step}
+                </span>
+              </div>
+
+              <div className="sm:col-span-4 min-w-0 space-y-3">
+                <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
+                  {stage.layer}
+                </p>
                 <h3 className="text-heading text-[var(--cv-text-primary)]">
                   {stage.title}
                 </h3>
+              </div>
+
+              <div className="sm:col-span-6 min-w-0 space-y-4">
                 <p className="text-body text-[var(--cv-text-secondary)] max-w-[58ch]">
                   {stage.summary}
                 </p>
+                <div className="flex flex-wrap gap-2">
+                  {stage.artifacts.map((path) => (
+                    <code
+                      key={path}
+                      className="rounded-md border border-[var(--cv-border)] bg-[var(--cv-surface)] px-2.5 py-1 font-mono text-caption text-[var(--cv-text-secondary)]"
+                    >
+                      {path}
+                    </code>
+                  ))}
+                </div>
               </div>
-
-              <div className="flex flex-wrap gap-2">
-                {stage.artifacts.map((path) => (
-                  <code
-                    key={path}
-                    className="rounded-md border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-2.5 py-1 font-mono text-caption text-[var(--cv-text-secondary)]"
-                  >
-                    {path}
-                  </code>
-                ))}
-              </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

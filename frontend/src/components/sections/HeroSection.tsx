@@ -2,10 +2,6 @@
 
 import * as React from "react";
 import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
-import { Badge } from "@/components/wensity/badge";
-import { Button } from "@/components/wensity/button";
-import { Marker } from "@/components/wensity/marker";
-import { Separator } from "@/components/wensity/separator";
 import type {
   DatasetStats,
   DriftMetrics,
@@ -27,6 +23,14 @@ interface HeroSectionProps {
   onSelectPreset: (preset: ClinicalCasePreset) => void;
 }
 
+const SCAN_LINES = [
+  { target: "model-registry", detail: "gradient_boosting-v2.0.0-c31272 · PRODUCTION" },
+  { target: "predict", detail: "SHA-256 payload cache · deterministic" },
+  { target: "drift-detector", detail: "KS-test + PSI · hourly baseline" },
+  { target: "audit-log", detail: "append-only JSONL · 200 entries" },
+  { target: "quota-guard", detail: "monthly allowance · per-user D1 counter" },
+];
+
 export function HeroSection({
   activeModel,
   telemetry,
@@ -40,165 +44,144 @@ export function HeroSection({
   const conditionCount = datasetStats?.condition_distribution
     ? Object.keys(datasetStats.condition_distribution).length
     : 5;
-  const rmseValue = activeModel?.metrics?.rmse ?? 1.4602;
   const p50Latency = telemetry?.latency_ms?.p50 ?? 0;
+  const totalInferences = telemetry?.total_inferences ?? 0;
 
-  const snapshotRows: Array<{ label: string; value: string; meta?: string }> = [
-    {
-      label: "Serving model",
-      value: activeModel?.model_id ?? "gradient_boosting-v2.0.0-c31272",
-      meta: "production registry",
-    },
-    {
-      label: "Trial cohort",
-      value: `${totalRecords.toLocaleString()} subjects`,
-      meta: `${conditionCount} indications, 15 compounds`,
-    },
-    {
-      label: "Validation RMSE",
-      value: rmseValue.toFixed(4),
-      meta: "95% confidence interval",
-    },
-    {
-      label: "p50 latency",
-      value: `${p50Latency.toFixed(1)} ms`,
-      meta: "edge inference",
-    },
+  const stats = [
+    { label: "Trial subjects", value: totalRecords.toLocaleString() },
+    { label: "Indications", value: String(conditionCount) },
+    { label: "p50 latency", value: `${p50Latency.toFixed(1)} ms` },
+    { label: "Inferences served", value: totalInferences.toLocaleString() },
   ];
 
   return (
-    <section
-      id="top"
-      className="border-b border-[var(--cv-border)] bg-[var(--cv-surface)]"
-    >
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 pt-14 pb-16 sm:pt-20 sm:pb-24 lg:pt-28 lg:pb-32">
+    <section className="bg-[#0a0a0a] text-[#f4f4f5]">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          <div className="lg:col-span-8 min-w-0 space-y-8">
-            <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
-              Clinical treatment-response regression
-            </p>
+          <div className="lg:col-span-7 min-w-0 space-y-8">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-caption text-[#d4d4d4]">
+                <span
+                  className={`size-1.5 rounded-full ${
+                    apiStatus === "live"
+                      ? "bg-emerald-400"
+                      : apiStatus === "connecting"
+                        ? "bg-sky-400"
+                        : "bg-amber-400"
+                  }`}
+                />
+                {apiStatus === "live"
+                  ? "Edge live"
+                  : apiStatus === "connecting"
+                    ? "Connecting"
+                    : "Reference mode"}
+              </span>
+              <span className="text-caption font-mono text-[#a8a8a8]">
+                {activeModel?.model_id ?? "gradient_boosting-v2.0.0-c31272"}
+              </span>
+            </div>
 
-            <h1 className="text-display text-[var(--cv-text-primary)] max-w-[16ch]">
-              Predict clinical response with measurable drift control.
+            <h1 className="text-display text-white max-w-[15ch]">
+              Score every patient. Govern every model.
             </h1>
 
-            <p className="text-body text-[var(--cv-text-secondary)] max-w-[58ch]">
-              Score patient treatment trajectories, run batch CSV evaluations,
-              and monitor clinical drift in production.
+            <p className="text-body text-[#a8a8a8] max-w-[56ch]">
+              Curavex predicts clinical treatment response from regimen
+              parameters, scores multi-subject cohorts, and monitors statistical
+              drift across every prediction in production.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Button
-                variant="default"
-                size="lg"
-                rightIcon={<IconArrowDownRight size={17} />}
+              <button
+                type="button"
                 onClick={onStartScoring}
-                className="min-h-[44px]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white px-6 py-2.5 text-label font-semibold text-black transition-opacity hover:opacity-90 cursor-pointer"
               >
-                Score a patient
-              </Button>
-              <Button variant="outline" size="lg" asChild className="min-h-[44px]">
-                <a
-                  href="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document
-                      .getElementById("architecture")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                >
-                  <span>Inspect architecture</span>
-                  <IconArrowUpRight size={16} />
-                </a>
-              </Button>
+                <span>Score a patient</span>
+                <IconArrowDownRight size={16} stroke={2} aria-hidden="true" />
+              </button>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document
+                    .getElementById("architecture")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-label text-white hover:border-white/50 transition-colors"
+              >
+                <span>Inspect architecture</span>
+                <IconArrowUpRight size={16} stroke={2} aria-hidden="true" />
+              </a>
             </div>
 
-            <div className="pt-6 space-y-4">
-              <div className="text-caption text-[var(--cv-text-secondary)]">
-                Or load a clinical preset:
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {CLINICAL_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => onSelectPreset(preset)}
-                    className="inline-flex min-h-[44px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-canvas)] px-4 py-2 text-caption font-medium text-[var(--cv-text-primary)] hover:border-[var(--cv-accent)] transition-colors cursor-pointer"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
+            <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-white/10">
+              {stats.map((stat) => (
+                <div key={stat.label} className="space-y-1">
+                  <div className="text-caption text-[#a8a8a8]">{stat.label}</div>
+                  <div className="text-title tabular-nums text-white">
+                    {stat.value}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="lg:col-span-4 min-w-0">
-            <div className="border border-[var(--cv-border)] bg-[var(--cv-canvas)]">
-              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[var(--cv-border)]">
-                <span className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
-                  System snapshot
+          <div className="lg:col-span-5 min-w-0">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-3.5">
+                <span className="text-caption font-mono text-[#a8a8a8]">
+                  edge-scan · curavex-api
                 </span>
-                <Marker
-                  variant="status"
-                  tone={
-                    apiStatus === "live"
-                      ? "success"
-                      : apiStatus === "connecting"
-                        ? "info"
-                        : "warning"
-                  }
-                  label={
-                    apiStatus === "live"
-                      ? "Live API"
-                      : apiStatus === "connecting"
-                        ? "Connecting"
-                        : "Reference mode"
-                  }
-                />
+                <span className="inline-flex items-center gap-1.5 text-caption font-mono text-emerald-400">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  scanning
+                </span>
               </div>
 
-              <dl className="divide-y divide-[var(--cv-border)]">
-                {snapshotRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="px-5 py-4 flex items-baseline justify-between gap-4"
+              <ul className="divide-y divide-white/5">
+                {SCAN_LINES.map((line, i) => (
+                  <li
+                    key={line.target}
+                    className="flex items-center justify-between gap-4 px-5 py-3.5"
                   >
-                    <dt className="text-caption text-[var(--cv-text-secondary)] shrink-0">
-                      {row.label}
-                    </dt>
-                    <dd className="text-right min-w-0">
-                      <div className="font-mono text-label tabular-nums text-[var(--cv-text-primary)] truncate">
-                        {row.value}
+                    <div className="min-w-0">
+                      <div className="font-mono text-label text-white truncate">
+                        {line.target}
                       </div>
-                      {row.meta && (
-                        <div className="text-caption text-[var(--cv-text-secondary)] mt-0.5">
-                          {row.meta}
-                        </div>
-                      )}
-                    </dd>
-                  </div>
+                      <div className="text-caption text-[#a8a8a8] truncate">
+                        {line.detail}
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-md border border-white/10 px-2 py-0.5 font-mono text-caption text-[#a8a8a8]">
+                      ok
+                    </span>
+                  </li>
                 ))}
-              </dl>
+              </ul>
 
-              <Separator />
-
-              <div className="flex items-center justify-between gap-4 px-5 py-3.5 text-caption">
-                <span className="text-[var(--cv-text-secondary)]">
-                  Drift guard
+              <div className="border-t border-white/10 px-5 py-3.5 flex items-center justify-between gap-4 text-caption font-mono text-[#a8a8a8]">
+                <span>
+                  drift:{" "}
+                  {drift?.overall_drift_detected ? "ALERT" : "stable"}
                 </span>
-                <Badge
-                  variant={
-                    drift?.overall_drift_detected ? "warning" : "success"
-                  }
-                  dot
-                >
-                  {drift
-                    ? drift.overall_drift_detected
-                      ? `${drift.drifted_features_count ?? 1} drifted feature`
-                      : "Distribution stable"
-                    : "KS p < 0.05 guard"}
-                </Badge>
+                <span className="tabular-nums">
+                  {totalInferences.toLocaleString()} served
+                </span>
               </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {CLINICAL_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => onSelectPreset(preset)}
+                  className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 px-4 py-2 text-caption font-medium text-[#d4d4d4] hover:border-white/40 hover:text-white transition-colors cursor-pointer"
+                >
+                  {preset.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

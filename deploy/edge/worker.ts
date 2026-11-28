@@ -2,6 +2,7 @@ import modelsDataRaw from "./models_data.json";
 import datasetStatsRaw from "./dataset_stats.json";
 import featureImportancesRaw from "./feature_importances.json";
 import registryDataRaw from "../../backend/models/registry/registry.json";
+import clinicalMetadataStatic from "./public/static/metadata/clinical.json";
 
 export interface Env {
   AI?: unknown;
@@ -779,17 +780,9 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/metadata/clinical") {
-      return jsonResponse(
-        request,
-        {
-          conditions: Object.keys(CONDITION_DRUG_MAP).sort(),
-          condition_drug_mapping: CONDITION_DRUG_MAP,
-          genders: ALLOWED_GENDERS,
-          clinical_bounds: CLINICAL_BOUNDS,
-        },
-        200,
-        { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" },
-      );
+      return jsonResponse(request, clinicalMetadataStatic, 200, {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+      });
     }
 
     if (request.method === "GET" && path === "/api/v1/metadata/dataset-stats") {

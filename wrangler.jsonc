@@ -3,6 +3,10 @@
   "name": "api",
   "main": "deploy/edge/worker.ts",
   "compatibility_date": "2026-11-20",
+  "assets": {
+    "directory": "./deploy/edge/public",
+    "binding": "ASSETS"
+  },
   "ai": {
     "binding": "AI"
   },

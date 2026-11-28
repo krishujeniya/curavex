@@ -1,0 +1,23 @@
+{
+  "conditions": [
+    "Depression",
+    "Diabetes",
+    "Hypertension",
+    "Infection",
+    "Pain Relief"
+  ],
+  "condition_drug_mapping": {
+    "Depression": ["Bupropion", "Escitalopram", "Sertraline"],
+    "Diabetes": ["Glipizide", "Metformin", "Insulin Glargine"],
+    "Hypertension": ["Metoprolol", "Amlodipine", "Losartan"],
+    "Infection": ["Ciprofloxacin", "Azithromycin", "Amoxicillin"],
+    "Pain Relief": ["Paracetamol", "Ibuprofen", "Tramadol"]
+  },
+  "genders": ["Male", "Female"],
+  "clinical_bounds": {
+    "Age": { "min": 1, "max": 120, "default": 45 },
+    "Dosage_mg": { "min": 5.0, "max": 2000.0, "default": 250.0 },
+    "Treatment_Duration_days": { "min": 1, "max": 365, "default": 30 },
+    "Improvement_Score": { "min": 0.0, "max": 10.0 }
+  }
+}

@@ -132,38 +132,31 @@ export function CuravexProvider({ children }: { children: React.ReactNode }) {
     if (base) setDocsUrl(`${base}/docs`);
 
     let mounted = true;
-    async function bootstrap() {
-      const results = await Promise.allSettled([
-        curavexApi.getClinicalMetadata().then((m) => {
-          if (mounted) setClinicalMeta(m);
-        }),
-        curavexApi.getDatasetStats().then((s) => {
-          if (mounted) setDatasetStats(s);
-        }),
-        refreshModels(),
-        refreshTelemetry(),
-        refreshDrift(),
-        refreshApiKeys(),
-      ]);
-
-      if (!mounted) return;
-      const anySuccess = results.some((r) => r.status === "fulfilled");
-      setApiStatus(anySuccess ? "live" : "offline");
-    }
-
-    void bootstrap();
+    void curavexApi
+      .getClinicalMetadata()
+      .then((m) => {
+        if (mounted) {
+          setClinicalMeta(m);
+          setApiStatus("live");
+        }
+      })
+      .catch(() => {
+        if (mounted) setApiStatus("offline");
+      });
     return () => {
       mounted = false;
     };
-  }, [refreshApiKeys, refreshDrift, refreshModels, refreshTelemetry]);
+  }, []);
 
   React.useEffect(() => {
     if (signedIn) {
       void refreshBilling();
+      void refreshApiKeys().catch(() => {});
     } else {
       setBillingStatus(null);
+      setApiKeys([]);
     }
-  }, [signedIn, refreshBilling]);
+  }, [signedIn, refreshBilling, refreshApiKeys]);
 
   const value = React.useMemo<CuravexContextValue>(
     () => ({

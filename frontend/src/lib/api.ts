@@ -238,9 +238,19 @@ async function apiRequest<T>(
   return res.json() as Promise<T>;
 }
 
+async function fetchStaticJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) {
+    throw new ApiError(`Static asset request failed: ${res.status}`, res.status);
+  }
+  return res.json() as Promise<T>;
+}
+
 export const curavexApi = {
   getClinicalMetadata: () =>
-    apiRequest<ClinicalMetadata>("/metadata/clinical"),
+    fetchStaticJson<ClinicalMetadata>("/static/metadata/clinical.json"),
 
   getDatasetStats: () =>
     apiRequest<DatasetStats>("/metadata/dataset-stats"),

@@ -23,8 +23,6 @@ import {
 
 const PRODUCTS = [
   { href: "/scoring", label: "Score a patient" },
-  { href: "/scoring", label: "Score a cohort" },
-  { href: "/scoring?tab=models", label: "Model registry" },
   { href: "/monitoring", label: "Monitoring" },
   { href: "/monitoring?tab=keys", label: "API keys" },
 ];

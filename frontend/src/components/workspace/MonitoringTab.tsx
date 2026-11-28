@@ -325,7 +325,7 @@ export function MonitoringTab({
           ) : (
             <EmptyState
               title="No inference events recorded"
-              description="Run a single or batch prediction to populate the live audit trail."
+              description="Run a prediction to populate the live audit trail."
             />
           )}
         </CardContent>

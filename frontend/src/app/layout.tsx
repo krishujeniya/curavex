@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     siteName: "Curavex",
     title: "Curavex: Clinical Treatment Response & MLOps by Krish Ujeniya",
     description:
-      "Clinical treatment-response regression, batch cohort scoring, and drift observability platform built by Krish Ujeniya (krishujeniya).",
+      "Clinical treatment-response regression and drift observability platform built by Krish Ujeniya (krishujeniya).",
     images: [
       {
         url: "/assets/curavex-logo.png",
@@ -119,7 +119,7 @@ const jsonLd = {
       applicationCategory: "MedicalBusinessApplication",
       operatingSystem: "All",
       description:
-        "Clinical treatment-response regression and pharmacology MLOps platform for single/batch efficacy prediction, model governance, and KS/PSI drift monitoring.",
+        "Clinical treatment-response regression and pharmacology MLOps platform for single-patient efficacy prediction and KS/PSI drift monitoring.",
       url: "https://curavex.pages.dev/",
       codeRepository: "https://github.com/krishujeniya/curavex",
       programmingLanguage: ["TypeScript", "Python"],

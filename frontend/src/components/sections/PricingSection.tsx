@@ -18,7 +18,7 @@ import { Separator } from "@/components/wensity/separator";
 
 const FREE_FEATURES = [
   "5 scoring requests per calendar month",
-  "Single-patient and batch CSV cohort scoring",
+  "Single-patient clinical scoring",
   "Calibrated 95% confidence intervals",
   "Local feature attribution breakdown",
   "KS-test and PSI drift monitoring",

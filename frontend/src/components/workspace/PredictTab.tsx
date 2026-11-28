@@ -187,25 +187,16 @@ export function PredictTab({
     <TooltipProvider>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-title text-[var(--cv-text-primary)]">
-              Clinical scoring
-            </h2>
+          {billingStatus && billingStatus.limit !== null ? (
             <p className="text-body text-[var(--cv-text-secondary)]">
-              Evaluate an individual patient regimen.
-              {billingStatus && billingStatus.limit !== null && (
-                <>
-                  {" "}
-                  <span className="font-medium text-[var(--cv-text-primary)] tabular-nums">
-                    {billingStatus.remaining} of {billingStatus.limit} free requests remaining this month.
-                  </span>{" "}
-                  <a href="/#pricing" className="text-[var(--cv-text-primary)]">
-                    View plans
-                  </a>
-                </>
-              )}
+              <span className="font-medium text-[var(--cv-text-primary)] tabular-nums">
+                {billingStatus.remaining} of {billingStatus.limit} free requests remaining this month.
+              </span>{" "}
+              <a href="/#pricing" className="text-[var(--cv-text-primary)]">
+                View plans
+              </a>
             </p>
-          </div>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -510,7 +501,6 @@ export function PredictTab({
                       />
                     }
                     title="No prognosis run yet"
-                    description="Submit patient parameters or choose a clinical preset to compute an improvement score and feature attribution."
                     className="py-8"
                   />
                 )}
@@ -518,11 +508,6 @@ export function PredictTab({
             </Card>
           </ShimmeringSkeletonWrapper>
 
-          <Alert
-            variant="neutral"
-            title="Clinical calibration notice"
-            description="Predictions reflect historical trial-cohort patterns (Low 1.0–4.5, Medium 4.6–7.5, High 7.6–10.0). Review confidence bounds alongside clinical judgment."
-          />
         </aside>
         </div>
       </div>

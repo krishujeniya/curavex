@@ -27,16 +27,9 @@ function ScoringContent() {
   return (
     <div className="space-y-8">
       <div className="space-y-3 max-w-[65ch]">
-        <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
-          Workspace
-        </p>
         <h1 className="text-title text-[var(--cv-text-primary)]">
           Patient scoring
         </h1>
-        <p className="text-body text-[var(--cv-text-secondary)]">
-          Score an individual patient regimen with calibrated confidence
-          intervals and feature attribution.
-        </p>
       </div>
 
       <AuthGate

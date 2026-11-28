@@ -3,7 +3,6 @@
 import * as React from "react";
 import { IconEye, IconEyeOff, IconKey } from "@tabler/icons-react";
 import { Alert } from "@/components/wensity/alert";
-import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
 import {
   Card,
@@ -15,7 +14,6 @@ import {
 import { CopyButton } from "@/components/wensity/copy-button";
 import { EmptyState } from "@/components/wensity/empty-state";
 import { Input } from "@/components/wensity/input";
-import { RadioGroup, RadioOption } from "@/components/wensity/radio-group";
 import { Separator } from "@/components/wensity/separator";
 import {
   Tabs,
@@ -86,7 +84,6 @@ export function ApiKeysTab({
 }) {
   const toast = useToastManager();
   const [name, setName] = React.useState("");
-  const [tier, setTier] = React.useState("standard");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [revealedKeys, setRevealedKeys] = React.useState<Record<string, boolean>>(
     {},
@@ -104,7 +101,7 @@ export function ApiKeysTab({
     setFeedback(null);
 
     try {
-      await curavexApi.generateApiKey(name.trim(), tier);
+      await curavexApi.generateApiKey(name.trim(), "standard");
       setName("");
       await onKeysUpdated();
       const msg = "The new key is active and ready for X-API-Key requests.";
@@ -192,17 +189,6 @@ export function ApiKeysTab({
               </div>
             </div>
 
-            <RadioGroup
-              label="Tier"
-              variant="segment"
-              orientation="horizontal"
-              value={tier}
-              onValueChange={setTier}
-            >
-              <RadioOption value="free" label="Free (60 rpm)" />
-              <RadioOption value="standard" label="Standard (300 rpm)" />
-              <RadioOption value="enterprise" label="Enterprise (1,200 rpm)" />
-            </RadioGroup>
           </form>
 
           <Separator />
@@ -217,14 +203,9 @@ export function ApiKeysTab({
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3.5"
                   >
                     <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-label font-medium text-[var(--cv-text-primary)]">
-                          {record.name}
-                        </span>
-                        <Badge variant="outline" size="sm">
-                          {record.tier}
-                        </Badge>
-                      </div>
+                      <span className="text-label font-medium text-[var(--cv-text-primary)]">
+                        {record.name}
+                      </span>
                       <div className="flex items-center gap-1.5">
                         <code className="truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
                           {isVisible ? record.api_key : maskKey(record.api_key)}
@@ -258,9 +239,6 @@ export function ApiKeysTab({
                       </div>
                     </div>
 
-                    <div className="text-start sm:text-end font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0">
-                      {record.requests_per_minute} rpm
-                    </div>
                   </div>
                 );
               })}

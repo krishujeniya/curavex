@@ -42,16 +42,9 @@ function MonitoringContent() {
   return (
     <div className="space-y-8">
       <div className="space-y-3 max-w-[65ch]">
-        <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
-          Workspace
-        </p>
         <h1 className="text-title text-[var(--cv-text-primary)]">
           Monitoring &amp; access
         </h1>
-        <p className="text-body text-[var(--cv-text-secondary)]">
-          Live telemetry, statistical drift diagnostics, the audit trail, and
-          API credentials.
-        </p>
       </div>
 
       <Tabs variant="segmented" value={tab} onValueChange={handleTabChange}>

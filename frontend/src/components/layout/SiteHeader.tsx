@@ -22,8 +22,7 @@ import {
 } from "@/lib/theme";
 
 const PRODUCTS = [
-  { href: "/scoring", label: "Score a patient" },
-  { href: "/monitoring", label: "Monitoring" },
+  { href: "/scoring", label: "Score" },
   { href: "/monitoring?tab=keys", label: "API keys" },
 ];
 
@@ -236,15 +235,15 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
               </button>
 
               {productsOpen && (
-                <div className="absolute left-1/2 top-full z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pt-3">
-                  <div className="overflow-hidden rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-2 shadow-[0_24px_60px_rgba(0,0,0,0.14)]">
-                    <div className="grid grid-cols-2 gap-0.5 p-1.5">
+                <div className="absolute left-1/2 top-full z-50 w-48 -translate-x-1/2 pt-2">
+                  <div className="overflow-hidden rounded-xl bg-[var(--cv-surface)] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,0.12)]">
+                    <div className="flex flex-col gap-0.5">
                     {PRODUCTS.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
                         onClick={() => setProductsOpen(false)}
-                        className="rounded-lg px-3.5 py-2.5 text-[13px] font-medium text-[var(--cv-text-secondary)] transition-colors hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]"
+                        className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-[var(--cv-text-secondary)] transition-colors hover:bg-[var(--cv-surface-raised)] hover:text-[var(--cv-text-primary)]"
                       >
                         {item.label}
                       </Link>

@@ -102,7 +102,7 @@ const TIERS: Record<string, { rpm: number; monthly_limit: number }> = {
 };
 
 const API_KEY_PREFIX = "live_curavex_";
-const API_KEY_DAILY_LIMIT = 10;
+const API_KEY_MONTHLY_LIMIT = 10;
 
 interface ApiKeyRow {
   key_hash: string;
@@ -187,6 +187,7 @@ async function consumeApiKeyQuota(
 ): Promise<{ allowed: boolean; used: number; limit: number }> {
   await ensureApiKeySchema(db);
   const today = new Date().toISOString().slice(0, 10);
+  const month = today.slice(0, 7);
   let used = 0;
   if (key.owner_id) {
     const row = await db
@@ -194,20 +195,21 @@ async function consumeApiKeyQuota(
         `SELECT COALESCE(SUM(u.calls), 0) AS total
          FROM curavex_api_key_usage u
          JOIN curavex_api_keys k ON u.key_hash = k.key_hash
-         WHERE k.owner_id = ? AND u.usage_date = ?`,
+         WHERE k.owner_id = ? AND substr(u.usage_date, 1, 7) = ?`,
       )
-      .bind(key.owner_id, today)
+      .bind(key.owner_id, month)
       .first<{ total: number }>();
     used = row?.total ?? 0;
   } else {
     const row = await db
       .prepare(
-        `SELECT calls FROM curavex_api_key_usage
-         WHERE key_hash = ? AND usage_date = ?`,
+        `SELECT COALESCE(SUM(calls), 0) AS total
+         FROM curavex_api_key_usage
+         WHERE key_hash = ? AND substr(usage_date, 1, 7) = ?`,
       )
-      .bind(key.key_hash, today)
-      .first<{ calls: number }>();
-    used = row?.calls ?? 0;
+      .bind(key.key_hash, month)
+      .first<{ total: number }>();
+    used = row?.total ?? 0;
   }
   await db
     .prepare(
@@ -217,7 +219,11 @@ async function consumeApiKeyQuota(
     )
     .bind(key.key_hash, today)
     .run();
-  return { allowed: used < API_KEY_DAILY_LIMIT, used, limit: API_KEY_DAILY_LIMIT };
+  return {
+    allowed: used < API_KEY_MONTHLY_LIMIT,
+    used,
+    limit: API_KEY_MONTHLY_LIMIT,
+  };
 }
 
 const AUDIT_LOGS: AuditLogEntry[] = [];
@@ -863,7 +869,7 @@ export default {
           return jsonResponse(
             request,
             {
-              detail: `Daily API key limit reached (${quota.limit}/${quota.limit} calls used). Try again tomorrow.`,
+              detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
               code: "QUOTA_EXCEEDED",
               used: quota.used,
               limit: quota.limit,
@@ -952,7 +958,7 @@ export default {
           return jsonResponse(
             request,
             {
-              detail: `Daily API key limit reached (${quota.limit}/${quota.limit} calls used). Try again tomorrow.`,
+              detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
               code: "QUOTA_EXCEEDED",
               used: quota.used,
               limit: quota.limit,
@@ -1193,11 +1199,11 @@ export default {
         return jsonResponse(request, { detail: "Storage unavailable." }, 503);
       }
       await ensureApiKeySchema(env.DB);
-      const today = new Date().toISOString().slice(0, 10);
+      const month = new Date().toISOString().slice(0, 7);
       const result = await env.DB.prepare(
         `SELECT k.key_id, k.key_prefix, k.key_suffix, k.name, k.tier,
                 k.requests_per_minute, k.monthly_limit,
-                COALESCE(SUM(CASE WHEN u.usage_date = ? THEN u.calls END), 0) AS calls_today,
+                COALESCE(SUM(CASE WHEN substr(u.usage_date, 1, 7) = ? THEN u.calls END), 0) AS calls_month,
                 COALESCE(SUM(u.calls), 0) AS calls_total
          FROM curavex_api_keys k
          LEFT JOIN curavex_api_key_usage u ON u.key_hash = k.key_hash
@@ -1205,7 +1211,7 @@ export default {
          GROUP BY k.key_id
          ORDER BY k.created_at DESC`,
       )
-        .bind(today, auth.userId)
+        .bind(month, auth.userId)
         .all<{
           key_id: string;
           key_prefix: string;
@@ -1214,16 +1220,16 @@ export default {
           tier: string;
           requests_per_minute: number;
           monthly_limit: number;
-          calls_today: number;
+          calls_month: number;
           calls_total: number;
         }>();
       const keys = result.results ?? [];
       return jsonResponse(
         request,
         {
-          daily_limit: API_KEY_DAILY_LIMIT,
-          period: today,
-          total_calls_today: keys.reduce((sum, k) => sum + (k.calls_today ?? 0), 0),
+          monthly_limit: API_KEY_MONTHLY_LIMIT,
+          period: month,
+          total_calls_month: keys.reduce((sum, k) => sum + (k.calls_month ?? 0), 0),
           total_calls: keys.reduce((sum, k) => sum + (k.calls_total ?? 0), 0),
           keys,
         },

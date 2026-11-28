@@ -140,14 +140,14 @@ export interface ApiKeyUsageEntry {
   tier: string;
   requests_per_minute: number;
   monthly_limit: number;
-  calls_today: number;
+  calls_month: number;
   calls_total: number;
 }
 
 export interface ApiKeyUsage {
-  daily_limit: number;
+  monthly_limit: number;
   period: string;
-  total_calls_today: number;
+  total_calls_month: number;
   total_calls: number;
   keys: ApiKeyUsageEntry[];
 }

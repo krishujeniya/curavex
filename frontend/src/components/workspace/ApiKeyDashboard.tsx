@@ -33,7 +33,7 @@ export function ApiKeyDashboard() {
   }, [load]);
 
   const keys = usage?.keys ?? [];
-  const dailyLimit = usage?.daily_limit ?? 10;
+  const monthlyLimit = usage?.monthly_limit ?? 10;
 
   return (
     <div className="space-y-6">
@@ -69,13 +69,13 @@ export function ApiKeyDashboard() {
         <Card>
           <CardContent className="p-6 space-y-1">
             <div className="text-caption text-[var(--cv-text-secondary)]">
-              Calls today
+              Calls this month
             </div>
             <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
-              {usage?.total_calls_today ?? 0}
+              {usage?.total_calls_month ?? 0}
               <span className="text-body text-[var(--cv-text-secondary)]">
                 {" "}
-                / {dailyLimit}
+                / {monthlyLimit}
               </span>
             </div>
           </CardContent>
@@ -103,7 +103,7 @@ export function ApiKeyDashboard() {
               {keys.map((key) => {
                 const pct = Math.min(
                   100,
-                  Math.round(((key.calls_today ?? 0) / dailyLimit) * 100),
+                  Math.round(((key.calls_month ?? 0) / monthlyLimit) * 100),
                 );
                 return (
                   <div key={key.key_id} className="py-4 first:pt-0 last:pb-0">
@@ -122,20 +122,20 @@ export function ApiKeyDashboard() {
                         </code>
                       </div>
                       <div className="font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0">
-                        {key.calls_today ?? 0}/{dailyLimit} today ·{" "}
+                        {key.calls_month ?? 0}/{monthlyLimit} this month ·{" "}
                         {key.calls_total ?? 0} total · {key.requests_per_minute} rpm
                       </div>
                     </div>
                     <Progress
-                      value={key.calls_today ?? 0}
-                      max={dailyLimit}
+                      value={key.calls_month ?? 0}
+                      max={monthlyLimit}
                       size="sm"
                       tone={
-                        (key.calls_today ?? 0) >= dailyLimit
+                        (key.calls_month ?? 0) >= monthlyLimit
                           ? "warning"
                           : "neutral"
                       }
-                      label={`Daily usage for ${key.name}`}
+                      label={`Monthly usage for ${key.name}`}
                       className="mt-3"
                     />
                   </div>

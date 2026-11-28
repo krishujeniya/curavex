@@ -23,12 +23,10 @@ interface HeroSectionProps {
   onSelectPreset: (preset: ClinicalCasePreset) => void;
 }
 
-const SCAN_LINES = [
-  { target: "model-registry", detail: "gradient_boosting-v2.0.0-c31272 · PRODUCTION" },
-  { target: "predict", detail: "SHA-256 payload cache · deterministic" },
-  { target: "drift-detector", detail: "KS-test + PSI · hourly baseline" },
-  { target: "audit-log", detail: "append-only JSONL · 200 entries" },
-  { target: "quota-guard", detail: "monthly allowance · per-user D1 counter" },
+const RADAR_NODES = [
+  { label: "support-agent", top: "18%", left: "62%" },
+  { label: "treatment-planner", top: "58%", left: "78%" },
+  { label: "triage-v3", top: "66%", left: "30%" },
 ];
 
 export function HeroSection({
@@ -55,19 +53,19 @@ export function HeroSection({
   ];
 
   return (
-    <section className="bg-[#0a0a0a] text-[#f4f4f5]">
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+    <section className="border-b border-[var(--cv-border)] bg-[var(--cv-canvas)]">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-28 lg:pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="lg:col-span-7 min-w-0 space-y-8">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-caption text-[#d4d4d4]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3 py-1 text-caption text-[var(--cv-text-secondary)]">
                 <span
                   className={`size-1.5 rounded-full ${
                     apiStatus === "live"
-                      ? "bg-emerald-400"
+                      ? "bg-emerald-500"
                       : apiStatus === "connecting"
-                        ? "bg-sky-400"
-                        : "bg-amber-400"
+                        ? "bg-sky-500"
+                        : "bg-amber-500"
                   }`}
                 />
                 {apiStatus === "live"
@@ -76,50 +74,46 @@ export function HeroSection({
                     ? "Connecting"
                     : "Reference mode"}
               </span>
-              <span className="text-caption font-mono text-[#a8a8a8]">
+              <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
                 {activeModel?.model_id ?? "gradient_boosting-v2.0.0-c31272"}
               </span>
             </div>
 
-            <h1 className="text-display text-white max-w-[15ch]">
+            <h1 className="text-display text-[var(--cv-text-primary)] max-w-[16ch]">
               Score every patient. Govern every model.
             </h1>
 
-            <p className="text-body text-[#a8a8a8] max-w-[56ch]">
+            <p className="text-body text-[var(--cv-text-secondary)] max-w-[56ch]">
               Curavex predicts clinical treatment response from regimen
-              parameters, scores multi-subject cohorts, and monitors statistical
-              drift across every prediction in production.
+              parameters, scores multi-subject cohorts, and monitors
+              statistical drift across every prediction in production.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={onStartScoring}
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white px-6 py-2.5 text-label font-semibold text-black transition-opacity hover:opacity-90 cursor-pointer"
+                className="inline-flex min-h-[46px] items-center gap-2 rounded-full bg-[var(--cv-accent)] px-6 py-2.5 text-label font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
               >
                 <span>Score a patient</span>
                 <IconArrowDownRight size={16} stroke={2} aria-hidden="true" />
               </button>
               <a
-                href="/"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById("architecture")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-label text-white hover:border-white/50 transition-colors"
+                href="/#architecture"
+                className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-[var(--cv-border)] px-5 py-2.5 text-label font-medium text-[var(--cv-text-primary)] hover:border-[var(--cv-border-strong)] transition-colors"
               >
                 <span>Inspect architecture</span>
                 <IconArrowUpRight size={16} stroke={2} aria-hidden="true" />
               </a>
             </div>
 
-            <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-white/10">
+            <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-[var(--cv-border)]">
               {stats.map((stat) => (
                 <div key={stat.label} className="space-y-1">
-                  <div className="text-caption text-[#a8a8a8]">{stat.label}</div>
-                  <div className="text-title tabular-nums text-white">
+                  <div className="text-caption text-[var(--cv-text-secondary)]">
+                    {stat.label}
+                  </div>
+                  <div className="text-title tabular-nums text-[var(--cv-text-primary)]">
                     {stat.value}
                   </div>
                 </div>
@@ -128,46 +122,77 @@ export function HeroSection({
           </div>
 
           <div className="lg:col-span-5 min-w-0">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-3.5">
-                <span className="text-caption font-mono text-[#a8a8a8]">
-                  edge-scan · curavex-api
+            <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
+              <div className="flex items-center justify-between gap-3 border-b border-[var(--cv-border)] px-5 py-3.5">
+                <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
+                  runtime security — live
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-caption font-mono text-emerald-400">
-                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-caption font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   scanning
                 </span>
               </div>
 
-              <ul className="divide-y divide-white/5">
-                {SCAN_LINES.map((line, i) => (
-                  <li
-                    key={line.target}
-                    className="flex items-center justify-between gap-4 px-5 py-3.5"
+              <div className="relative aspect-square w-full overflow-hidden bg-[var(--cv-canvas)]">
+                <svg
+                  viewBox="0 0 400 400"
+                  className="absolute inset-0 size-full"
+                  aria-hidden="true"
+                >
+                  {[60, 110, 160, 210].map((r) => (
+                    <circle
+                      key={r}
+                      cx="200"
+                      cy="200"
+                      r={r}
+                      fill="none"
+                      stroke="var(--cv-border)"
+                      strokeWidth="1"
+                    />
+                  ))}
+                  <line x1="200" y1="0" x2="200" y2="400" stroke="var(--cv-border)" strokeWidth="1" />
+                  <line x1="0" y1="200" x2="400" y2="200" stroke="var(--cv-border)" strokeWidth="1" />
+                  <g
+                    style={{
+                      transformOrigin: "200px 200px",
+                      animation: "cv-radar-sweep 4s linear infinite",
+                    }}
                   >
-                    <div className="min-w-0">
-                      <div className="font-mono text-label text-white truncate">
-                        {line.target}
-                      </div>
-                      <div className="text-caption text-[#a8a8a8] truncate">
-                        {line.detail}
-                      </div>
-                    </div>
-                    <span className="shrink-0 rounded-md border border-white/10 px-2 py-0.5 font-mono text-caption text-[#a8a8a8]">
-                      ok
-                    </span>
-                  </li>
+                    <path
+                      d="M200 200 L200 20 A180 180 0 0 1 320 95 Z"
+                      fill="var(--cv-accent)"
+                      opacity="0.08"
+                    />
+                    <line
+                      x1="200"
+                      y1="200"
+                      x2="200"
+                      y2="20"
+                      stroke="var(--cv-accent)"
+                      strokeWidth="1.5"
+                      opacity="0.5"
+                    />
+                  </g>
+                </svg>
+                {RADAR_NODES.map((node) => (
+                  <span
+                    key={node.label}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-2.5 py-1 font-mono text-[10px] text-[var(--cv-text-secondary)] shadow-sm whitespace-nowrap"
+                    style={{ top: node.top, left: node.left }}
+                  >
+                    {node.label}
+                  </span>
                 ))}
-              </ul>
+              </div>
 
-              <div className="border-t border-white/10 px-5 py-3.5 flex items-center justify-between gap-4 text-caption font-mono text-[#a8a8a8]">
+              <div className="border-t border-[var(--cv-border)] px-5 py-4 flex items-center justify-between gap-4 text-caption font-mono text-[var(--cv-text-secondary)] tabular-nums">
                 <span>
                   drift:{" "}
-                  {drift?.overall_drift_detected ? "ALERT" : "stable"}
+                  <span className={drift?.overall_drift_detected ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}>
+                    {drift?.overall_drift_detected ? "ALERT" : "stable"}
+                  </span>
                 </span>
-                <span className="tabular-nums">
-                  {totalInferences.toLocaleString()} served
-                </span>
+                <span>{totalInferences.toLocaleString()} inferences served</span>
               </div>
             </div>
 
@@ -177,7 +202,7 @@ export function HeroSection({
                   key={preset.id}
                   type="button"
                   onClick={() => onSelectPreset(preset)}
-                  className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 px-4 py-2 text-caption font-medium text-[#d4d4d4] hover:border-white/40 hover:text-white transition-colors cursor-pointer"
+                  className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3.5 text-caption font-medium text-[var(--cv-text-secondary)] hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
                 >
                   {preset.label}
                 </button>

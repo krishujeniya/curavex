@@ -1,27 +1,36 @@
 "use client";
 
 import * as React from "react";
-import { IconArrowUpRight } from "@tabler/icons-react";
+import {
+  IconArrowUpRight,
+  IconHeartbeat,
+  IconLock,
+  IconShieldCheck,
+} from "@tabler/icons-react";
 import { Badge } from "@/components/wensity/badge";
-import { Progress } from "@/components/wensity/progress";
-import { Separator } from "@/components/wensity/separator";
 
-const PILLARS = [
+const AUDIENCES = [
   {
-    audience: "Clinical teams",
-    title: "Calibrated scores you can defend",
-    body: "Every prediction returns a point estimate with a 95% confidence interval and per-feature attribution — decision support, not a black box.",
+    title: "Clinical teams",
+    body: "Calibrated scores with confidence intervals and per-feature attribution — decision support you can defend at the point of care.",
+    icon: IconHeartbeat,
   },
   {
-    audience: "MLOps engineers",
-    title: "Registry, drift, and audit built in",
-    body: "Versioned .joblib registry with STAGING-to-PRODUCTION promotion, KS/PSI drift detection, and an append-only inference audit trail.",
+    title: "MLOps engineers",
+    body: "A versioned model registry, KS/PSI drift detection, and an append-only inference audit trail — governance without a second system.",
+    icon: IconShieldCheck,
   },
   {
-    audience: "Platform & security",
-    title: "Controlled access by default",
-    body: "Tiered X-API-Key rate limits, monthly quotas, CORS and security headers at the edge, and per-key usage visibility.",
+    title: "Platform & security",
+    body: "Tiered X-API-Key rate limits, monthly quotas, edge-enforced CORS and security headers, and per-key usage visibility.",
+    icon: IconLock,
   },
+];
+
+const EVAL_ROWS = [
+  { model: "gradient_boosting-v2.0.0", score: "0.91", status: "PASSED" },
+  { model: "logistic-regression-v1.4.2", score: "0.84", status: "PASSED" },
+  { model: "support-agent-v4", score: "0.88", status: "PASSED" },
 ];
 
 const AUDIT_FEED = [
@@ -31,14 +40,110 @@ const AUDIT_FEED = [
   { time: "12:18", event: "model promoted", detail: "gradient_boosting-v2.0.0 → PRODUCTION", tone: "ok" },
 ];
 
+function EvalsCard() {
+  return (
+    <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--cv-border)] px-5 py-3.5">
+        <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
+          evals — support-agent-v4
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-caption font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          passed
+        </span>
+      </div>
+      <ul className="divide-y divide-[var(--cv-border)]">
+        {EVAL_ROWS.map((row) => (
+          <li
+            key={row.model}
+            className="flex items-center justify-between gap-4 px-5 py-3.5"
+          >
+            <span className="font-mono text-label text-[var(--cv-text-primary)] truncate">
+              {row.model}
+            </span>
+            <div className="flex items-center gap-4 shrink-0">
+              <span className="font-mono text-caption tabular-nums text-[var(--cv-text-secondary)]">
+                {row.score}
+              </span>
+              <Badge variant="success" size="sm">
+                {row.status}
+              </Badge>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="border-t border-[var(--cv-border)] px-5 py-4">
+        <div className="flex items-center justify-between text-caption text-[var(--cv-text-secondary)] mb-2">
+          <span className="font-mono">PII leakage</span>
+          <span className="font-mono tabular-nums">0.00</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-[var(--cv-border)] overflow-hidden">
+          <div className="h-full w-full rounded-full bg-[var(--cv-accent)]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditCard() {
+  return (
+    <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--cv-border)] px-5 py-3.5">
+        <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
+          runtime audit — live feed
+        </span>
+        <Badge variant="success" dot size="sm">
+          nominal
+        </Badge>
+      </div>
+      <ul className="divide-y divide-[var(--cv-border)] px-5">
+        {AUDIT_FEED.map((row) => (
+          <li
+            key={row.time + row.event}
+            className="flex items-start gap-4 py-3.5"
+          >
+            <span className="font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0 pt-0.5">
+              {row.time}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-label font-medium text-[var(--cv-text-primary)]">
+                {row.event}
+              </div>
+              <div className="text-caption text-[var(--cv-text-secondary)] truncate">
+                {row.detail}
+              </div>
+            </div>
+            <Badge
+              variant={row.tone === "warn" ? "warning" : "success"}
+              size="sm"
+              className="shrink-0"
+            >
+              {row.tone === "warn" ? "flagged" : "ok"}
+            </Badge>
+          </li>
+        ))}
+      </ul>
+      <div className="border-t border-[var(--cv-border)] px-5 py-4">
+        <a
+          href="/monitoring"
+          className="inline-flex items-center gap-1.5 text-label font-medium text-[var(--cv-text-primary)] hover:underline underline-offset-4"
+        >
+          Open live monitoring
+          <IconArrowUpRight size={15} aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export function PlatformSection() {
   return (
-    <section className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] py-16 sm:py-24 lg:py-28">
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-14 sm:space-y-20">
-        {/* Pillars */}
+    <section className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)]">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28 space-y-20 sm:space-y-28">
+        {/* Audience overview — 3-column with top rules + circular badges */}
         <div className="space-y-10">
           <div className="max-w-[65ch] space-y-4">
-            <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
+            <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
               Platform
             </p>
             <h2 className="text-title text-[var(--cv-text-primary)]">
@@ -51,147 +156,76 @@ export function PlatformSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px border border-[var(--cv-border)] bg-[var(--cv-border)] rounded-2xl overflow-hidden">
-            {PILLARS.map((pillar) => (
-              <div
-                key={pillar.title}
-                className="bg-[var(--cv-surface)] p-7 sm:p-8 flex flex-col gap-4"
-              >
-                <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
-                  {pillar.audience}
-                </p>
-                <h3 className="text-heading text-[var(--cv-text-primary)]">
-                  {pillar.title}
-                </h3>
-                <p className="text-body text-[var(--cv-text-secondary)]">
-                  {pillar.body}
-                </p>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
+            {AUDIENCES.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="border-t border-[var(--cv-border)] pt-6 space-y-4">
+                  <span className="inline-flex size-11 items-center justify-center rounded-full bg-[var(--cv-accent)] text-[var(--cv-on-accent)]">
+                    <Icon size={20} stroke={1.8} aria-hidden="true" />
+                  </span>
+                  <h3 className="text-heading text-[var(--cv-text-primary)]">
+                    {item.title}
+                  </h3>
+                  <p className="text-body text-[var(--cv-text-secondary)]">
+                    {item.body}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Product panels */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Prediction output mock */}
-          <div className="rounded-2xl border border-[var(--cv-border)] bg-[#0a0a0a] text-[#f4f4f5] p-7 sm:p-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-caption font-mono text-[#a8a8a8]">
-                /api/v1/predict · live output
-              </span>
-              <span className="rounded-md border border-white/15 px-2 py-0.5 font-mono text-caption text-[#a8a8a8]">
-                gradient_boosting-v2.0.0
-              </span>
+        {/* Alternating feature splits */}
+        <div className="space-y-20 sm:space-y-28">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div className="space-y-5">
+              <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
+                Governance &amp; audit
+              </p>
+              <h3 className="text-title text-[var(--cv-text-primary)]">
+                Every score is reproducible, attributable, and logged
+              </h3>
+              <p className="text-body text-[var(--cv-text-secondary)] max-w-[52ch]">
+                Predictions return point estimates with 95% confidence
+                intervals and per-feature attribution. Every inference lands
+                in an append-only audit trail you can replay months later.
+              </p>
+              <a
+                href="/scoring"
+                className="inline-flex items-center gap-1.5 pt-2 text-label font-medium text-[var(--cv-text-primary)] hover:underline underline-offset-4"
+              >
+                Try scoring
+                <IconArrowUpRight size={15} aria-hidden="true" />
+              </a>
             </div>
-
-            <div className="space-y-2">
-              <div className="text-caption text-[#a8a8a8]">
-                Expected improvement score
-              </div>
-              <div className="flex items-baseline gap-2 tabular-nums">
-                <span className="text-display text-white">7.20</span>
-                <span className="text-body text-[#a8a8a8]">/ 10.0</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-caption text-[#a8a8a8]">
-                <span>95% confidence interval</span>
-                <code className="font-mono text-white slashed-zero">
-                  [4.34 – 10.00]
-                </code>
-              </div>
-              <Progress
-                value={7.2}
-                max={10}
-                size="md"
-                tone="brand"
-                label="Improvement score"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="text-caption font-medium uppercase tracking-[0.14em] text-[#a8a8a8]">
-                Local feature attribution
-              </div>
-              {[
-                { feature: "Treatment_Duration_days", pct: 82 },
-                { feature: "Age", pct: 64 },
-                { feature: "Drug_Name", pct: 41 },
-              ].map((item) => (
-                <div key={item.feature} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-caption">
-                    <span className="font-mono text-[#d4d4d4]">{item.feature}</span>
-                    <span className="font-mono tabular-nums text-[#a8a8a8]">
-                      {item.pct}%
-                    </span>
-                  </div>
-                  <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-white/80"
-                      style={{ width: `${item.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-auto flex items-center justify-between gap-4 text-caption font-mono text-[#a8a8a8] tabular-nums">
-              <span>Inference: 0.2 ms</span>
-              <span className="truncate max-w-[220px]">
-                gradient_boosting-v2.0.0-c31272
-              </span>
-            </div>
+            <EvalsCard />
           </div>
 
-          {/* Audit feed mock */}
-          <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-7 sm:p-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
-                Runtime audit · live feed
-              </span>
-              <Badge variant="success" dot size="sm">
-                nominal
-              </Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div className="lg:order-2 space-y-5">
+              <p className="text-caption font-medium uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
+                Runtime security
+              </p>
+              <h3 className="text-title text-[var(--cv-text-primary)]">
+                Drift detection runs on every production cohort
+              </h3>
+              <p className="text-body text-[var(--cv-text-secondary)] max-w-[52ch]">
+                KS and PSI tests compare live feature distributions against
+                the training baseline hourly. Alerts surface before a
+                degraded model reaches a patient.
+              </p>
+              <a
+                href="/monitoring"
+                className="inline-flex items-center gap-1.5 pt-2 text-label font-medium text-[var(--cv-text-primary)] hover:underline underline-offset-4"
+              >
+                View monitoring
+                <IconArrowUpRight size={15} aria-hidden="true" />
+              </a>
             </div>
-
-            <ul className="divide-y divide-[var(--cv-border)] flex-1">
-              {AUDIT_FEED.map((row) => (
-                <li
-                  key={row.time + row.event}
-                  className="flex items-start gap-4 py-3.5 first:pt-0 last:pb-0"
-                >
-                  <span className="font-mono text-caption tabular-nums text-[var(--cv-text-secondary)] shrink-0 pt-0.5">
-                    {row.time}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-label font-medium text-[var(--cv-text-primary)]">
-                      {row.event}
-                    </div>
-                    <div className="text-caption text-[var(--cv-text-secondary)] truncate">
-                      {row.detail}
-                    </div>
-                  </div>
-                  <Badge
-                    variant={row.tone === "warn" ? "warning" : "success"}
-                    size="sm"
-                    className="shrink-0"
-                  >
-                    {row.tone === "warn" ? "flagged" : "ok"}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-
-            <a
-              href="/monitoring"
-              className="inline-flex items-center gap-1.5 text-label font-medium text-[var(--cv-text-primary)] hover:underline underline-offset-4"
-            >
-              Open live monitoring
-              <IconArrowUpRight size={15} aria-hidden="true" />
-            </a>
+            <div className="lg:order-1">
+              <AuditCard />
+            </div>
           </div>
         </div>
       </div>

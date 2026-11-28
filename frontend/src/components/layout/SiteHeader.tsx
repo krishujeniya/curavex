@@ -2,28 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   SignInButton,
-  SignUpButton,
   UserButton,
   useAuth,
 } from "@clerk/react";
-import {
-  IconBook,
-  IconBrandGithub,
-  IconChartBar,
-  IconCpu,
-  IconKey,
-  IconPalette,
-  IconSearch,
-  IconTable,
-} from "@tabler/icons-react";
 import { isClerkConfigured } from "@/components/auth/ClerkAuthWrapper";
 import { useLocalAuth } from "@/components/auth/AuthProvider";
 import { HamburgerMenu } from "@/components/wensity/animated-hamburger-menu";
-import { CommandDialog, type CommandGroup } from "@/components/wensity/command";
-import { CLINICAL_PRESETS } from "@/lib/clinical-validation";
 import {
   persistTheme,
   readCurrentTheme,
@@ -36,9 +23,6 @@ const NAV_LINKS = [
   { href: "/monitoring", label: "Monitoring" },
 ];
 
-const GITHUB_URL = "https://github.com/krishujeniya/curavex";
-const DEFAULT_DOCS_URL = "https://api.curavex.workers.dev/docs";
-
 interface SiteHeaderProps {
   docsUrl?: string;
 }
@@ -50,9 +34,9 @@ function ClerkHeaderAuth() {
       <SignInButton mode="modal">
         <button
           type="button"
-          className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
+          className="inline-flex h-[38px] items-center rounded-full border border-[var(--cv-border)] px-4 text-[13px] font-medium text-[var(--cv-text-primary)] transition-colors hover:border-[var(--cv-border-strong)] hover:bg-[var(--cv-surface-raised)] cursor-pointer"
         >
-          Login
+          Sign in
         </button>
       </SignInButton>
     );
@@ -68,30 +52,16 @@ function ClerkHeaderAuth() {
   );
 }
 
-export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
+export function SiteHeader({ docsUrl }: SiteHeaderProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const normalizedPath = (pathname || "/").replace(/\/$/, "") || "/";
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [commandOpen, setCommandOpen] = React.useState(false);
   const [theme, setTheme] = React.useState<ThemeMode>("light");
   const clerkReady = isClerkConfigured();
   const { user: localUser, openAuthModal, signOut } = useLocalAuth();
 
   React.useEffect(() => {
     setTheme(readCurrentTheme());
-  }, []);
-
-  React.useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setCommandOpen((open) => !open);
-      }
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   React.useEffect(() => {
@@ -119,132 +89,23 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
     persistTheme(next);
   }
 
-  function goTo(href: string) {
-    setMobileOpen(false);
-    setCommandOpen(false);
-    router.push(href);
-  }
-
-  const commandGroups: CommandGroup[] = React.useMemo(
-    () => [
-      {
-        heading: "Pages",
-        items: NAV_LINKS.map((item) => ({
-          id: `page-${item.href}`,
-          label: item.label,
-          description: item.href,
-          onSelect: () => goTo(item.href),
-        })),
-      },
-      {
-        heading: "Clinical presets",
-        items: CLINICAL_PRESETS.map((preset) => ({
-          id: `preset-${preset.id}`,
-          label: preset.label,
-          description: preset.summary,
-          keywords: [preset.input.Condition, preset.input.Drug_Name, "preset"],
-          icon: <IconTable size={16} />,
-          onSelect: () =>
-            goTo(`/scoring?preset=${encodeURIComponent(preset.id)}`),
-        })),
-      },
-      {
-        heading: "Workspace",
-        items: [
-          {
-            id: "workspace-predict",
-            label: "Single patient scoring",
-            description: "Score one patient regimen",
-            icon: <IconChartBar size={16} />,
-            onSelect: () => goTo("/scoring"),
-          },
-          {
-            id: "workspace-batch",
-            label: "Batch cohort scoring",
-            description: "Upload and score CSV cohorts",
-            icon: <IconTable size={16} />,
-            onSelect: () => goTo("/scoring"),
-          },
-          {
-            id: "workspace-models",
-            label: "Model registry",
-            description: "Compare, benchmark, and promote models",
-            icon: <IconCpu size={16} />,
-            onSelect: () => goTo("/scoring?tab=models"),
-          },
-          {
-            id: "workspace-monitoring",
-            label: "Monitoring",
-            description: "Inspect drift, latency, and audit logs",
-            icon: <IconChartBar size={16} />,
-            onSelect: () => goTo("/monitoring"),
-          },
-          {
-            id: "workspace-apikeys",
-            label: "API keys",
-            description: "Provision X-API-Key credentials",
-            icon: <IconKey size={16} />,
-            onSelect: () => goTo("/monitoring?tab=keys"),
-          },
-        ],
-      },
-      {
-        heading: "Actions",
-        items: [
-          {
-            id: "toggle-theme",
-            label: "Toggle light / dark theme",
-            description: "Switch the monochrome interface polarity",
-            icon: <IconPalette size={16} />,
-            onSelect: () => {
-              handleToggleTheme();
-              setCommandOpen(false);
-            },
-          },
-          {
-            id: "open-docs",
-            label: "Open API docs",
-            description: docsUrl,
-            icon: <IconBook size={16} />,
-            onSelect: () => {
-              window.open(docsUrl, "_blank", "noopener,noreferrer");
-              setCommandOpen(false);
-            },
-          },
-          {
-            id: "open-github",
-            label: "Open GitHub repository",
-            description: GITHUB_URL,
-            icon: <IconBrandGithub size={16} />,
-            onSelect: () => {
-              window.open(GITHUB_URL, "_blank", "noopener,noreferrer");
-              setCommandOpen(false);
-            },
-          },
-        ],
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [docsUrl, theme],
-  );
-
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[var(--cv-surface)]">
-        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-4 px-4 sm:px-6 lg:px-8 min-[950px]:gap-5">
+      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--cv-border)] bg-[var(--cv-surface)]/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="flex items-center gap-2 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
+            className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--cv-accent)]"
             aria-label="Curavex home"
           >
             <img
               src="/assets/curavex-mark.svg"
               alt=""
-              width={26}
-              height={26}
-              className="size-[26px] rounded-md object-contain shrink-0"
+              width={28}
+              height={28}
+              className="size-7 rounded-lg object-contain shrink-0"
             />
-            <span className="text-[15px] font-semibold tracking-[-0.015em] text-[var(--cv-text-primary)]">
+            <span className="text-[16px] font-medium tracking-[-0.01em] text-[var(--cv-text-primary)]">
               Curavex
             </span>
           </Link>
@@ -252,7 +113,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
           <nav
             id="primary-nav"
             aria-label="Primary navigation"
-            className="hidden min-[950px]:flex items-center gap-4 xl:gap-5 ml-auto"
+            className="hidden min-[950px]:flex items-center gap-7 ml-auto"
           >
             {NAV_LINKS.map((item) => {
               const isActive = normalizedPath === item.href;
@@ -262,7 +123,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "inline-flex h-8 items-center text-[14px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap",
+                    "inline-flex h-9 items-center text-[14px] font-medium tracking-[0.01em] transition-colors whitespace-nowrap",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-accent)]",
                     isActive
                       ? "text-[var(--cv-text-primary)]"
@@ -275,7 +136,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
             })}
           </nav>
 
-          <div className="flex items-center gap-2 shrink-0 min-[950px]:ml-0">
+          <div className="flex items-center gap-2.5 shrink-0 min-[950px]:ml-0 ml-auto min-[950px]:ml-0">
             <button
               type="button"
               onClick={handleToggleTheme}
@@ -284,7 +145,7 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
               }
               aria-pressed={theme === "dark"}
               title={theme === "dark" ? "Light theme" : "Dark theme"}
-              className="inline-flex size-[34px] items-center justify-center rounded-full border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+              className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors hover:border-[var(--cv-border-strong)] hover:text-[var(--cv-text-primary)] cursor-pointer"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -299,8 +160,21 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
               </svg>
             </button>
 
+            {docsUrl ? (
+              <a
+                href={docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden min-[950px]:inline-flex h-[38px] items-center rounded-full border border-[var(--cv-border)] px-4 text-[13px] font-medium text-[var(--cv-text-primary)] transition-colors hover:border-[var(--cv-border-strong)] hover:bg-[var(--cv-surface-raised)]"
+              >
+                Docs
+              </a>
+            ) : null}
+
             {clerkReady ? (
-              <ClerkHeaderAuth />
+              <span className="hidden min-[950px]:inline-flex">
+                <ClerkHeaderAuth />
+              </span>
             ) : localUser ? (
               <div className="flex items-center gap-2">
                 <span className="hidden min-[950px]:inline-block text-[12px] font-medium text-[var(--cv-text-secondary)]">
@@ -309,19 +183,31 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
                 <button
                   type="button"
                   onClick={() => void signOut()}
-                  className="inline-flex h-[34px] items-center rounded-full border border-[var(--cv-border)] px-3 text-[12px] font-medium text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors cursor-pointer"
+                  className="inline-flex h-[38px] items-center rounded-full border border-[var(--cv-border)] px-4 text-[13px] font-medium text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors cursor-pointer"
                 >
                   Sign out
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => openAuthModal("signin")}
-                className="inline-flex h-[34px] items-center rounded-full bg-[var(--cv-accent)] px-3.5 text-[12px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
-              >
-                Login
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signin")}
+                  className="hidden min-[950px]:inline-flex h-[38px] items-center rounded-full px-4 text-[13px] font-medium text-[var(--cv-text-primary)] hover:bg-[var(--cv-surface-raised)] transition-colors cursor-pointer"
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signup")}
+                  className="hidden min-[950px]:inline-flex h-[38px] items-center gap-1.5 rounded-full bg-[var(--cv-accent)] px-4 text-[13px] font-semibold text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
+                >
+                  Get started
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </>
             )}
 
             <div className="min-[950px]:hidden">
@@ -334,91 +220,90 @@ export function SiteHeader({ docsUrl = DEFAULT_DOCS_URL }: SiteHeaderProps) {
               />
             </div>
           </div>
+        </div>
 
-          {mobileOpen && (
-            <nav
-              id="mobile-nav-menu"
-              aria-label="Mobile navigation"
-              className="absolute left-0 right-0 top-full border-b border-[var(--cv-border)] bg-[var(--cv-surface)] px-4 pb-4 pt-2 shadow-[0_18px_50px_rgba(0,0,0,0.14)] min-[950px]:hidden"
-            >
-              <div className="flex flex-col">
-                {NAV_LINKS.map((item) => {
-                  const isActive = normalizedPath === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      aria-current={isActive ? "page" : undefined}
-                      className={[
-                        "flex min-h-[44px] items-center border-b border-[var(--cv-border)] px-1 text-[15px] font-semibold transition-colors last:border-b-0",
-                        isActive
-                          ? "text-[var(--cv-text-primary)]"
-                          : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
+        {mobileOpen && (
+          <nav
+            id="mobile-nav-menu"
+            aria-label="Mobile navigation"
+            className="absolute left-0 right-0 top-full border-b border-[var(--cv-border)] bg-[var(--cv-surface)] px-4 pb-4 pt-2 shadow-[0_18px_50px_rgba(0,0,0,0.14)] min-[950px]:hidden"
+          >
+            <div className="flex flex-col">
+              {NAV_LINKS.map((item) => {
+                const isActive = normalizedPath === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={[
+                      "flex min-h-[44px] items-center border-b border-[var(--cv-border)] px-1 text-[15px] font-medium transition-colors last:border-b-0",
+                      isActive
+                        ? "text-[var(--cv-text-primary)]"
+                        : "text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)]",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
 
+            <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
+              {docsUrl ? (
+                <a
+                  href={docsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)]"
+                >
+                  Docs
+                </a>
+              ) : null}
               {clerkReady ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
+                <div className="flex min-h-[44px] flex-1 items-center justify-center">
                   <ClerkHeaderAuth />
                 </div>
+              ) : localUser ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    void signOut();
+                  }}
+                  className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)] cursor-pointer"
+                >
+                  Sign out ({localUser.name})
+                </button>
               ) : (
-                <div className="mt-3 flex items-center gap-2 border-t border-[var(--cv-border)] pt-3">
-                  {localUser ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileOpen(false);
-                        void signOut();
-                      }}
-                      className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)] cursor-pointer"
-                    >
-                      Sign out ({localUser.name})
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileOpen(false);
-                          openAuthModal("signin");
-                        }}
-                        className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)] cursor-pointer"
-                      >
-                        Sign in
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileOpen(false);
-                          openAuthModal("signup");
-                        }}
-                        className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[var(--cv-accent)] px-3 text-[14px] font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
-                      >
-                        Sign up
-                      </button>
-                    </>
-                  )}
-                </div>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openAuthModal("signin");
+                    }}
+                    className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-[var(--cv-border)] px-3 text-[14px] font-medium text-[var(--cv-text-primary)] transition-colors hover:bg-[var(--cv-surface-raised)] cursor-pointer"
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openAuthModal("signup");
+                    }}
+                    className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[var(--cv-accent)] px-3 text-[14px] font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-90 cursor-pointer"
+                  >
+                    Sign up
+                  </button>
+                </>
               )}
-            </nav>
-          )}
-        </div>
+            </div>
+          </nav>
+        )}
       </header>
-
-      <CommandDialog
-        open={commandOpen}
-        onOpenChange={setCommandOpen}
-        groups={commandGroups}
-        placeholder="Search pages, presets, docs, or actions…"
-        emptyMessage="No matching Curavex command."
-        aria-label="Curavex command palette"
-      />
     </>
   );
 }

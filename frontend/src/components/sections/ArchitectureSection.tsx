@@ -52,7 +52,7 @@ export function ArchitectureSection() {
       id="architecture"
       className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] py-16 sm:py-24 lg:py-28 scroll-mt-20"
     >
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[65ch] space-y-4 pb-12 sm:pb-16">
           <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
             Architecture

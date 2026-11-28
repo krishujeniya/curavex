@@ -72,7 +72,7 @@ export function MethodologySection({
       id="methodology"
       className="border-t border-[var(--cv-border)] bg-[var(--cv-surface)] py-16 sm:py-24 lg:py-28 scroll-mt-20"
     >
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         <div className="space-y-4 max-w-[65ch]">
           <p className="text-caption font-medium uppercase tracking-[0.18em] text-[var(--cv-text-secondary)]">
             Methodology

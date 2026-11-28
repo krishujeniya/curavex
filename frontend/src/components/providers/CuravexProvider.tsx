@@ -66,7 +66,7 @@ function ClerkTokenBridge({
 
 export function CuravexProvider({ children }: { children: React.ReactNode }) {
   const [docsUrl, setDocsUrl] = React.useState(
-    "https://curavex-api.curavex.workers.dev/docs",
+    "https://api-curavex.workers.dev/docs",
   );
   const [apiStatus, setApiStatus] = React.useState<
     "live" | "connecting" | "offline"

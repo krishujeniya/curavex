@@ -178,25 +178,10 @@ export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null
 }
 
 export function getApiBaseUrl(): string {
-  if (typeof window === "undefined") {
-    return "https://api.curavex.workers.dev";
-  }
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const paramBackend = urlParams.get("backend");
-  if (paramBackend) return paramBackend.replace(/\/$/, "");
-
-  const stored = window.localStorage.getItem("curavex_backend_url");
-  if (stored) return stored.replace(/\/$/, "");
-
-  if (
-    window.location.hostname.includes("pages.dev") ||
-    window.location.hostname.includes("curavex")
-  ) {
-    return "https://api.curavex.workers.dev";
-  }
-
-  return "";
+  return (
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
+    "https://api.curavex.workers.dev"
+  );
 }
 
 async function apiRequest<T>(

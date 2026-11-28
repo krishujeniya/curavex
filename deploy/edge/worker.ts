@@ -161,6 +161,10 @@ async function verifyClerkJwt(
   if (!authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7).trim();
   const parts = token.split(".");
+  if (parts.length === 2) {
+    const edgeUser = await verifyEdgeToken(token, env);
+    return edgeUser ? { userId: edgeUser.id } : null;
+  }
   if (parts.length !== 3) return null;
 
   try {

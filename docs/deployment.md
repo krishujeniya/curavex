@@ -80,3 +80,16 @@ Expected HTTP response: `200 OK`.
    ```
 2. **Cloudflare Pages rollback**: Re-deploy the previous commit's `frontend/out/` via `wrangler pages deploy` or promote the previous deployment in Cloudflare Pages.
 3. **Verify**: Re-run `curl -f https://api.curavex.workers.dev/healthz` and `curl -f https://curavex.pages.dev/`.
+
+---
+
+## 6. Scaling Notes
+
+The edge Worker is stateless and horizontally scaled by Cloudflare across every PoP. Per-request costs:
+
+- **Auth**: HMAC edge tokens verified locally; Clerk JWTs verified against a JWKS cache (5 min TTL) — no DB hit.
+- **Billing/quota reads**: one `db.batch()` round-trip per request (subscription + monthly usage).
+- **Quota writes**: one upsert per authenticated predict.
+- **API keys**: SHA-256 hash lookup + monthly usage sum + daily upsert — all indexed on `key_hash` / `owner_id`.
+
+D1 is single-threaded per database (~1k queries/sec ceiling). At very high authenticated-predict volume, move quota counters to a Durable Object or KV with atomic increments, and enable D1 read replication for the billing status reads. Static metadata endpoints (`/api/v1/metadata/*`, `/api/v1/models`, `/api/v1/monitoring/drift`, `/openapi.json`) send short `s-maxage` cache headers so repeat reads are absorbed at the edge.

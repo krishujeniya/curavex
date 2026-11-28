@@ -181,6 +181,20 @@ async function findApiKey(
     .first<ApiKeyRow>();
 }
 
+async function lookupApiKey(
+  env: Env,
+  token: string,
+  auth: { userId: string } | null,
+): Promise<ApiKeyRow | null> {
+  if (auth || !env.DB || !token) return null;
+  try {
+    return await findApiKey(env.DB, token);
+  } catch (err) {
+    console.warn("api-key lookup failed; treating as unauthenticated", err);
+    return null;
+  }
+}
+
 async function consumeApiKeyQuota(
   db: D1Database,
   key: ApiKeyRow,
@@ -340,19 +354,22 @@ async function getBillingStatus(
   if (!db) {
     return { plan: "free", used: 0, limit: 5, remaining: 5, period_ym: periodYm };
   }
-  const sub = await db
-    .prepare("SELECT plan, monthly_limit FROM curavex_subscriptions WHERE user_id = ?")
-    .bind(userId)
-    .first<{ plan: string; monthly_limit: number }>();
+  const [subResult, usageResult] = await db.batch([
+    db.prepare(
+      "SELECT plan, monthly_limit FROM curavex_subscriptions WHERE user_id = ?",
+    ).bind(userId),
+    db.prepare(
+      "SELECT request_count FROM curavex_monthly_usage WHERE user_id = ? AND period_ym = ?",
+    ).bind(userId, periodYm),
+  ]);
+  const sub = subResult.results?.[0] as
+    | { plan: string; monthly_limit: number }
+    | undefined;
   const plan = sub?.plan ?? "free";
   const limit = plan === "enterprise" ? null : (sub?.monthly_limit ?? 5);
-
-  const usage = await db
-    .prepare(
-      "SELECT request_count FROM curavex_monthly_usage WHERE user_id = ? AND period_ym = ?",
-    )
-    .bind(userId, periodYm)
-    .first<{ request_count: number }>();
+  const usage = usageResult.results?.[0] as
+    | { request_count: number }
+    | undefined;
   const used = usage?.request_count ?? 0;
   const remaining = limit === null ? null : Math.max(0, limit - used);
   return { plan, used, limit, remaining, period_ym: periodYm };
@@ -666,7 +683,9 @@ export default {
     }
 
     if (path === "/openapi.json") {
-      return jsonResponse(request, OPENAPI_SPEC);
+      return jsonResponse(request, OPENAPI_SPEC, 200, {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      });
     }
 
     if (path.startsWith("/api/v1/auth/")) {
@@ -774,7 +793,9 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/metadata/dataset-stats") {
-      return jsonResponse(request, DATASET_STATS);
+      return jsonResponse(request, DATASET_STATS, 200, {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      });
     }
 
     if (request.method === "GET" && path === "/api/v1/billing/status") {
@@ -850,10 +871,7 @@ export default {
     if (request.method === "POST" && path === "/api/v1/predict") {
       const auth = await verifyClerkJwt(request, env);
       const apiKeyHeader = request.headers.get("X-API-Key") || "";
-      const apiKey =
-        !auth && env.DB && apiKeyHeader
-          ? await findApiKey(env.DB, apiKeyHeader)
-          : null;
+      const apiKey = await lookupApiKey(env, apiKeyHeader, auth);
 
       if (!auth && !apiKey) {
         return jsonResponse(
@@ -864,38 +882,46 @@ export default {
       }
 
       if (apiKey && env.DB) {
-        const quota = await consumeApiKeyQuota(env.DB, apiKey);
-        if (!quota.allowed) {
-          return jsonResponse(
-            request,
-            {
-              detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
-              code: "QUOTA_EXCEEDED",
-              used: quota.used,
-              limit: quota.limit,
-            },
-            429,
-            { "Cache-Control": "no-store" },
-          );
+        try {
+          const quota = await consumeApiKeyQuota(env.DB, apiKey);
+          if (!quota.allowed) {
+            return jsonResponse(
+              request,
+              {
+                detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
+                code: "QUOTA_EXCEEDED",
+                used: quota.used,
+                limit: quota.limit,
+              },
+              429,
+              { "Cache-Control": "no-store" },
+            );
+          }
+        } catch (err) {
+          console.warn("api-key quota check failed; allowing request", err);
         }
       }
 
       if (auth) {
-        const quota = await checkAndIncrementQuota(env.DB, auth.userId);
-        if (!quota.allowed) {
-          return jsonResponse(
-            request,
-            {
-              detail:
-                "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
-              code: "QUOTA_EXCEEDED",
-              plan: quota.plan,
-              used: quota.used,
-              limit: quota.limit,
-              period_ym: quota.periodYm,
-            },
-            429,
-          );
+        try {
+          const quota = await checkAndIncrementQuota(env.DB, auth.userId);
+          if (!quota.allowed) {
+            return jsonResponse(
+              request,
+              {
+                detail:
+                  "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
+                code: "QUOTA_EXCEEDED",
+                plan: quota.plan,
+                used: quota.used,
+                limit: quota.limit,
+                period_ym: quota.period_ym,
+              },
+              429,
+            );
+          }
+        } catch (err) {
+          console.warn("billing quota check failed; allowing request", err);
         }
       }
 
@@ -939,10 +965,7 @@ export default {
     if (request.method === "POST" && path === "/api/v1/predict/upload-csv") {
       const auth = await verifyClerkJwt(request, env);
       const apiKeyHeader = request.headers.get("X-API-Key") || "";
-      const apiKey =
-        !auth && env.DB && apiKeyHeader
-          ? await findApiKey(env.DB, apiKeyHeader)
-          : null;
+      const apiKey = await lookupApiKey(env, apiKeyHeader, auth);
 
       if (!auth && !apiKey) {
         return jsonResponse(
@@ -953,38 +976,46 @@ export default {
       }
 
       if (apiKey && env.DB) {
-        const quota = await consumeApiKeyQuota(env.DB, apiKey);
-        if (!quota.allowed) {
-          return jsonResponse(
-            request,
-            {
-              detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
-              code: "QUOTA_EXCEEDED",
-              used: quota.used,
-              limit: quota.limit,
-            },
-            429,
-            { "Cache-Control": "no-store" },
-          );
+        try {
+          const quota = await consumeApiKeyQuota(env.DB, apiKey);
+          if (!quota.allowed) {
+            return jsonResponse(
+              request,
+              {
+                detail: `Monthly API key limit reached (${quota.limit}/${quota.limit} calls used). Resets next month.`,
+                code: "QUOTA_EXCEEDED",
+                used: quota.used,
+                limit: quota.limit,
+              },
+              429,
+              { "Cache-Control": "no-store" },
+            );
+          }
+        } catch (err) {
+          console.warn("api-key quota check failed; allowing request", err);
         }
       }
 
       if (auth) {
-        const quota = await checkAndIncrementQuota(env.DB, auth.userId);
-        if (!quota.allowed) {
-          return jsonResponse(
-            request,
-            {
-              detail:
-                "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
-              code: "QUOTA_EXCEEDED",
-              plan: quota.plan,
-              used: quota.used,
-              limit: quota.limit,
-              period_ym: quota.periodYm,
-            },
-            429,
-          );
+        try {
+          const quota = await checkAndIncrementQuota(env.DB, auth.userId);
+          if (!quota.allowed) {
+            return jsonResponse(
+              request,
+              {
+                detail:
+                  "Monthly free quota reached (5/5 requests used). Contact us for Enterprise.",
+                code: "QUOTA_EXCEEDED",
+                plan: quota.plan,
+                used: quota.used,
+                limit: quota.limit,
+                period_ym: quota.period_ym,
+              },
+              429,
+            );
+          }
+        } catch (err) {
+          console.warn("billing quota check failed; allowing request", err);
         }
       }
 
@@ -1040,7 +1071,9 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/models") {
-      return jsonResponse(request, REGISTRY_MODELS);
+      return jsonResponse(request, REGISTRY_MODELS, 200, {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      });
     }
 
     if (request.method === "POST" && path === "/api/v1/models/benchmark") {
@@ -1084,10 +1117,15 @@ export default {
       if (!entry) {
         return jsonResponse(request, { detail: `Model '${modelId}' not found.` }, 404);
       }
-      return jsonResponse(request, {
-        model: entry,
-        feature_importances: FEATURE_IMPORTANCES[modelId] ?? [],
-      });
+      return jsonResponse(
+        request,
+        {
+          model: entry,
+          feature_importances: FEATURE_IMPORTANCES[modelId] ?? [],
+        },
+        200,
+        { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
+      );
     }
 
     if (request.method === "GET" && path === "/api/v1/monitoring/metrics") {
@@ -1107,7 +1145,7 @@ export default {
           p95: sorted.length ? computePercentile(sorted, 95) : 2.4,
           p99: sorted.length ? computePercentile(sorted, 99) : 3.2,
         },
-      });
+      }, 200, { "Cache-Control": "no-store" });
     }
 
     if (request.method === "GET" && path === "/api/v1/monitoring/drift") {
@@ -1130,6 +1168,8 @@ export default {
           Condition: { psi: 0.018, drift_detected: false, status: "Stable" },
           Drug_Name: { psi: 0.024, drift_detected: false, status: "Stable" },
         },
+      }, 200, {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       });
     }
 

@@ -177,12 +177,12 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
   return (
     <>
       <header
-        className={`sticky top-0 z-[var(--z-sticky)] border-b bg-[var(--cv-surface)]/85 backdrop-blur-md transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.165,0.84,0.44,1)] will-change-transform ${
+        className={`sticky top-0 z-[var(--z-sticky)] border-b bg-[var(--cv-canvas)]/85 backdrop-blur-md transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.165,0.84,0.44,1)] will-change-transform ${
           navHidden ? "-translate-y-full" : "translate-y-0"
         } ${
           scrolled
-            ? "border-[var(--cv-border)] bg-[var(--cv-surface)]/95"
-            : "border-transparent bg-[var(--cv-surface)]/70"
+            ? "border-[var(--cv-border)] bg-[var(--cv-canvas)]/95"
+            : "border-transparent bg-[var(--cv-canvas)]/70"
         }`}
       >
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
@@ -359,7 +359,7 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
           <nav
             id="mobile-nav-menu"
             aria-label="Mobile navigation"
-            className="absolute left-0 right-0 top-full border-b border-[var(--cv-border)] bg-[var(--cv-surface)] px-4 pb-4 pt-2 shadow-[0_18px_50px_rgba(0,0,0,0.14)] min-[950px]:hidden"
+            className="absolute left-0 right-0 top-full border-b border-[var(--cv-border)] bg-[var(--cv-canvas)] px-4 pb-4 pt-2 shadow-[0_18px_50px_rgba(0,0,0,0.14)] min-[950px]:hidden"
           >
             <div className="flex flex-col">
               <button

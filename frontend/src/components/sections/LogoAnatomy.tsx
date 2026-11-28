@@ -27,8 +27,7 @@ const ANNOTATIONS = [
 
 export function LogoAnatomy() {
   return (
-    <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
-      <div className="relative aspect-square w-full">
+    <div className="relative aspect-square w-full">
         <svg
           viewBox="0 0 1000 1000"
           className="absolute inset-0 size-full"
@@ -80,7 +79,6 @@ export function LogoAnatomy() {
             </div>
           </div>
         ))}
-      </div>
     </div>
   );
 }

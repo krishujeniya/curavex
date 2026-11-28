@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LogoAnatomy } from "@/components/sections/LogoAnatomy";
 
 export function HeroSection() {
@@ -15,6 +16,14 @@ export function HeroSection() {
               parameters, scores multi-subject cohorts, and monitors
               statistical drift across every prediction in production.
             </p>
+
+            <Link
+              href="/scoring"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--cv-accent)] px-6 py-3 text-[14px] font-medium text-[var(--cv-on-accent)] transition-opacity hover:opacity-85"
+            >
+              Score a patient
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
           <div className="lg:col-span-5 min-w-0">

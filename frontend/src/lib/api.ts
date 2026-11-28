@@ -132,6 +132,26 @@ export interface AuditLogEntry {
   latency_ms?: number;
 }
 
+export interface ApiKeyUsageEntry {
+  key_id: string;
+  key_prefix: string;
+  key_suffix: string;
+  name: string;
+  tier: string;
+  requests_per_minute: number;
+  monthly_limit: number;
+  calls_today: number;
+  calls_total: number;
+}
+
+export interface ApiKeyUsage {
+  daily_limit: number;
+  period: string;
+  total_calls_today: number;
+  total_calls: number;
+  keys: ApiKeyUsageEntry[];
+}
+
 export interface ApiKeyRecord {
   id: string;
   name: string;
@@ -292,6 +312,8 @@ export const curavexApi = {
 
   deleteApiKey: (id: string) =>
     apiRequest<{ status: string }>(`/api-keys/${encodeURIComponent(id)}`, "DELETE"),
+
+  getApiKeyUsage: () => apiRequest<ApiKeyUsage>("/api-keys/usage"),
 
   getBillingStatus: () => apiRequest<BillingStatus>("/billing/status"),
 

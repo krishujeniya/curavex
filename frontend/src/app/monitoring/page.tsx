@@ -4,8 +4,8 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCuravex } from "@/components/providers/CuravexProvider";
 import { AuthGate } from "@/components/auth/AuthGate";
-import { MonitoringTab } from "@/components/workspace/MonitoringTab";
 import { ApiKeysTab } from "@/components/workspace/ApiKeysTab";
+import { ApiKeyDashboard } from "@/components/workspace/ApiKeyDashboard";
 import {
   Tabs,
   TabsContent,
@@ -19,22 +19,7 @@ function MonitoringContent() {
   const rawTab = searchParams.get("tab");
   const tab =
     rawTab === "dashboard" || rawTab === "metrics" ? "dashboard" : "create";
-  const {
-    telemetry,
-    drift,
-    auditLogs,
-    apiKeys,
-    refreshApiKeys,
-    refreshTelemetry,
-    refreshDrift,
-  } = useCuravex();
-
-  React.useEffect(() => {
-    const timer = window.setInterval(() => {
-      void Promise.allSettled([refreshTelemetry(), refreshDrift()]);
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [refreshTelemetry, refreshDrift]);
+  const { apiKeys, refreshApiKeys } = useCuravex();
 
   function handleTabChange(value: string) {
     if (value === "dashboard") router.replace("/monitoring?tab=dashboard");
@@ -65,14 +50,12 @@ function MonitoringContent() {
       </TabsContent>
 
       <TabsContent value="dashboard" className="pt-2">
-        <MonitoringTab
-          telemetry={telemetry}
-          drift={drift}
-          auditLogs={auditLogs}
-          onRefresh={async () => {
-            await Promise.allSettled([refreshTelemetry(), refreshDrift()]);
-          }}
-        />
+        <AuthGate
+          title="Sign in to view API usage"
+          description="Sign in with your Curavex account to see API key usage and limits."
+        >
+          <ApiKeyDashboard />
+        </AuthGate>
       </TabsContent>
       </Tabs>
     </div>

@@ -1179,6 +1179,59 @@ export default {
       return jsonResponse(request, list, 200, { "Cache-Control": "no-store" });
     }
 
+    if (request.method === "GET" && path === "/api/v1/api-keys/usage") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
+      if (!env.DB) {
+        return jsonResponse(request, { detail: "Storage unavailable." }, 503);
+      }
+      await ensureApiKeySchema(env.DB);
+      const today = new Date().toISOString().slice(0, 10);
+      const result = await env.DB.prepare(
+        `SELECT k.key_id, k.key_prefix, k.key_suffix, k.name, k.tier,
+                k.requests_per_minute, k.monthly_limit,
+                COALESCE(SUM(CASE WHEN u.usage_date = ? THEN u.calls END), 0) AS calls_today,
+                COALESCE(SUM(u.calls), 0) AS calls_total
+         FROM curavex_api_keys k
+         LEFT JOIN curavex_api_key_usage u ON u.key_hash = k.key_hash
+         WHERE k.owner_id = ? AND k.revoked = 0
+         GROUP BY k.key_id
+         ORDER BY k.created_at DESC`,
+      )
+        .bind(today, auth.userId)
+        .all<{
+          key_id: string;
+          key_prefix: string;
+          key_suffix: string;
+          name: string;
+          tier: string;
+          requests_per_minute: number;
+          monthly_limit: number;
+          calls_today: number;
+          calls_total: number;
+        }>();
+      const keys = result.results ?? [];
+      return jsonResponse(
+        request,
+        {
+          daily_limit: API_KEY_DAILY_LIMIT,
+          period: today,
+          total_calls_today: keys.reduce((sum, k) => sum + (k.calls_today ?? 0), 0),
+          total_calls: keys.reduce((sum, k) => sum + (k.calls_total ?? 0), 0),
+          keys,
+        },
+        200,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
     if (request.method === "DELETE" && path.startsWith("/api/v1/api-keys/")) {
       const auth = await verifyClerkJwt(request, env);
       if (!auth) {

@@ -42,7 +42,7 @@ function MonitoringContent() {
   return (
     <div className="space-y-8">
       <div className="space-y-3 max-w-[65ch]">
-        <h1 className="text-title text-[var(--cv-text-primary)]">
+        <h1 className="text-display leading-[1.05] tracking-[-0.03em] text-[var(--cv-text-primary)]">
           Monitoring &amp; access
         </h1>
       </div>

@@ -40,6 +40,9 @@ export function ArchitectureSection() {
       className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] py-16 sm:py-24 lg:py-28 scroll-mt-20"
     >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <h2 className="text-title text-[var(--cv-text-primary)] pb-12 sm:pb-16">
+          End-to-end clinical inference pipeline
+        </h2>
         <ol className="border-t border-[var(--cv-border)]">
           {PIPELINE_STAGES.map((stage) => (
             <li

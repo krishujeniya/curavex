@@ -29,6 +29,9 @@ export function PlatformSection() {
       className="border-t border-[var(--cv-border)] bg-[var(--cv-canvas)] scroll-mt-20"
     >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
+        <h2 className="text-title text-[var(--cv-text-primary)] mb-12">
+          One system of record for clinical inference
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
           {AUDIENCES.map((item) => {
             const Icon = item.icon;

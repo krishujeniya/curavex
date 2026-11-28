@@ -133,6 +133,7 @@ export interface AuditLogEntry {
 }
 
 export interface ApiKeyRecord {
+  id: string;
   name: string;
   tier: string;
   api_key: string;
@@ -186,7 +187,7 @@ export function getApiBaseUrl(): string {
 
 async function apiRequest<T>(
   endpoint: string,
-  method: "GET" | "POST" = "GET",
+  method: "GET" | "POST" | "DELETE" = "GET",
   body: unknown = null,
   apiKey: string = DEFAULT_API_KEY,
 ): Promise<T> {
@@ -288,6 +289,9 @@ export const curavexApi = {
 
   generateApiKey: (name: string, tier: string) =>
     apiRequest<ApiKeyRecord>("/api-keys/generate", "POST", { name, tier }),
+
+  deleteApiKey: (id: string) =>
+    apiRequest<{ status: string }>(`/api-keys/${encodeURIComponent(id)}`, "DELETE"),
 
   getBillingStatus: () => apiRequest<BillingStatus>("/billing/status"),
 

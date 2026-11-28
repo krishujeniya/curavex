@@ -9,13 +9,7 @@ import {
 import { Alert } from "@/components/wensity/alert";
 import { Badge } from "@/components/wensity/badge";
 import { Button } from "@/components/wensity/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/wensity/card";
+import { Card, CardContent } from "@/components/wensity/card";
 import { EmptyState } from "@/components/wensity/empty-state";
 import { Input } from "@/components/wensity/input";
 import { NativeSelect } from "@/components/wensity/native-select";
@@ -45,7 +39,6 @@ import {
 import {
   CANONICAL_CONDITION_DRUG_MAP,
   CLINICAL_LIMITS,
-  CLINICAL_PRESETS,
   formatConfidenceInterval,
   validateClinicalInput,
   type ClinicalCasePreset,
@@ -77,7 +70,7 @@ export function PredictTab({
     [conditionDrugMap, condition],
   );
   const [drugName, setDrugName] = React.useState(drugsForCondition[0] ?? "Amlodipine");
-  const [dosage, setDosage] = React.useState(250);
+  const [dosage, setDosage] = React.useState(255);
   const [duration, setDuration] = React.useState(30);
 
   const [isPredicting, setIsPredicting] = React.useState(false);
@@ -112,16 +105,6 @@ export function PredictTab({
     setDuration(input.Treatment_Duration_days);
     setErrorMsg(null);
   }, [selectedPreset]);
-
-  function applyPreset(preset: ClinicalCasePreset) {
-    setAge(preset.input.Age);
-    setGender(preset.input.Gender === "Male" ? "Male" : "Female");
-    setCondition(preset.input.Condition);
-    setDrugName(preset.input.Drug_Name);
-    setDosage(preset.input.Dosage_mg);
-    setDuration(preset.input.Treatment_Duration_days);
-    setErrorMsg(null);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -201,33 +184,7 @@ export function PredictTab({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <Card className="lg:col-span-7 min-w-0">
-          <CardHeader className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <CardTitle className="text-title">Score a patient regimen</CardTitle>
-              <Badge variant="outline" size="sm">
-                Calibrated regression
-              </Badge>
-            </div>
-            <CardDescription className="max-w-[60ch]">
-              Configure patient demographics and compound dosing to estimate
-              clinical improvement and local feature attribution.
-            </CardDescription>
-
-            <div className="flex flex-wrap gap-2 pt-1">
-              {CLINICAL_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => applyPreset(preset)}
-                  className="inline-flex min-h-[44px] items-center rounded-full border border-[var(--cv-border)] bg-[var(--cv-surface)] px-3.5 py-1.5 text-caption text-[var(--cv-text-secondary)] hover:border-[var(--cv-accent)] hover:text-[var(--cv-text-primary)] transition-colors cursor-pointer"
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          </CardHeader>
-
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
                 <div className="space-y-3">

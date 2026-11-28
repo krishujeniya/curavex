@@ -1,16 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { IconEye, IconEyeOff, IconKey } from "@tabler/icons-react";
+import { IconEye, IconEyeOff, IconKey, IconTrash } from "@tabler/icons-react";
 import { Alert } from "@/components/wensity/alert";
 import { Button } from "@/components/wensity/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/wensity/card";
+import { Card, CardContent } from "@/components/wensity/card";
 import { CopyButton } from "@/components/wensity/copy-button";
 import { EmptyState } from "@/components/wensity/empty-state";
 import { Input } from "@/components/wensity/input";
@@ -85,9 +79,9 @@ export function ApiKeysTab({
   const toast = useToastManager();
   const [name, setName] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [revealedKeys, setRevealedKeys] = React.useState<Record<string, boolean>>(
-    {},
-  );
+  const [newKey, setNewKey] = React.useState<ApiKeyRecord | null>(null);
+  const [newKeyVisible, setNewKeyVisible] = React.useState(true);
+  const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const [feedback, setFeedback] = React.useState<{
     variant: "success" | "error";
     title: string;
@@ -101,8 +95,10 @@ export function ApiKeysTab({
     setFeedback(null);
 
     try {
-      await curavexApi.generateApiKey(name.trim(), "standard");
+      const record = await curavexApi.generateApiKey(name.trim(), "standard");
       setName("");
+      setNewKey(record);
+      setNewKeyVisible(true);
       await onKeysUpdated();
       const msg = "The new key is active and ready for X-API-Key requests.";
       setFeedback({
@@ -135,6 +131,33 @@ export function ApiKeysTab({
     }
   }
 
+  async function handleDelete(id: string) {
+    if (isDeleting) return;
+    setIsDeleting(id);
+    setFeedback(null);
+    try {
+      await curavexApi.deleteApiKey(id);
+      await onKeysUpdated();
+      toast.add({
+        title: "API key deleted",
+        description: "The key can no longer be used for API requests.",
+        data: { variant: "success" },
+      });
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Could not delete API key.";
+      setFeedback({
+        variant: "error",
+        title: "Delete failed",
+        description: msg,
+      });
+    } finally {
+      setIsDeleting(null);
+    }
+  }
+
+  const keyLimitReached = apiKeys.length >= 3;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       <Card className="lg:col-span-7 min-w-0">
@@ -148,6 +171,50 @@ export function ApiKeysTab({
             />
           )}
 
+          {newKey && (
+            <div className="rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)] p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-label font-medium text-[var(--cv-text-primary)]">
+                  {newKey.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setNewKey(null)}
+                  className="text-caption text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <code className="truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
+                  {newKeyVisible ? newKey.api_key : maskKey(newKey.api_key)}
+                </code>
+                <button
+                  type="button"
+                  aria-label={
+                    newKeyVisible ? "Hide new API key" : "Reveal new API key"
+                  }
+                  onClick={() => setNewKeyVisible((v) => !v)}
+                  className="inline-flex size-11 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
+                >
+                  {newKeyVisible ? (
+                    <IconEyeOff size={15} />
+                  ) : (
+                    <IconEye size={15} />
+                  )}
+                </button>
+                <CopyButton
+                  value={newKey.api_key}
+                  variant="icon"
+                  aria-label="Copy new API key"
+                />
+              </div>
+              <p className="text-caption text-[var(--cv-text-secondary)]">
+                This is the only time the full key is shown — copy it now.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
               <div className="sm:col-span-8">
@@ -159,6 +226,7 @@ export function ApiKeysTab({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  disabled={keyLimitReached}
                 />
               </div>
               <div className="sm:col-span-4">
@@ -167,66 +235,48 @@ export function ApiKeysTab({
                   variant="default"
                   size="lg"
                   loading={isGenerating}
+                  disabled={keyLimitReached}
                   className="w-full min-h-[44px]"
                 >
                   {isGenerating ? "Creating…" : "Create key"}
                 </Button>
               </div>
             </div>
-
+            {keyLimitReached && (
+              <p className="text-caption text-[var(--cv-text-secondary)]">
+                Maximum of 3 API keys per user — delete one to create another.
+              </p>
+            )}
           </form>
 
           <Separator />
 
           {apiKeys.length > 0 ? (
             <div className="divide-y divide-[var(--cv-border)] rounded-xl border border-[var(--cv-border)] bg-[var(--cv-canvas)]">
-              {apiKeys.map((record) => {
-                const isVisible = Boolean(revealedKeys[record.api_key]);
-                return (
-                  <div
-                    key={record.api_key}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3.5"
-                  >
-                    <div className="min-w-0 space-y-1">
-                      <span className="text-label font-medium text-[var(--cv-text-primary)]">
-                        {record.name}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <code className="truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
-                          {isVisible ? record.api_key : maskKey(record.api_key)}
-                        </code>
-                        <button
-                          type="button"
-                          aria-label={
-                            isVisible
-                              ? `Hide API key for ${record.name}`
-                              : `Reveal API key for ${record.name}`
-                          }
-                          onClick={() =>
-                            setRevealedKeys((prev) => ({
-                              ...prev,
-                              [record.api_key]: !prev[record.api_key],
-                            }))
-                          }
-                          className="inline-flex size-11 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer"
-                        >
-                          {isVisible ? (
-                            <IconEyeOff size={15} />
-                          ) : (
-                            <IconEye size={15} />
-                          )}
-                        </button>
-                        <CopyButton
-                          value={record.api_key}
-                          variant="icon"
-                          aria-label={`Copy API key for ${record.name}`}
-                        />
-                      </div>
-                    </div>
-
+              {apiKeys.map((record) => (
+                <div
+                  key={record.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3.5"
+                >
+                  <div className="min-w-0 space-y-1">
+                    <span className="text-label font-medium text-[var(--cv-text-primary)]">
+                      {record.name}
+                    </span>
+                    <code className="block truncate font-mono text-caption text-[var(--cv-text-secondary)] slashed-zero">
+                      {record.api_key}
+                    </code>
                   </div>
-                );
-              })}
+                  <button
+                    type="button"
+                    aria-label={`Delete API key ${record.name}`}
+                    disabled={isDeleting === record.id}
+                    onClick={() => void handleDelete(record.id)}
+                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[var(--cv-text-secondary)] hover:text-[var(--cv-text-primary)] cursor-pointer disabled:opacity-50"
+                  >
+                    <IconTrash size={15} />
+                  </button>
+                </div>
+              ))}
             </div>
           ) : (
             <EmptyState
@@ -246,13 +296,7 @@ export function ApiKeysTab({
       </Card>
 
       <Card className="lg:col-span-5 min-w-0">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-heading">Quickstart</CardTitle>
-          <CardDescription>
-            Send a JSON request to score a patient regimen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Tabs variant="segmented" defaultValue="curl">
             <TabsList className="mb-4">
               <TabsTrigger value="curl">cURL</TabsTrigger>

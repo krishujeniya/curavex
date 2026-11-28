@@ -103,7 +103,14 @@ const TIERS: Record<string, { rpm: number; monthly_limit: number }> = {
 
 const API_KEYS_STORE = new Map<
   string,
-  { name: string; tier: string; requests_per_minute: number; monthly_limit: number }
+  {
+    id?: string;
+    name: string;
+    tier: string;
+    ownerId?: string;
+    requests_per_minute: number;
+    monthly_limit: number;
+  }
 >([
   [
     "demo_key_public_guest",
@@ -326,7 +333,7 @@ function jsonResponse(
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization",
       Vary: "Origin",
       ...SECURITY_HEADERS,
@@ -542,7 +549,7 @@ export default {
         status: 204,
         headers: {
           "Access-Control-Allow-Origin": resolveAllowedOrigin(request),
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization",
           Vary: "Origin",
           ...SECURITY_HEADERS,
@@ -1001,19 +1008,75 @@ export default {
     }
 
     if (request.method === "GET" && path === "/api/v1/api-keys") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
       const list = Array.from(API_KEYS_STORE.entries())
-        .filter(([token]) => token !== "demo_key_public_guest")
+        .filter(
+          ([token, meta]) =>
+            token !== "demo_key_public_guest" && meta.ownerId === auth.userId,
+        )
         .map(([token, meta]) => ({
-        api_key: maskKey(token),
-        name: meta.name,
-        tier: meta.tier,
-        requests_per_minute: meta.requests_per_minute,
-        monthly_limit: meta.monthly_limit,
-      }));
+          id: meta.id ?? token,
+          api_key: maskKey(token),
+          name: meta.name,
+          tier: meta.tier,
+          requests_per_minute: meta.requests_per_minute,
+          monthly_limit: meta.monthly_limit,
+        }));
       return jsonResponse(request, list, 200, { "Cache-Control": "no-store" });
     }
 
+    if (request.method === "DELETE" && path.startsWith("/api/v1/api-keys/")) {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
+      const keyId = decodeURIComponent(path.slice("/api/v1/api-keys/".length));
+      const entry = Array.from(API_KEYS_STORE.entries()).find(
+        ([, meta]) => (meta.id ?? "") === keyId && meta.ownerId === auth.userId,
+      );
+      if (!entry) {
+        return jsonResponse(request, { detail: "API key not found." }, 404);
+      }
+      API_KEYS_STORE.delete(entry[0]);
+      return jsonResponse(request, { status: "deleted" }, 200, {
+        "Cache-Control": "no-store",
+      });
+    }
+
     if (request.method === "POST" && path === "/api/v1/api-keys/generate") {
+      const auth = await verifyClerkJwt(request, env);
+      if (!auth) {
+        return jsonResponse(
+          request,
+          { detail: "Sign in required.", code: "UNAUTHORIZED" },
+          401,
+          { "Cache-Control": "no-store" },
+        );
+      }
+      const ownedCount = Array.from(API_KEYS_STORE.values()).filter(
+        (meta) => meta.ownerId === auth.userId,
+      ).length;
+      if (ownedCount >= 3) {
+        return jsonResponse(
+          request,
+          { detail: "Maximum of 3 API keys per user reached." },
+          403,
+          { "Cache-Control": "no-store" },
+        );
+      }
       let body: { name?: string; tier?: string };
       try {
         body = (await request.json()) as { name?: string; tier?: string };
@@ -1031,15 +1094,19 @@ export default {
       const token =
         "live_curavex_" +
         Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+      const keyId = crypto.randomUUID();
       API_KEYS_STORE.set(token, {
+        id: keyId,
         name,
         tier,
+        ownerId: auth.userId,
         requests_per_minute: cfg.rpm,
         monthly_limit: cfg.monthly_limit,
       });
       return jsonResponse(
         request,
         {
+          id: keyId,
           api_key: token,
           name,
           tier,

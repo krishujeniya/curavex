@@ -10,8 +10,8 @@ import { SectionNav } from "@/components/sections/SectionNav";
 export default function OverviewPage() {
   return (
     <>
-      <SectionNav />
       <HeroSection />
+      <SectionNav />
       <PlatformSection />
       <ArchitectureSection />
       <PricingSection />

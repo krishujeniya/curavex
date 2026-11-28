@@ -36,15 +36,17 @@ export function LogoAnatomy() {
         >
           <defs>
             <clipPath id="cv-logo-wipe">
-              <rect x="0" y="0" width="1000" height="1000">
-                <animate
-                  attributeName="x"
-                  values="-1000;0;0;1000"
-                  keyTimes="0;0.42;0.9;1"
-                  dur="7s"
-                  repeatCount="indefinite"
-                />
-              </rect>
+              <g transform="rotate(-35 500 500)">
+                <rect x="-800" y="-800" width="2600" height="2600">
+                  <animate
+                    attributeName="x"
+                    values="-3000;0;0;3000"
+                    keyTimes="0;0.5;0.9;1"
+                    dur="7s"
+                    repeatCount="indefinite"
+                  />
+                </rect>
+              </g>
             </clipPath>
           </defs>
 

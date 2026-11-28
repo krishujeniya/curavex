@@ -9,6 +9,7 @@ import {
   useAuth,
 } from "@clerk/react";
 import {
+  IconArrowUpRight,
   IconBook,
   IconChevronDown,
   IconTable,
@@ -261,31 +262,46 @@ export function SiteHeader({ docsUrl }: SiteHeaderProps) {
               </button>
 
               {productsOpen && (
-                <div className="absolute left-0 top-full pt-2">
-                  <div className="w-[300px] rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
-                    {PRODUCTS.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setProductsOpen(false)}
-                          className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--cv-surface-raised)]"
-                        >
-                          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[var(--cv-border)] text-[var(--cv-text-secondary)]">
-                            <Icon size={15} stroke={1.8} aria-hidden="true" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-[13px] font-medium text-[var(--cv-text-primary)]">
-                              {item.label}
+                <div className="absolute left-1/2 top-full z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pt-3">
+                  <div className="overflow-hidden rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_24px_60px_rgba(0,0,0,0.14)]">
+                    <div className="flex items-center justify-between gap-4 border-b border-[var(--cv-border)] px-5 py-3.5">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--cv-text-secondary)]">
+                        Explore Curavex products
+                      </span>
+                      <Link
+                        href="/#platform"
+                        onClick={() => setProductsOpen(false)}
+                        className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--cv-text-primary)] hover:underline underline-offset-4"
+                      >
+                        See overview
+                        <IconArrowUpRight size={13} aria-hidden="true" />
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2">
+                      {PRODUCTS.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setProductsOpen(false)}
+                            className="group flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-[var(--cv-surface-raised)] sm:border-b sm:border-[var(--cv-border)] sm:[&:nth-child(odd)]:border-r"
+                          >
+                            <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[var(--cv-border)] text-[var(--cv-text-secondary)] transition-colors group-hover:text-[var(--cv-text-primary)]">
+                              <Icon size={15} stroke={1.8} aria-hidden="true" />
                             </span>
-                            <span className="block text-[12px] text-[var(--cv-text-secondary)]">
-                              {item.description}
+                            <span className="min-w-0">
+                              <span className="block text-[13px] font-medium text-[var(--cv-text-primary)]">
+                                {item.label}
+                              </span>
+                              <span className="block text-[12px] leading-snug text-[var(--cv-text-secondary)]">
+                                {item.description}
+                              </span>
                             </span>
-                          </span>
-                        </Link>
-                      );
-                    })}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}

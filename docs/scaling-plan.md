@@ -50,10 +50,12 @@ resource — spend them only on authenticated predicts and key management.
    - Add **Cache Rules** (10 free) for `api.curavex.workers.dev/api/v1/metadata/*`
      etc. if Workers-side headers prove insufficient.
 
-3. **Rate limiting rule (the 1 free rule)**
-   - Expression: `http.request.uri.path eq "/api/v1/predict"`
-   - Characteristics: IP, period 10s — protects the metered+DB-writing endpoint
-     from abuse/bots. Login endpoints are Clerk-hosted (already protected).
+3. **Rate limiting** — DONE via Workers Rate Limiting binding (GA, free plan):
+   three bindings `RL_FREE`/`RL_STANDARD`/`RL_ENTERPRISE` (60/300/1200 req
+   per 60s) enforced per API-key-hash or per user on both predict endpoints.
+   NOTE: dashboard WAF/rate-limit rules do NOT apply — `workers.dev`
+   subdomains are not zones. Zone rules only become relevant if a custom
+   domain is added later.
 
 4. **WAF custom rules (5 free)**
    - Block known-bad ASNs/user-agents on `/api/v1/*` if attack surface grows.

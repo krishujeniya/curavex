@@ -28,16 +28,7 @@ const ANNOTATIONS = [
 export function LogoAnatomy() {
   return (
     <div className="rounded-2xl border border-[var(--cv-border)] bg-[var(--cv-surface)] shadow-[0_12px_32px_rgba(20,20,23,0.06)] overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--cv-border)] px-5 py-3.5">
-        <span className="text-caption font-mono text-[var(--cv-text-secondary)]">
-          curavex-mark · anatomy
-        </span>
-        <span className="text-caption font-mono text-[var(--cv-text-secondary)] tabular-nums">
-          1000×1000
-        </span>
-      </div>
-
-      <div className="relative aspect-square w-full bg-[var(--cv-canvas)]">
+      <div className="relative aspect-square w-full">
         <svg
           viewBox="0 0 1000 1000"
           className="absolute inset-0 size-full"
@@ -58,23 +49,13 @@ export function LogoAnatomy() {
             </clipPath>
           </defs>
 
-          <g opacity="0.05">
-            <rect width="1000" height="1000" rx="220" fill="var(--cv-accent)" />
-          </g>
-          <rect
-            width="1000"
-            height="1000"
-            rx="220"
-            fill="var(--cv-accent)"
-          />
-
           <g clipPath="url(#cv-logo-wipe)">
-            <path d={MAIN_PATH} fill="var(--cv-canvas)" fillRule="evenodd" />
+            <path d={MAIN_PATH} fill="var(--cv-accent)" fillRule="evenodd" />
           </g>
 
           <path
             d={ACCENT_PATH}
-            fill="var(--cv-canvas)"
+            fill="var(--cv-accent)"
             fillRule="evenodd"
             style={{ animation: "cv-logo-accent 7s ease-in-out infinite" }}
           />

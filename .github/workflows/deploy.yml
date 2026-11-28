@@ -53,7 +53,7 @@ jobs:
         if: steps.check-secrets.outputs.has_secrets == 'true'
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_BASE_URL: https://api.curavex.workers.dev
+          NEXT_PUBLIC_API_BASE_URL: https://curavex-api.curavex.workers.dev
         run: npm ci && npm run build
 
       - name: Deploy Worker to Cloudflare
